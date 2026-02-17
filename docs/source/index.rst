@@ -1,4 +1,4 @@
-Name of the Workshop
+Kubernetes Training
 =================================================
 
 This repository provides an introduction to the concepts of parallel programming using Python.
@@ -12,10 +12,6 @@ Contents
 
 .. toctree::
 
-   prerequisite
-   outcomes
-   modules
-   packages
-   are_errors.rst
+   installation
    tutorial
    references
