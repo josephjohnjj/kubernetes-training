@@ -13,5 +13,6 @@ Contents
 .. toctree::
 
    installation
-   tutorial
+   deploy_app
+   commands
    references
