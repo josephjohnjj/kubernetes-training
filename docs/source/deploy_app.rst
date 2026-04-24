@@ -19,7 +19,6 @@ View the details of the deployment.
     
     kubectl describe deployment nginx 
 
-
 or
 
 .. code-block:: bash
@@ -27,6 +26,9 @@ or
     kubectl get deployment nginx -o yaml
 
     kubectl get deployment nginx -o yaml > first.yaml
+
+
+The details about the decription can be found in :doc:`this page <describe>`
 
 View the basic steps the cluster took in order to pull and deploy the new application.
 
@@ -49,15 +51,19 @@ Create from yaml file
 
 
 `--dry-run=client` generates the Kubernetes resource locally without creating it in the cluster.
-It does not contact the API server or persist anything.
+It does not contact the API server or persist anything. This is especially useful when you want to generate a manifest file for a resource without 
+actually creating it in the cluster.
 
 
 .. code-block:: bash
 
     kubectl create deployment two --image=nginx --dry-run=client -o yaml
 
-This is especially useful when you want to generate a manifest file for a resource without actually 
-creating it in the cluster.
+
+`--dry-run` lets you simulate a `kubectl` command without creating or modifying resources. `--dry-run=client` performs the check locally using \
+`kubectl`, while `--dry-run=server` sends the request to the Kubernetes API server for full validation and defaulting, but does not save it. 
+Omitting `--dry-run` executes the command normally. It is commonly used to safely preview manifests or validate changes before applying them.
+
 
 
 After creating a Service, it must be exposed so it can accept network traffic.
