@@ -28,7 +28,7 @@ or
     kubectl get deployment nginx -o yaml > first.yaml
 
 
-The details about the decription can be found in :doc:`this page <describe>`
+The details about the decription can be found in :doc:`this page  <describe>`
 
 View the basic steps the cluster took in order to pull and deploy the new application.
 

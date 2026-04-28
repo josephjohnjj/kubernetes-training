@@ -1,5 +1,5 @@
 kubectl edit vs patch vs apply vs replace
-------------------------------------------------------------
+============================================
 
 This document explains the difference between ``kubectl edit``, 
 ``kubectl patch``, ``kubectl apply``, and ``kubectl replace``.
