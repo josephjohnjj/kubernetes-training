@@ -14,6 +14,9 @@ Contents
 
    installation
    deploy_app
-   access
+   outside_access
+   etcd_backup
+   cluster_upgrade
+   important
    commands
    references
