@@ -17,6 +17,7 @@ Contents
    outside_access
    etcd_backup
    cluster_upgrade
+   resource_limits
    important
    commands
    references
