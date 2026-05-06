@@ -18,6 +18,7 @@ Contents
    etcd_backup
    cluster_upgrade
    resource_limits
+   name_space.rst
    important
    commands
    references
