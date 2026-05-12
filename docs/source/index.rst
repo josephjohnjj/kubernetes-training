@@ -18,7 +18,10 @@ Contents
    etcd_backup
    cluster_upgrade
    resource_limits
-   name_space.rst
+   name_space
+   api
+   tls
+   strace
    important
    commands
    references
