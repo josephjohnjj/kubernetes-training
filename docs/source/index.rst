@@ -22,6 +22,7 @@ Contents
    api
    tls
    strace
+   jobs
    important
    commands
    references

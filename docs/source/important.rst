@@ -48,3 +48,22 @@ Debugging
 This starts a BusyBox container with tools like `sh` and `ls`, and because of `--target=etcd`, it joins the same Pod environment as the etcd container. 
 That means it shares mounted volumes, so you can inspect directories used by `etcd` even though you are not inside the etcd container itself.
 
+Daemonsets
+-------------
+
+Daemonsets are a Kubernetes object that ensures that a copy of a specific Pod is running on all (or some) nodes in the cluster.
+This is useful for running cluster-wide services such as log collection, monitoring agents, or network plugins
+Get all daemonsets in the cluster
+
+.. code-block:: bash
+
+    kubectl get daemonsets -A
+
+    NAMESPACE     NAME          DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+
+    kube-system   calico-node   3         3         3       3            3           kubernetes.io/os=linux   84d
+    kube-system   kube-proxy    3         3         3       3            3           kubernetes.io/os=linux   84d
+
+.. note::
+
+    The ``-A`` flag is used to get resources across all namespaces. 
