@@ -23,6 +23,7 @@ Contents
    tls
    strace
    jobs
+   replica_set
    important
    commands
    references
