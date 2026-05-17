@@ -190,9 +190,26 @@ Now if you check the rollout history again, you will see the change cause for th
 .. code-block:: bash
 
     kubectl rollout history ds ds-one
-    
+
     daemonset.apps/ds-one 
     REVISION  CHANGE-CAUSE
     1         <none>
     2         <none>
     3         Updated nginx to 1.23.1-alpine
+
+
+if you use RollingUpdate strategy, the update will be applied automatically to all the Pods without needing to delete them manually.
+You can also check the status of the rollout using the `rollout status` command:
+
+.. code-block:: bash
+
+    kubectl rollout status ds ds-one
+
+    daemonset "ds-one" successfully rolled out
+
+
+.. code-block:: bash
+
+    kubectl delete ds ds-one
+    
+    daemonset.apps "ds-one" deleted from default namespace
