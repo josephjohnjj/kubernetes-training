@@ -95,6 +95,15 @@ Now also change the image of the deployment.
 
     kubectl set image deploy webserver nginx=nginx:1.23.1-alpine 
 
+.. note::
+    
+    `nginx` is the container name and `nginx:1.23.1-alpine` is the new image in the command:
+    `kubectl set image deploy webserver nginx=nginx:1.23.1-alpine`
+
+    These details are availble using the `get` command.
+
+
+
 
 .. code-block:: bash
 

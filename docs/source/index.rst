@@ -24,7 +24,8 @@ Contents
    strace
    jobs
    replica_set
-   deployment.rst
+   deployment
+   daemon
    important
    commands
    references
