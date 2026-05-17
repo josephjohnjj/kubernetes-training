@@ -204,3 +204,22 @@ After running the above command on all worker nodes, check the status of the nod
 
 
 With this, we have successfully set up a Kubernetes cluster with one control-plane node and two worker nodes. 
+
+
+Helm
+----
+
+Helm is a package manager for Kubernetes that allows you to easily deploy and manage applications on your cluster.
+
+To install Helm, run the following command on your control-plane node:
+
+.. code-block:: bash
+
+    wget https://get.helm.sh/helm-v3.19.0-linux-amd64.tar.gz
+
+    tar -xvf helm-v3.19.0-linux-amd64.tar.gz 
+
+    sudo cp linux-amd64/helm /usr/local/bin/helm
+
+
+
