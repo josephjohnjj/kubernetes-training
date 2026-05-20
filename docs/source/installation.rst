@@ -222,4 +222,20 @@ To install Helm, run the following command on your control-plane node:
     sudo cp linux-amd64/helm /usr/local/bin/helm
 
 
+NFS
+----
+
+To set up an NFS server, run the following command on one of the cp nodes:
+
+.. code-block:: bash
+
+    sudo apt-get install -y nfs-kernel-server
+
+On the worker nodes install the nfs-common package:
+
+.. code-block:: bash
+
+    sudo apt-get install -y nfs-common
+
+
 

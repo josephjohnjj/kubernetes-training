@@ -26,6 +26,9 @@ Contents
    replica_set
    deployment
    daemon
+   helm
+   config_map
+   persistent_volume
    important
    commands
    references
