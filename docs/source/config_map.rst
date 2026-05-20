@@ -326,3 +326,5 @@ Now delete the Pod and the ConfigMap:
 
     kubectl delete configmap fast-car colors
 
+
+
