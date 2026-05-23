@@ -90,3 +90,4 @@ Now we will create a Persistent Volume (PV) in Kubernetes that points to this NF
     NAME      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
     pvvol-1   1Gi        RWX            Retain           Available                          <unset>                          32s
 
+

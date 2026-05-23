@@ -117,6 +117,21 @@ Now apply the Pod definition and check the environment variable:
 
     blue
 
+.. note::
+    
+    The command `kubectl exec shell-demo -- /bin/bash -c 'echo $ilike'` can be broken down as follows:
+
+    * `kubectl exec` is the Kubernetes command used to run instructions inside a running container in a Pod. 
+    * `shell-demo` is the name of the Pod where the command will be executed. 
+    * The `--` separates Kubernetes arguments from the command that will run inside the container.
+    * `/bin/bash` starts a Bash shell inside the container.
+    * The `-c` flag tells Bash to execute the following string as a command. 
+
+    If I want to run bore tha one command i can use `kubectl exec shell-demo -- /bin/bash -c 'echo $ilike; ls /etc/cars'`.
+
+    If my pod has more than one container, I can specify which container to execute the command in using the `-c`:
+    `kubectl exec shell-demo -c nginx -- /bin/bash -c 'echo $ilike; ls /etc/cars'`
+
 Now delete the Pod:
 
 .. code-block:: bash

@@ -29,6 +29,7 @@ Contents
    helm
    config_map
    persistent_volume
+   pv_claim
    important
    commands
    references
