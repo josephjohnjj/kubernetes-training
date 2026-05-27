@@ -30,6 +30,7 @@ Contents
    config_map
    persistent_volume
    pv_claim
+   services
    important
    commands
    references
