@@ -1,0 +1,6 @@
+---
+# master_setup.yml
+- import_playbook: 1_setup_ssh_keys.yml
+- import_playbook: 2_setup_hostnames.yml
+- import_playbook: 3_append_keys.yml
+- import_playbook: 4_password_less.yml

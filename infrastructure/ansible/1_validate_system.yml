@@ -1,0 +1,92 @@
+# ---------------------------------------------------------
+# Playbook: Validate GPU + CPU + OS Requirements (Ubuntu)
+# ---------------------------------------------------------
+- name: Validate system requirements
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+
+    # -----------------------------------------------------
+    # OS CHECK (Ubuntu 22.04 LTS)
+    # -----------------------------------------------------
+    - name: Check OS is Ubuntu 22.04
+      fail:
+        msg: "This playbook only supports Ubuntu 22.04 LTS"
+      when: not (
+        ansible_distribution == "Ubuntu" and
+        ansible_distribution_version is version("22.04", "=="))
+
+    # -----------------------------------------------------
+    # CPU CHECK (AMD or Intel supported)
+    # -----------------------------------------------------
+    - name: Detect CPU model
+      shell: grep -m1 "model name" /proc/cpuinfo
+      register: cpu_model
+      changed_when: false
+
+    - name: Show CPU model
+      debug:
+        msg: "Detected CPU: {{ cpu_model.stdout }}"
+
+    - name: Validate CPU is AMD or Intel
+      assert:
+        that:
+          - >
+            ('AMD' in cpu_model.stdout or
+             'Intel' in cpu_model.stdout or
+             'EPYC' in cpu_model.stdout or
+             'Xeon' in cpu_model.stdout)
+        fail_msg: "Unsupported CPU. Only AMD EPYC or Intel Xeon CPUs are supported."
+
+    # -----------------------------------------------------
+    # GPU CHECK (V100 or newer, PCI-based, no nvidia-smi)
+    # -----------------------------------------------------
+
+    - name: Install pciutils for GPU detection
+      apt:
+        name: pciutils
+        state: present
+        update_cache: yes
+      tags: packages
+
+    - name: Detect NVIDIA GPU via PCI
+      shell: lspci | grep -i nvidia
+      register: gpu_pci
+      changed_when: false
+      failed_when: gpu_pci.rc != 0
+
+    - name: Show detected GPU
+      debug:
+        msg: "{{ gpu_pci.stdout }}"
+
+    - name: Validate GPU is V100 or newer
+      set_fact:
+        gpu_supported: >-
+          {{
+            'V100' in gpu_pci.stdout or
+            'Tesla V100' in gpu_pci.stdout or
+            'T4' in gpu_pci.stdout or
+            'A10' in gpu_pci.stdout or
+            'A100' in gpu_pci.stdout or
+            'H100' in gpu_pci.stdout
+          }}
+
+    - name: Fail if GPU is not V100 or newer
+      fail:
+        msg: >
+          Unsupported GPU detected. Only V100 or newer NVIDIA GPUs are allowed.
+          Detected: {{ gpu_pci.stdout }}
+      when: not gpu_supported
+
+    # -----------------------------------------------------
+    # FINAL VALIDATION FLAG
+    # -----------------------------------------------------
+    - name: Set system validation fact
+      set_fact:
+        requirements_met: true
+
+    - name: End play if validation failed
+      meta: end_play
+      when: requirements_met is not defined or not requirements_met

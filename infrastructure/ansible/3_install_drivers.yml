@@ -1,0 +1,134 @@
+# ---------------------------------------------------------
+# Play: Install NVIDIA Drivers on Ubuntu 22.04 LTS
+# ---------------------------------------------------------
+- name: Install NVIDIA Drivers on Ubuntu 22.04
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+
+    # -----------------------------------------------------
+    # PRECHECK: GPU detection
+    # -----------------------------------------------------
+    - name: Check if NVIDIA GPU is detected
+      shell: lspci | grep -i nvidia || true
+      register: nvidia_gpu_check
+      changed_when: false
+      tags: nvidia_driver
+
+    - name: Show GPU detection result
+      debug:
+        var: nvidia_gpu_check.stdout
+      tags: nvidia_driver
+
+    - name: Fail if no NVIDIA GPU found
+      fail:
+        msg: "No NVIDIA GPU detected on this system."
+      when: nvidia_gpu_check.stdout == ""
+      tags: nvidia_driver
+
+    # -----------------------------------------------------
+    # APT PREPARATION (safe install flow)
+    # -----------------------------------------------------
+    - name: Fix broken packages (safety)
+      command: apt-get -f install -y
+      ignore_errors: yes
+      tags: apt_fix
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      tags: apt
+
+    - name: Install prerequisites for NVIDIA driver installation
+      apt:
+        name:
+          - build-essential
+          - dkms
+          - linux-headers-{{ ansible_kernel }}
+          - wget
+          - curl
+          - gnupg
+        state: present
+      tags: nvidia_driver
+
+    # -----------------------------------------------------
+    # -----------------------------------------------------
+    # NVIDIA DRIVER INSTALL (Ubuntu-native way)
+    # -----------------------------------------------------
+
+    - name: Install ubuntu-drivers tool (required for autoinstall)
+      apt:
+        name: ubuntu-drivers-common
+        state: present
+        update_cache: yes
+      tags: nvidia_driver
+
+    - name: Install Ubuntu recommended NVIDIA driver
+      command: ubuntu-drivers autoinstall
+      register: driver_install
+      changed_when: "'nvidia' in driver_install.stdout or driver_install.rc == 0"
+      tags: nvidia_driver
+
+    # -----------------------------------------------------
+    # CUDA REPOSITORY (optional but modern approach)
+    # -----------------------------------------------------
+    - name: Download NVIDIA CUDA repository pin
+      get_url:
+        url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
+        dest: /etc/apt/preferences.d/cuda-repository-pin-600
+        mode: '0644'
+      tags: cuda_repo
+
+    - name: Add NVIDIA CUDA repository key
+      shell: |
+        curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub | gpg --dearmor -o /usr/share/keyrings/cuda-archive-keyring.gpg
+      args:
+        executable: /bin/bash
+      tags: cuda_repo
+
+    - name: Add CUDA repository
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
+        state: present
+        filename: cuda
+      tags: cuda_repo
+
+    - name: Update apt cache after adding CUDA repo
+      apt:
+        update_cache: yes
+      tags: cuda_repo
+
+    # -----------------------------------------------------
+    # OPTIONAL CUDA TOOLKIT (not driver, just toolkit)
+    # -----------------------------------------------------
+    - name: Install CUDA toolkit 
+      apt:
+        name: cuda-toolkit
+        state: present
+      tags: cuda_toolkit
+
+    # -----------------------------------------------------
+    # VERIFY DRIVER INSTALL
+    # -----------------------------------------------------
+    - name: Verify NVIDIA driver installation
+      command: nvidia-smi
+      register: nvidia_smi
+      changed_when: false
+      failed_when: false
+      tags: nvidia_driver
+
+    - name: Show NVIDIA driver status
+      debug:
+        var: nvidia_smi.stdout
+      tags: nvidia_driver
+
+    # -----------------------------------------------------
+    # REBOOT (required for driver activation)
+    # -----------------------------------------------------
+    - name: Reboot nodes
+      reboot:
+        reboot_timeout: 600
+        test_command: whoami
+      tags: reboot

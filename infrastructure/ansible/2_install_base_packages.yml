@@ -1,0 +1,120 @@
+# ---------------------------------------------------------
+# Play 1: System Update + Base Preparation (Ubuntu 22.04)
+# ---------------------------------------------------------
+- name: Update packages safely on all nodes
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+
+    # -----------------------------------------------------
+    # APT repair + refresh (IMPORTANT SAFETY STEP)
+    # -----------------------------------------------------
+    - name: Fix broken packages (safety)
+      command: apt-get -f install -y
+      register: fix_broken
+      changed_when: fix_broken.rc == 0
+      ignore_errors: yes
+      tags: apt_fix
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      tags: apt
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+      tags: update
+
+    # -----------------------------------------------------
+    # Core system libraries
+    # -----------------------------------------------------
+    - name: Ensure libc and base tools are up to date
+      apt:
+        name:
+          - libc6
+          - libc6-dev
+        state: latest
+      tags: core
+
+    # -----------------------------------------------------
+    # Development tools
+    # -----------------------------------------------------
+    - name: Install build-essential (Development Tools)
+      apt:
+        name: build-essential
+        state: present
+      tags: devtools
+
+    # -----------------------------------------------------
+    # Base system packages
+    # -----------------------------------------------------
+    - name: Install required system packages
+      apt:
+        name:
+          - acl
+          - curl
+          - git
+          - wget
+          - htop
+          - vim
+          - net-tools
+          - nano
+          - unzip
+          - tar
+          - lsof
+          - dnsutils
+          - pciutils
+          - xauth
+        state: present
+      tags: packages
+
+    # -----------------------------------------------------
+    # Kernel + NVIDIA driver dependencies
+    # -----------------------------------------------------
+    - name: Install kernel build dependencies
+      apt:
+        name:
+          - linux-headers-{{ ansible_kernel }}
+          - dkms
+          - libelf-dev
+        state: present
+      tags: nvidia_driver
+
+    # -----------------------------------------------------
+    # Additional dev tools
+    # -----------------------------------------------------
+    - name: Install additional build tools
+      apt:
+        name:
+          - python3
+          - python3-dev
+          - perl
+          - autoconf
+          - automake
+          - gcc
+          - g++
+          - make
+          - cmake
+          - ncat
+        state: present
+      tags: build
+
+    # -----------------------------------------------------
+    # Cleanup
+    # -----------------------------------------------------
+    - name: Remove unused packages
+      apt:
+        autoremove: yes
+      tags: cleanup
+
+    # -----------------------------------------------------
+    # Reboot
+    # -----------------------------------------------------
+    - name: Reboot nodes
+      reboot:
+        reboot_timeout: 600
+        test_command: whoami
+      tags: reboot

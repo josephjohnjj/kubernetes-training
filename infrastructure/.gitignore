@@ -1,0 +1,7 @@
+
+ansible/1_setup_ssh/keys
+ansible/2_setup_beegfs/certificates
+.terraform.lock.hcl
+.terraform
+ansible/host.ini
+pbs-cluster/keys
