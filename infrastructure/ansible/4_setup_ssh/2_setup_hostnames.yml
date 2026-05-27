@@ -1,9 +1,19 @@
-- name: Set hostnames and update /etc/hosts for all nodes
+- name: Set hostnames and update /etc/hosts for all nodes (Ubuntu)
   hosts: all
   become: yes
-  gather_facts: true
+  gather_facts: yes
 
   tasks:
+
+    - name: Verify Ubuntu OS
+      assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+        fail_msg: "This playbook is designed for Ubuntu systems"
+      tags:
+        - setup
+        - validate
+
     - name: Compute dynamic hostname
       set_fact:
         dynamic_hostname: "node{{ groups['all'].index(inventory_hostname) + 1 }}"

@@ -1,14 +1,24 @@
 ---
-- name: Setup passwordless SSH between EC2 nodes
+- name: Setup passwordless SSH between EC2 nodes (Ubuntu)
   hosts: all
   gather_facts: yes
   become: yes
 
   vars:
-    target_user: rocky
+    target_user: ubuntu
     ssh_dir: "/home/{{ target_user }}/.ssh"
 
   tasks:
+
+    - name: Verify Ubuntu OS
+      assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+        fail_msg: "This playbook is designed for Ubuntu systems"
+      tags:
+        - setup
+        - validate
+
     - name: Ensure .ssh directory exists
       file:
         path: "{{ ssh_dir }}"

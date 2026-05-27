@@ -1,13 +1,22 @@
-- name: Setup inter-instance SSH keys for all hosts
+- name: Setup inter-instance SSH keys for all hosts (Ubuntu)
   hosts: all
   become: yes
-  gather_facts: no
+  gather_facts: yes
 
   vars:
     ssh_key_path: "/home/{{ ansible_user }}/.ssh/id_rsa"
 
   tasks:
-  
+
+    - name: Verify Ubuntu OS
+      assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+        fail_msg: "This playbook is designed for Ubuntu systems"
+      tags:
+        - setup
+        - validate
+
     - name: Ensure a clean keys directory exists (on control node)
       file:
         path: "./keys"
