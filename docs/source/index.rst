@@ -31,6 +31,7 @@ Contents
    persistent_volume
    pv_claim
    services
+   labels
    important
    commands
    references
