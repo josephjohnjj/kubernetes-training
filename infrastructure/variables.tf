@@ -1,7 +1,7 @@
 
 
-variable "compute_node_count" {
-  description = "Number of compute node EC2 instances to create in the cluster"
+variable "worker_node_count" {
+  description = "Number of worker node EC2 instances to create in the cluster"
   type        = number
   default     = 3
 }
@@ -39,7 +39,7 @@ variable "instance_name" {
 
   # The default value to use if no value is provided in a .tfvars file
   # or via the command line. This means the variable is optional.
-  default = "Slurm-Server"
+  default = "Kube-Server"
 }
 
 
@@ -78,7 +78,7 @@ variable "login_ami" {
   default     = "ami-020cba7c55df1f615"
 }
 
-variable "compute_ami" {
+variable "worker_ami" {
   description = "AMI ID for compute nodes"
   type        = string
   default     = "ami-020cba7c55df1f615"

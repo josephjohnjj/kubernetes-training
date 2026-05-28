@@ -95,26 +95,26 @@ resource "aws_instance" "control_node" {
 
 
   # Explicit market type
-  dynamic "instance_market_options" {
-    for_each = var.capacity_reservation_id != "" ? [1] : []
-
-    content {
-      market_type = "capacity-block"
-    }
-  }
+  //dynamic "instance_market_options" {
+  //  for_each = var.capacity_reservation_id != "" ? [1] : []
+//
+  //  content {
+  //    market_type = "capacity-block"
+  //  }
+  //}
 
   # Conditionally specify Capacity Reservation for this instance
   # If 'capacity_reservation_id' variable is non-empty, the instance
   # will launch into the specified Capacity Reservation block.
-  dynamic "capacity_reservation_specification" {
-    for_each = var.capacity_reservation_id != "" ? [1] : []
-
-    content {
-      capacity_reservation_target {
-        capacity_reservation_id = var.capacity_reservation_id
-      }
-    }
-  }
+  //dynamic "capacity_reservation_specification" {
+  //  for_each = var.capacity_reservation_id != "" ? [1] : []
+//
+  //  content {
+  //    capacity_reservation_target {
+  //      capacity_reservation_id = var.capacity_reservation_id
+  //    }
+  //  }
+  //}
 
 }
 
@@ -197,18 +197,18 @@ resource "aws_instance" "login_node" {
 }
 
 # ---------------------------------------
-# Launch an EC2 Instance as Compute Node
+# Launch an EC2 Instance as Worker Node
 # ----------------------------------------
-resource "aws_instance" "compute_node" {
+resource "aws_instance" "worker_node" {
 
   # Number of instances to create
-  count = var.compute_node_count
+  count = var.worker_node_count
 
 
   # The AMI ID for the EC2 instance.
   # This AMI must exist in your selected region.
   #ami = "ami-05ee60afff9d0a480"  # Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.7 (Ubuntu 22.04) 20250602
-  ami = var.compute_ami # Example AMI ID for Ubuntu 22.04 LTS
+  ami = var.worker_ami # Example AMI ID for Ubuntu 22.04 LTS
 
   # The EC2 instance type.
   #instance_type = "p4d.24xlarge" # Eight A100 GPUs, 96 vCPUs, 1152 GiB RAM
@@ -234,7 +234,7 @@ resource "aws_instance" "compute_node" {
 
   # Add tags to the instance for identification and management.
   tags = {
-    Name = "computeNode-${count.index + 1}" # Name tag appears in the EC2 console
+    Name = "workerNode-${count.index + 1}" # Name tag appears in the EC2 console
   }
 
 
@@ -258,26 +258,26 @@ resource "aws_instance" "compute_node" {
 
 
   # Explicit market type
-  dynamic "instance_market_options" {
-    for_each = var.capacity_reservation_id != "" ? [1] : []
-
-    content {
-      market_type = "capacity-block"
-    }
-  }
+  //dynamic "instance_market_options" {
+  //  for_each = var.capacity_reservation_id != "" ? [1] : []
+//
+  //  content {
+  //    market_type = "capacity-block"
+  //  }
+  //}
 
   # Conditionally specify Capacity Reservation for this instance
   # If 'capacity_reservation_id' variable is non-empty, the instance
   # will launch into the specified Capacity Reservation block.
-  dynamic "capacity_reservation_specification" {
-    for_each = var.capacity_reservation_id != "" ? [1] : []
-
-    content {
-      capacity_reservation_target {
-        capacity_reservation_id = var.capacity_reservation_id
-      }
-    }
-  }
+  //dynamic "capacity_reservation_specification" {
+  //  for_each = var.capacity_reservation_id != "" ? [1] : []
+//
+  //  content {
+  //    capacity_reservation_target {
+  //      capacity_reservation_id = var.capacity_reservation_id
+  //    }
+  //  }
+  //}
 
 }
 
@@ -365,25 +365,25 @@ resource "aws_instance" "storage_node" {
 
 
   # Explicit market type
-  dynamic "instance_market_options" {
-    for_each = var.capacity_reservation_id != "" ? [1] : []
-
-    content {
-      market_type = "capacity-block"
-    }
-  }
+  //dynamic "instance_market_options" {
+  //  for_each = var.capacity_reservation_id != "" ? [1] : []
+//
+  //  content {
+  //    market_type = "capacity-block"
+  //  }
+  //}
 
   # Conditionally specify Capacity Reservation for this instance
   # If 'capacity_reservation_id' variable is non-empty, the instance
   # will launch into the specified Capacity Reservation block.
-  dynamic "capacity_reservation_specification" {
-    for_each = var.capacity_reservation_id != "" ? [1] : []
-
-    content {
-      capacity_reservation_target {
-        capacity_reservation_id = var.capacity_reservation_id
-      }
-    }
-  }
+  //dynamic "capacity_reservation_specification" {
+  //  for_each = var.capacity_reservation_id != "" ? [1] : []
+//
+  //  content {
+  //    capacity_reservation_target {
+  //      capacity_reservation_id = var.capacity_reservation_id
+  //    }
+  //  }
+  //}
 
 }
