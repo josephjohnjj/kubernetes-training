@@ -1,9 +1,15 @@
 
 
-variable "worker_node_count" {
+variable "worker_node_cpu_count" {
   description = "Number of worker node EC2 instances to create in the cluster"
   type        = number
-  default     = 3
+  default     = 2
+}
+
+variable "worker_node_gpu_count" {
+  description = "Number of worker node EC2 instances to create in the cluster"
+  type        = number
+  default     = 2
 }
 
 variable "storage_node_count" {
@@ -78,7 +84,13 @@ variable "login_ami" {
   default     = "ami-020cba7c55df1f615"
 }
 
-variable "worker_ami" {
+variable "worker_cpu_ami" {
+  description = "AMI ID for compute nodes"
+  type        = string
+  default     = "ami-020cba7c55df1f615"
+}
+
+variable "worker_gpu_ami" {
   description = "AMI ID for compute nodes"
   type        = string
   default     = "ami-020cba7c55df1f615"
