@@ -7,12 +7,12 @@
 # --------------------------------------------
 output "control_node_public_ip" {
   description = "Public IP address of the control node"
-  value       = aws_instance.control_node.public_ip
+  value       = [for i in aws_instance.control_node : i.public_ip]
 }
 
 output "control_node_private_ip" {
   description = "Private IP address of the control node"
-  value       = aws_instance.control_node.private_ip
+  value       = [for i in aws_instance.control_node : i.private_ip]
 }
 
 # --------------------------------------------
@@ -29,16 +29,29 @@ output "login_node_private_ips" {
 }
 
 # --------------------------------------------
-# Compute Nodes (usually many)
+# Worker Nodes (without GPU)
 # --------------------------------------------
-output "compute_node_public_ips" {
+output "worker_node_cpu_public_ips" {
   description = "Public IPs of the compute nodes (optional)"
-  value       = [for i in aws_instance.compute_node : i.public_ip]
+  value       = [for i in aws_instance.worker_node_cpu : i.public_ip]
 }
 
-output "compute_node_private_ips" {
+output "worker_node_cpu_private_ips" {
   description = "Private IPs of the compute nodes"
-  value       = [for i in aws_instance.compute_node : i.private_ip]
+  value       = [for i in aws_instance.worker_node_cpu : i.private_ip]
+}
+
+# --------------------------------------------
+# Worker Nodes (without GPU)
+# --------------------------------------------
+output "worker_node_gpu_public_ips" {
+  description = "Public IPs of the compute nodes (optional)"
+  value       = [for i in aws_instance.worker_node_gpu : i.public_ip]
+}
+
+output "worker_node_gpu_private_ips" {
+  description = "Private IPs of the compute nodes"
+  value       = [for i in aws_instance.worker_node_gpu : i.private_ip]
 }
 
 # --------------------------------------------
@@ -52,22 +65,4 @@ output "storage_node_public_ips" {
 output "storage_node_private_ips" {
   description = "Private IPs of the storage nodes"
   value       = [for i in aws_instance.storage_node : i.private_ip]
-}
-
-# --------------------------------------------
-# EFS IDs
-# --------------------------------------------
-output "efs_apps_id" {
-  description = "EFS File System ID for /apps mount"
-  value       = aws_efs_file_system.apps.id
-}
-
-output "efs_scratch_id" {
-  description = "EFS File System ID for /scratch mount"
-  value       = aws_efs_file_system.scratch.id
-}
-
-output "efs_home_id" {
-  description = "EFS File System ID for /home mount"
-  value       = aws_efs_file_system.home.id
 }

@@ -19,15 +19,12 @@ resource "aws_instance" "control_node" {
   # Number of instances to create
   count = var.control_node_count
 
-
   # The AMI ID for the EC2 instance.
-  # This AMI must exist in your selected region.
-  #ami = "ami-05ee60afff9d0a480"  # Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.7 (Ubuntu 22.04) 20250602
-  ami = var.controller_ami # Example AMI ID for Ubuntu 22.04 LTS
+  ami = var.controller_ami
 
   # The EC2 instance type.
   #instance_type = "p4d.24xlarge" # Eight A100 GPUs, 96 vCPUs, 1152 GiB RAM
-  instance_type = var.instance_type # 1 CPU
+  instance_type = var.control_instance_type
 
   # Use the key pair created above for SSH access.
   key_name = aws_key_pair.hcp_key.key_name
@@ -57,64 +54,21 @@ resource "aws_instance" "control_node" {
   # Configure root volume
   root_block_device {
     volume_type           = "gp3" # Use gp3 for improved performance and cost control
-    volume_size           = 50    # 300 GiB
+    volume_size           = 200   # Size in GiB
     iops                  = 3000  # Provisioned IOPS (default for gp3 is 3000)
     encrypted             = false # Set to false for unencrypted volume (default is false)
     delete_on_termination = true  # Deletes the volume when the instance is terminated
   }
 
-  # First additional disk for /BeeGFS (metadata + management)
+  # First additional disk 
   ebs_block_device {
     device_name           = "/dev/sdf" # Linux will map this to /dev/nvme1n1 on newer instances
     volume_type           = "gp3"
-    volume_size           = 50 # Size in GiB
+    volume_size           = 150 # Size in GiB
     iops                  = 3000
     encrypted             = false
     delete_on_termination = true
   }
-
-  # Second additional disk for /storage/stor1
-  ebs_block_device {
-    device_name           = "/dev/sdg"
-    volume_type           = "gp3"
-    volume_size           = 50
-    iops                  = 3000
-    encrypted             = false
-    delete_on_termination = true
-  }
-
-  # Third additional disk for /storage/stor2
-  ebs_block_device {
-    device_name           = "/dev/sdh"
-    volume_type           = "gp3"
-    volume_size           = 50
-    iops                  = 3000
-    encrypted             = false
-    delete_on_termination = true
-  }
-
-
-  # Explicit market type
-  //dynamic "instance_market_options" {
-  //  for_each = var.capacity_reservation_id != "" ? [1] : []
-//
-  //  content {
-  //    market_type = "capacity-block"
-  //  }
-  //}
-
-  # Conditionally specify Capacity Reservation for this instance
-  # If 'capacity_reservation_id' variable is non-empty, the instance
-  # will launch into the specified Capacity Reservation block.
-  //dynamic "capacity_reservation_specification" {
-  //  for_each = var.capacity_reservation_id != "" ? [1] : []
-//
-  //  content {
-  //    capacity_reservation_target {
-  //      capacity_reservation_id = var.capacity_reservation_id
-  //    }
-  //  }
-  //}
 
 }
 
@@ -128,15 +82,12 @@ resource "aws_instance" "login_node" {
   # Number of instances to create
   count = var.login_node_count
 
-
   # The AMI ID for the EC2 instance.
-  # This AMI must exist in your selected region.
-  #ami = "ami-05ee60afff9d0a480"  # Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.7 (Ubuntu 22.04) 20250602
   ami = var.login_ami # Example AMI ID for Ubuntu 22.04 LTS
 
   # The EC2 instance type.
   #instance_type = "p4d.24xlarge" # Eight A100 GPUs, 96 vCPUs, 1152 GiB RAM
-  instance_type = var.instance_type # 1 CPU
+  instance_type = var.login_instance_type
 
   # Use the key pair created above for SSH access.
   key_name = aws_key_pair.hcp_key.key_name
@@ -165,34 +116,11 @@ resource "aws_instance" "login_node" {
   # Configure root volume
   root_block_device {
     volume_type           = "gp3" # Use gp3 for improved performance and cost control
-    volume_size           = 50    # 300 GiB
+    volume_size           = 100   # Size in GiB
     iops                  = 3000  # Provisioned IOPS (default for gp3 is 3000)
     encrypted             = false # Set to false for unencrypted volume (default is false)
     delete_on_termination = true  # Deletes the volume when the instance is terminated
   }
-
-
-  # Explicit market type
-  dynamic "instance_market_options" {
-    for_each = var.capacity_reservation_id != "" ? [1] : []
-
-    content {
-      market_type = "capacity-block"
-    }
-  }
-
-  # Conditionally specify Capacity Reservation for this instance
-  # If 'capacity_reservation_id' variable is non-empty, the instance
-  # will launch into the specified Capacity Reservation block.
-  //dynamic "capacity_reservation_specification" {
-  //  for_each = var.capacity_reservation_id != "" ? [1] : []
-//
-  //  content {
-  //    capacity_reservation_target {
-  //      capacity_reservation_id = var.capacity_reservation_id
-  //    }
-  //  }
-  //}
 
 }
 
@@ -204,15 +132,12 @@ resource "aws_instance" "worker_node_cpu" {
   # Number of instances to create
   count = var.worker_node_cpu_count
 
-
   # The AMI ID for the EC2 instance.
-  # This AMI must exist in your selected region.
-  #ami = "ami-05ee60afff9d0a480"  # Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.7 (Ubuntu 22.04) 20250602
   ami = var.worker_cpu_ami # Example AMI ID for Ubuntu 22.04 LTS
 
   # The EC2 instance type.
   #instance_type = "p4d.24xlarge" # Eight A100 GPUs, 96 vCPUs, 1152 GiB RAM
-  instance_type = var.instance_type # 1 CPU
+  instance_type = var.worker_cpu_instance_type
 
   # Use the key pair created above for SSH access.
   key_name = aws_key_pair.hcp_key.key_name
@@ -241,7 +166,7 @@ resource "aws_instance" "worker_node_cpu" {
   # Configure root volume
   root_block_device {
     volume_type           = "gp3" # Use gp3 for improved performance and cost control
-    volume_size           = 50    # 300 GiB
+    volume_size           = 200   #  Size in GiB
     iops                  = 3000  # Provisioned IOPS (default for gp3 is 3000)
     encrypted             = false # Set to false for unencrypted volume (default is false)
     delete_on_termination = true  # Deletes the volume when the instance is terminated
@@ -250,34 +175,11 @@ resource "aws_instance" "worker_node_cpu" {
   ebs_block_device {
     device_name           = "/dev/sdf" # Linux will map this to /dev/nvme1n1 on newer instances
     volume_type           = "gp3"
-    volume_size           = 50 # Size in GiB
+    volume_size           = 200 # Size in GiB
     iops                  = 3000
     encrypted             = false
     delete_on_termination = true
   }
-
-
-  # Explicit market type
-  //dynamic "instance_market_options" {
-  //  for_each = var.capacity_reservation_id != "" ? [1] : []
-//
-  //  content {
-  //    market_type = "capacity-block"
-  //  }
-  //}
-
-  # Conditionally specify Capacity Reservation for this instance
-  # If 'capacity_reservation_id' variable is non-empty, the instance
-  # will launch into the specified Capacity Reservation block.
-  //dynamic "capacity_reservation_specification" {
-  //  for_each = var.capacity_reservation_id != "" ? [1] : []
-//
-  //  content {
-  //    capacity_reservation_target {
-  //      capacity_reservation_id = var.capacity_reservation_id
-  //    }
-  //  }
-  //}
 
 }
 
@@ -289,15 +191,12 @@ resource "aws_instance" "worker_node_gpu" {
   # Number of instances to create
   count = var.worker_node_gpu_count
 
-
   # The AMI ID for the EC2 instance.
-  # This AMI must exist in your selected region.
-  #ami = "ami-05ee60afff9d0a480"  # Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.7 (Ubuntu 22.04) 20250602
   ami = var.worker_gpu_ami # Example AMI ID for Ubuntu 22.04 LTS
 
   # The EC2 instance type.
   #instance_type = "p4d.24xlarge" # Eight A100 GPUs, 96 vCPUs, 1152 GiB RAM
-  instance_type = var.instance_type # 1 CPU
+  instance_type = var.worker_gpu_instance_type
 
   # Use the key pair created above for SSH access.
   key_name = aws_key_pair.hcp_key.key_name
@@ -326,7 +225,7 @@ resource "aws_instance" "worker_node_gpu" {
   # Configure root volume
   root_block_device {
     volume_type           = "gp3" # Use gp3 for improved performance and cost control
-    volume_size           = 50    # 300 GiB
+    volume_size           = 200   #  Size in GiB
     iops                  = 3000  # Provisioned IOPS (default for gp3 is 3000)
     encrypted             = false # Set to false for unencrypted volume (default is false)
     delete_on_termination = true  # Deletes the volume when the instance is terminated
@@ -335,34 +234,12 @@ resource "aws_instance" "worker_node_gpu" {
   ebs_block_device {
     device_name           = "/dev/sdf" # Linux will map this to /dev/nvme1n1 on newer instances
     volume_type           = "gp3"
-    volume_size           = 50 # Size in GiB
+    volume_size           = 200 # Size in GiB
     iops                  = 3000
     encrypted             = false
     delete_on_termination = true
   }
 
-
-  # Explicit market type
-  //dynamic "instance_market_options" {
-  //  for_each = var.capacity_reservation_id != "" ? [1] : []
-//
-  //  content {
-  //    market_type = "capacity-block"
-  //  }
-  //}
-
-  # Conditionally specify Capacity Reservation for this instance
-  # If 'capacity_reservation_id' variable is non-empty, the instance
-  # will launch into the specified Capacity Reservation block.
-  //dynamic "capacity_reservation_specification" {
-  //  for_each = var.capacity_reservation_id != "" ? [1] : []
-//
-  //  content {
-  //    capacity_reservation_target {
-  //      capacity_reservation_id = var.capacity_reservation_id
-  //    }
-  //  }
-  //}
 
 }
 
@@ -375,15 +252,12 @@ resource "aws_instance" "storage_node" {
   # Number of instances to create
   count = var.storage_node_count
 
-
   # The AMI ID for the EC2 instance.
-  # This AMI must exist in your selected region.
-  #ami = "ami-05ee60afff9d0a480"  # Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.7 (Ubuntu 22.04) 20250602
-  ami = var.storage_ami # Example AMI ID for Ubuntu 22.04 LTS
+  ami = var.storage_ami
 
   # The EC2 instance type.
   #instance_type = "p4d.24xlarge" # Eight A100 GPUs, 96 vCPUs, 1152 GiB RAM
-  instance_type = var.instance_type # 1 CPU
+  instance_type = var.storage_instance_type
 
   # Use the key pair created above for SSH access.
   key_name = aws_key_pair.hcp_key.key_name
@@ -412,63 +286,40 @@ resource "aws_instance" "storage_node" {
   # Configure root volume
   root_block_device {
     volume_type           = "gp3" # Use gp3 for improved performance and cost control
-    volume_size           = 50    # 300 GiB
+    volume_size           = 100   #  Size in GiB
     iops                  = 3000  # Provisioned IOPS (default for gp3 is 3000)
     encrypted             = false # Set to false for unencrypted volume (default is false)
     delete_on_termination = true  # Deletes the volume when the instance is terminated
   }
 
-  # First additional disk for /BeeGFS (metadata + management)
+  # First additional disk
   ebs_block_device {
     device_name           = "/dev/sdf" # Linux will map this to /dev/nvme1n1 on newer instances
     volume_type           = "gp3"
-    volume_size           = 50 # Size in GiB
+    volume_size           = 200 # Size in GiB
     iops                  = 3000
     encrypted             = false
     delete_on_termination = true
   }
 
-  # Second additional disk for /storage/stor1
+  # Second additional disk 
   ebs_block_device {
     device_name           = "/dev/sdg"
     volume_type           = "gp3"
-    volume_size           = 50
+    volume_size           = 200
     iops                  = 3000
     encrypted             = false
     delete_on_termination = true
   }
 
-  # Third additional disk for /storage/stor2
+  # Third additional disk 
   ebs_block_device {
     device_name           = "/dev/sdh"
     volume_type           = "gp3"
-    volume_size           = 50
+    volume_size           = 200
     iops                  = 3000
     encrypted             = false
     delete_on_termination = true
   }
-
-
-  # Explicit market type
-  //dynamic "instance_market_options" {
-  //  for_each = var.capacity_reservation_id != "" ? [1] : []
-//
-  //  content {
-  //    market_type = "capacity-block"
-  //  }
-  //}
-
-  # Conditionally specify Capacity Reservation for this instance
-  # If 'capacity_reservation_id' variable is non-empty, the instance
-  # will launch into the specified Capacity Reservation block.
-  //dynamic "capacity_reservation_specification" {
-  //  for_each = var.capacity_reservation_id != "" ? [1] : []
-//
-  //  content {
-  //    capacity_reservation_target {
-  //      capacity_reservation_id = var.capacity_reservation_id
-  //    }
-  //  }
-  //}
 
 }

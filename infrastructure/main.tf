@@ -19,15 +19,10 @@ terraform {
     }
   }
 
-  # --------------------------------------------
-  # Required Terraform CLI Version
-  # --------------------------------------------
+
   # Ensures that Terraform CLI version 1.2.0 or newer is used
   required_version = ">= 1.2.0"
 
-  # --------------------------------------------
-  # Terraform Cloud Configuration (Optional)
-  # --------------------------------------------
   cloud {
     # The Terraform Cloud organization to connect with
     organization = "jxj900"
@@ -35,7 +30,7 @@ terraform {
     # Workspace configuration in Terraform Cloud
     workspaces {
       # Name of the workspace to use for state management
-      name = "slurm-cluster"
+      name = "ceph-cluster"
     }
   }
 }
