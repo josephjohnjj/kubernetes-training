@@ -3,61 +3,78 @@ set -e
 
 OUTPUTS=$(terraform -chdir=.. output -json)
 
-CONTROL_PUBS=$(echo "$OUTPUTS" | jq -r '.control_node_public_ips.value[]')
-LOGIN_PUB=$(echo "$OUTPUTS" | jq -r '.login_node_public_ips.value[0]')
-WORKER_PUBS=$(echo "$OUTPUTS" | jq -r '.worker_node_public_ips.value[]')
-STORAGE_PUBS=$(echo "$OUTPUTS" | jq -r '.storage_node_public_ips.value[]')
-
 SSH_KEY="/home/joseph/.ssh/terraform-user"
 
-# Start writing host.ini
-cat <<EOF > host.ini
-[control]
-EOF
+# Helper function
+write_group() {
+  GROUP_NAME=$1
+  HOST_PREFIX=$2
+  PUB_KEY=$3
+  PRIV_KEY=$4
 
-count=1
+  PUBS=$(echo "$OUTPUTS" | jq -r "$PUB_KEY")
+  PRIVS=$(echo "$OUTPUTS" | jq -r "$PRIV_KEY")
 
-# Add control nodes
-for ip in $CONTROL_PUBS; do
-  [ -z "$ip" ] && continue
-  echo "node$count ansible_host=$ip ansible_user=ubuntu ansible_ssh_private_key_file=$SSH_KEY" >> host.ini
-  count=$((count + 1))
-done
+  echo "" >> host.ini
+  echo "[$GROUP_NAME]" >> host.ini
 
-# Add login node
+  pub_file=$(mktemp)
+  priv_file=$(mktemp)
+
+  echo "$PUBS" > "$pub_file"
+  echo "$PRIVS" > "$priv_file"
+
+  count=1
+
+  paste "$pub_file" "$priv_file" | while IFS="$(printf '\t')" read -r pub priv; do
+    [ -z "$pub" ] && continue
+
+    echo "${HOST_PREFIX}${count} ansible_host=$pub private_ip=$priv ansible_user=ubuntu ansible_ssh_private_key_file=$SSH_KEY" >> host.ini
+
+    count=$((count + 1))
+  done
+
+  rm -f "$pub_file" "$priv_file"
+}
+
+# Create inventory
+: > host.ini
+
+write_group \
+  "control" \
+  "control" \
+  '.control_node_public_ip.value[]' \
+  '.control_node_private_ip.value[]'
+
+write_group \
+  "login" \
+  "login" \
+  '.login_node_public_ips.value[]' \
+  '.login_node_private_ips.value[]'
+
+write_group \
+  "worker_cpu" \
+  "cpu-worker" \
+  '.worker_node_cpu_public_ips.value[]' \
+  '.worker_node_cpu_private_ips.value[]'
+
+write_group \
+  "worker_gpu" \
+  "gpu-worker" \
+  '.worker_node_gpu_public_ips.value[]' \
+  '.worker_node_gpu_private_ips.value[]'
+
+write_group \
+  "storage" \
+  "storage" \
+  '.storage_node_public_ips.value[]' \
+  '.storage_node_private_ips.value[]'
+
 cat <<EOF >> host.ini
 
-[login]
-EOF
-
-echo "node$count ansible_host=$LOGIN_PUB ansible_user=ubuntu ansible_ssh_private_key_file=$SSH_KEY" >> host.ini
-count=$((count + 1))
-
-# Add worker nodes
-cat <<EOF >> host.ini
-
-[worker]
-EOF
-
-for ip in $WORKER_PUBS; do
-  [ -z "$ip" ] && continue
-  echo "node$count ansible_host=$ip ansible_user=ubuntu ansible_ssh_private_key_file=$SSH_KEY" >> host.ini
-  count=$((count + 1))
-done
-
-# Add storage nodes — continues numbering
-cat <<EOF >> host.ini
-
-[storage]
-EOF
-
-for ip in $STORAGE_PUBS; do
-  [ -z "$ip" ] && continue
-  echo "node$count ansible_host=$ip ansible_user=ubuntu ansible_ssh_private_key_file=$SSH_KEY" >> host.ini
-  count=$((count + 1))
-done
-
-cat <<EOF >> host.ini
+[worker:children]
+worker_cpu
+worker_gpu
 
 [all:children]
 control
