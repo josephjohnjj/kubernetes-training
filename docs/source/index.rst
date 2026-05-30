@@ -32,6 +32,8 @@ Contents
    pv_claim
    services
    labels
+   linkered
+   ingress
    important
    commands
    references
