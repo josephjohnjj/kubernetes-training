@@ -34,6 +34,9 @@ Contents
    labels
    linkered
    ingress
+   scheduling
+
+
    important
    commands
    references
