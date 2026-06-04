@@ -1,7 +1,8 @@
 Kubernetes Training
 =================================================
 
-This repository provides an introduction to the concepts of parallel programming using Python.
+This repository covers the fundamentals of Kubernetes along with infrastructure-as-code to provision a production-ready cluster.
+
 
 .. note::
 
@@ -12,31 +13,6 @@ Contents
 
 .. toctree::
 
-   installation
-   deploy_app
-   outside_access
-   etcd_backup
-   cluster_upgrade
-   resource_limits
-   name_space
-   api
-   tls
-   strace
-   jobs
-   replica_set
-   deployment
-   daemon
-   helm
-   config_map
-   persistent_volume
-   pv_claim
-   services
-   labels
-   linkered
-   ingress
-   scheduling
-
-
-   important
-   commands
+   tutorial
+   infrastructure
    references
