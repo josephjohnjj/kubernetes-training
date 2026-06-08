@@ -21,6 +21,7 @@ This repository covers the fundamentals of Kubernetes along with infrastructure-
 ├── Security
 │   ├── RBAC
 │   ├── Trivy
+|   ├── Keyverno
 │   └── Falco
 │
 ├── Storage

@@ -25,6 +25,9 @@
    tutorial/linkered
    tutorial/ingress
    tutorial/scheduling
+   tutorial/log.rst
+   tutorial/security.rst
+   tutorial/crd.rst
 
 
    tutorial/important
