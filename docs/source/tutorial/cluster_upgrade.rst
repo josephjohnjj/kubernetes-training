@@ -1,4 +1,4 @@
-Cluster Upgade
+Cluster Upgrade
 ================
 
 First, update the package index on your system to ensure you have the latest information about available packages and their versions. 
@@ -184,15 +184,15 @@ Now find the upgrade plan for the control plane node. This will show you the com
     on each node after the control plane is updated. Overall, the output reflects pending upgrade steps rather than components being stuck, 
     and Kubernetes enforces this staged process to ensure safe, incremental version upgrades.
 
-In the above plan you are given twop options for upgrading the control plane components. You can either upgrade to the latest patch version in the 
+In the above plan you are given two options for upgrading the control plane components. You can either upgrade to the latest patch version in the 
 current minor version (v1.34.7) or upgrade to the latest minor version (v1.35.4). It is generally recommended to upgrade to the latest patch version 
-first to ensure stability and compatibility,
+first to ensure stability and compatibility.
 
 .. code-block:: bash
 
     sudo kubeadm upgrade apply v1.34.7
 
-But in out case we ill get an error because the kubeadm version is not compatible with the target version. \
+But in our case we will get an error because the kubeadm version is not compatible with the target version.
 
 .. code-block:: bash
 
@@ -275,7 +275,7 @@ can be found using the following command:
     kubectl | 1.35.1-1.1 | https://pkgs.k8s.io/core:/stable:/v1.35/deb  Packages
     kubectl | 1.35.0-1.1 | https://pkgs.k8s.io/core:/stable:/v1.35/deb  Packages
 
-Now that we have confirmed that the package avaialble is same as the target version, we can proceed to upgrade kubelet and kubectl.
+Now that we have confirmed that the package available is same as the target version, we can proceed to upgrade kubelet and kubectl.
 
 .. code-block:: bash
 
@@ -404,7 +404,7 @@ Now back on the **worker node**, do the following
 
 
 
-Now we continue with the installatinons on the **worker node** to upgrade kubelet and kubectl to the latest version.
+Now we continue with the installations on the **worker node** to upgrade kubelet and kubectl to the latest version.
 
 
 .. code-block:: bash
