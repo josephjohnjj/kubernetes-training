@@ -2,7 +2,7 @@ Kubernetes APIs
 =================
 
 Kubernetes is built on a powerful, REST-based API. Every operation within the cluster, whether it comes from internal 
-components or external users, is driven through this API. the kube-apiserver acts as the central communication hub. 
+components or external users, is driven through this API. The kube-apiserver acts as the central communication hub. 
 It manages requests from both within the cluster and from external clients.
 
 .. note::
@@ -16,7 +16,7 @@ It manages requests from both within the cluster and from external clients.
 
 
 
-The kubectl auth can-i subcommand lets you test specific operations. Use the command to query whether a user can perform specific actions on 
+The `kubectl auth can-i subcommand` lets you test specific operations. Use the command to query whether a user can perform specific actions on 
 resources. 
 
 .. code-block:: bash
@@ -46,7 +46,7 @@ To update an annotation, you can use the `--overwrite` flag:
     kubectl describe pod hog-54849dd678-8q85k 
 
 
-to remove an annotation, you can use the `kubectl annotate` command with a `-` at the end of the annotation key:
+To remove an annotation, you can use the `kubectl annotate` command with a `-` at the end of the annotation key:
 
 .. code-block:: bash
 
