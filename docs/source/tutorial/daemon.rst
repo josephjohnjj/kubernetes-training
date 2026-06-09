@@ -87,7 +87,7 @@ Similar to `Deployments`, we can also update the `DaemonSet` using rollout and r
       type: RollingUpdate
 
 
-Now ltes change th typw to `OnDelete` and apply the change:
+Now let's change the type to `OnDelete` and apply the change:
 
 .. code-block:: yaml
 
@@ -111,7 +111,7 @@ Now ltes change th typw to `OnDelete` and apply the change:
     kubectl edit ds ds-one
 
 
-Now chnage the image to `nginx:1.23.1` and save the change.
+Now change the image to `nginx:1.23.1` and save the change.
 
 
 .. code-block:: bash
@@ -119,7 +119,7 @@ Now chnage the image to `nginx:1.23.1` and save the change.
    kubectl set image ds ds-one nginx=nginx:1.23.1-alpine
 
 
-Now let delete one of the Pods to trigger the update:
+Now let's delete one of the Pods to trigger the update:
 
 .. code-block:: bash
 
@@ -144,7 +144,7 @@ Now let delete one of the Pods to trigger the update:
 
 You can see that the deleted Pod `ds-one-cj9jf` has been replaced with a new Pod `ds-one-bns72` that is running the updated image.
 
-You can also check the imgae in both th existing pods to verify that the update has been applied:
+You can also check the image in both the existing pods to verify that the update has been applied:
 
 .. code-block:: bash
 
@@ -174,7 +174,7 @@ If you checkout the rollout history of the DaemonSet, you will get
     1         <none>
     2         <none>
 
-This is beacuse we didnt use --record flag when we updated the DaemonSet, so there is no change cause recorded for the update.
+This is because we didn't use --record flag when we updated the DaemonSet, so there is no change cause recorded for the update.
 The record flag is deprecated in newer versions of kubectl, so you can use the `--change-cause` flag to specify a change cause when updating 
 the DaemonSet. For example:
 
