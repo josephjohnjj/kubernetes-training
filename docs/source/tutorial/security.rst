@@ -42,10 +42,10 @@ Create a new user:
     sudo passwd DevDan
 
 
-Lets use the password `lftr@in`.
+Let's use the password `lftr@in`.
 
 
-Now lts create an RSA key for the user
+Now let's create an RSA key for the user
 
 .. code-block:: bash
 

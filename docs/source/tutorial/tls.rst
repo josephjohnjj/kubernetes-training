@@ -216,7 +216,7 @@ Deployments                     /apis/apps/v1/deployments
 =============================== ============================
 
 
-Now lets create a new Pod by sending a POST request to the Kubernetes API server.
+Now let's create a new Pod by sending a POST request to the Kubernetes API server.
 
 .. code-block:: json
 

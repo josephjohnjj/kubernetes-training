@@ -1,10 +1,10 @@
 Important Caveats
 ========================
 
-When upgrading a cluster, it's important to recognize that each component, developed by different teams, is versioned and tested for compatibility. 
+When upgrading a cluster, it's important to recognize that each component, developed by different teams, is versioned and tested for compatibility.
 Mismatches in versions can lead to instability or errors.
 
-To ensure a successful upgrade, use commands like the one below:
+To ensure a successful upgrade, use a command like the one below:
 
 
 .. code-block:: bash
@@ -28,32 +28,34 @@ To ensure a successful upgrade, use commands like the one below:
     etcd                      ip-172-31-17-15   3.6.5-0   3.6.5-0
 
 
-Always take a anspshot of the etcd data before performing an upgrade.
+Always take a snapshot of the etcd data before performing an upgrade.
 
 .. code-block:: bash
 
-    etcdctl snapshot save /tmp/etcd-snapshot.db 
+    etcdctl snapshot save /tmp/etcd-snapshot.db
 
 
 Debugging
 -----------
 
- In Kubernetes, the kubectl debug command is used to attach a temporary ephemeral debug container to a running Pod, which is especially useful 
- when the original container (like etcd) has no shell or basic tools. For example:    
+In Kubernetes, the `kubectl debug` command is used to attach a temporary ephemeral debug container to a running Pod, which is especially useful
+when the original container (like etcd) has no shell or basic tools. For example:
 
 .. code-block:: bash
 
     kubectl debug -n kube-system -it etcd-ip-172-31-17-15 --image=busybox --target=etcd
 
-This starts a BusyBox container with tools like `sh` and `ls`, and because of `--target=etcd`, it joins the same Pod environment as the etcd container. 
+This starts a BusyBox container with tools like `sh` and `ls`, and because of `--target=etcd`, it joins the same Pod environment as the etcd container.
 That means it shares mounted volumes, so you can inspect directories used by `etcd` even though you are not inside the etcd container itself.
 
-Daemonsets
+
+DaemonSets
 -------------
 
-Daemonsets are a Kubernetes object that ensures that a copy of a specific Pod is running on all (or some) nodes in the cluster.
-This is useful for running cluster-wide services such as log collection, monitoring agents, or network plugins
-Get all daemonsets in the cluster
+DaemonSets are a Kubernetes object that ensures that a copy of a specific Pod is running on all (or some) nodes in the cluster.
+This is useful for running cluster-wide services such as log collection, monitoring agents, or network plugins.
+
+Get all DaemonSets in the cluster:
 
 .. code-block:: bash
 
@@ -66,4 +68,6 @@ Get all daemonsets in the cluster
 
 .. note::
 
-    The ``-A`` flag is used to get resources across all namespaces. 
+    The `-A` flag is used to get resources across all namespaces.
+
+    

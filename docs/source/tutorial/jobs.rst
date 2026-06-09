@@ -1,8 +1,8 @@
 Jobs
 ===================================
 
-Jobs are a Kubernetes resource that allows you to run a task to completion. A Job creates one or more Pods and ensures that a specified number 
-of them successfully terminate. As Pods successfully complete, the Job tracks the successful completions. When a specified number of successful 
+Jobs are a Kubernetes resource that allows you to run a task to completion. A Job creates one or more Pods and ensures that a specified number
+of them successfully terminate. As Pods successfully complete, the Job tracks the successful completions. When a specified number of successful
 completions is reached, the Job itself is complete.
 
 Create a Job using the following YAML `job.yml` definition:
@@ -23,7 +23,6 @@ Create a Job using the following YAML `job.yml` definition:
               command: ["/bin/sleep"]
               args: ["3"]
           restartPolicy: Never
-
 
 
 Apply the Job definition:
@@ -53,7 +52,7 @@ Describe the Job to see more details:
     kubectl describe jobs sleepy
 
 
-You can also get the details of the Job in YAML format
+You can also get the details of the Job in YAML format:
 
 .. code-block:: bash
 
@@ -71,11 +70,8 @@ Even after a Kubernetes Job finishes successfully, the Job object and its Pods s
 So deleting a finished Job is mainly about:
 
 * cleanup
-
 * reducing clutter
-
 * freeing resources
-
 * avoiding accumulation of old objects
 
 
@@ -111,7 +107,6 @@ Now apply the change and check the status of the Job again:
 
     NAME     STATUS    COMPLETIONS   DURATION   AGE
     sleepy   Running   1/5           10s        10s
-    kubectl get jobs
 
 The job will eventually complete when all 5 completions are reached:
 
@@ -139,6 +134,7 @@ Now delete the Job again:
 .. code-block:: bash
 
     kubectl delete job sleepy
+
 
 Now add the parallelism field to the Job definition and set it to 2:
 
@@ -168,7 +164,7 @@ Now apply the change and check the status of the Job again:
 
     kubectl apply -f job.yml
 
-This will allow up to 2 Pods to run in parallel to complete the Job. You can check the status of the Pods to see that 2 Pods are running at 
+This will allow up to 2 Pods to run in parallel to complete the Job. You can check the status of the Pods to see that 2 Pods are running at
 the same time:
 
 
@@ -208,7 +204,6 @@ Now change the `activeDeadlineSeconds: 15` in the Job definition and apply the c
           restartPolicy: Never
 
 
-
 .. code-block:: bash
 
     kubectl delete job sleepy
@@ -228,6 +223,7 @@ Now check the status of the Job again:
     NAME     STATUS   COMPLETIONS   DURATION   AGE
     sleepy   Failed   4/5           2m48s      2m48s
 
+
 You can get more details about the Job to see why it failed:
 
 .. code-block:: bash
@@ -240,19 +236,19 @@ You can get more details about the Job to see why it failed:
       reason: DeadlineExceeded
       status: "True"
       type: Failed
-  
+
 
 Cron Jobs
 -------------
 
 
-A Linux cron job is a scheduled task that runs automatically at specific times or intervals
+A Linux cron job is a scheduled task that runs automatically at specific times or intervals.
 
 .. note::
 
 
     .. code-block:: text
-    
+
         * * * * * command_to_run
         │ │ │ │ │
         │ │ │ │ └── Day of week (0-7) (Sun=0 or 7)
@@ -262,36 +258,35 @@ A Linux cron job is a scheduled task that runs automatically at specific times o
         └────────── Minute (0-59)
 
 
-    Each * in the cron schedule represents a wildcard that matches any value for that time unit. For example, if you have a cron job with the 
+    Each * in the cron schedule represents a wildcard that matches any value for that time unit. For example, if you have a cron job with the
     schedule `0 0 * * *`, it will run at midnight every day, regardless of the day of the month or the month itself.
 
-    .. code-block:: bash 
-    
+    .. code-block:: bash
+
         * * * * * echo "Hello"
 
-
-    This cron job will print "Hello" to the console every minute, regardless of the hour, day, month, or day of the week. The * allows the cron job 
+    This cron job will print "Hello" to the console every minute, regardless of the hour, day, month, or day of the week. The * allows the cron job
     to run at every possible value for those time units.
 
-    .. code-block:: bash 
-    
+    .. code-block:: bash
+
         30 2 * * * /home/user/backup.sh
 
     This cron job will run the `backup.sh` script at 2:30 AM every day, regardless of the day of the month, month, or day of the week.
 
 
-    .. code-block:: bash 
-    
+    .. code-block:: bash
+
       */5 * * * * python3 script.py
 
-    This cron job will run the `script.py` Python script every 5 minutes, regardless of the hour, day, month, or day of the week. The `*/5` in the minute 
+    This cron job will run the `script.py` Python script every 5 minutes, regardless of the hour, day, month, or day of the week. The `*/5` in the minute
     field means "every 5 minutes".
 
 
-In Kubernetes a `CronJob` creates a watch loop which will create a batch job on your behalf when the time becomes true. 
+In Kubernetes a `CronJob` creates a watch loop which will create a batch Job on your behalf when the time becomes true.
 The CronJob controller inside Kubernetes continuously checks the current time against the schedule you defined.
-When the current time matches the cron schedule, the CronJob controller creates a new `Job object` based on the template you provided 
-in the CronJob specification. This will inturn create one or more Pods to run the task defined in the Job. The CronJob controller also manages 
+When the current time matches the cron schedule, the CronJob controller creates a new `Job object` based on the template you provided
+in the CronJob specification. This will in turn create one or more Pods to run the task defined in the Job. The CronJob controller also manages
 the lifecycle of the Jobs it creates, ensuring that they are executed according to the schedule and that any failed Jobs are retried if necessary.
 
 
@@ -324,6 +319,7 @@ Apply the CronJob definition:
 
     kubectl apply -f cronjob.yml
 
+
 .. code-block:: bash
 
     kubectl get cronjobs
@@ -336,6 +332,7 @@ Apply the CronJob definition:
     NAME     SCHEDULE      TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
     sleepy   */2 * * * *   <none>     False     0        45s             81s
 
+
 .. code-block:: bash
 
     kubectl get jobs
@@ -345,19 +342,20 @@ Apply the CronJob definition:
     sleepy-29643846   Complete   1/1           8s         2m6s
     sleepy-29643848   Running    0/1           6s         6s
 
+
 .. note::
 
-  This `CronJob` runs every 2 minutes because the schedule `"*/2 * * * *"` matches every second minute. When you first ran `kubectl get cronjobs`, 
-  `LAST SCHEDULE` was `<none>` because the CronJob had not yet reached its first scheduled execution time, and `ACTIVE` was `0` 
-  because no Job was running yet. After the first schedule occurred, `LAST SCHEDULE` showed how long ago the CronJob last created a Job. 
-  The `ACTIVE` column still remained `0` because the container only executes `sleep 5`, so the Job finishes very quickly. 
-  Running `kubectl get jobs` shows the individual Jobs automatically created by the CronJob controller. One Job was already 
-  `Complete`, meaning its Pod successfully finished, while another was still `Running` because its Pod was currently executing the 
+  This `CronJob` runs every 2 minutes because the schedule `"*/2 * * * *"` matches every second minute. When you first ran `kubectl get cronjobs`,
+  `LAST SCHEDULE` was `<none>` because the CronJob had not yet reached its first scheduled execution time, and `ACTIVE` was `0`
+  because no Job was running yet. After the first schedule occurred, `LAST SCHEDULE` showed how long ago the CronJob last created a Job.
+  The `ACTIVE` column still remained `0` because the container only executes `sleep 5`, so the Job finishes very quickly.
+  Running `kubectl get jobs` shows the individual Jobs automatically created by the CronJob controller. One Job was already
+  `Complete`, meaning its Pod successfully finished, while another was still `Running` because its Pod was currently executing the
   `sleep 5` command. Each scheduled execution creates a separate Job with an auto-generated name such as `sleepy-29643846`.
 
 
-  A `CronJob` will not automatically delete itself after completion. The `CronJob` object will remain in the cluster unti
-  you manually delete it.
+A `CronJob` will not automatically delete itself after completion. The `CronJob` object will remain in the cluster until
+you manually delete it.
 
-Similar to 'Jobs', you can also specify `parallelism`, `completions`, and `activeDeadlineSeconds` in the Job template of the CronJob definition to 
+Similar to 'Jobs', you can also specify `parallelism`, `completions`, and `activeDeadlineSeconds` in the Job template of the CronJob definition to
 control how the Jobs created by the CronJob will run.

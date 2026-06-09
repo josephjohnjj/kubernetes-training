@@ -268,7 +268,7 @@ Now check the namespace to see the Storage Quota:
     workloads running in that specific namespace and does not impact other namespaces in the cluster.
 
 
-Now remove the namespace filed from the `nfs-pod.yaml` so that we can pass other namespaces when creating the deployment:
+Now remove the namespace field from the `nfs-pod.yaml` so that we can pass other namespaces when creating the deployment:
 
 .. code-block:: yaml
 
@@ -397,7 +397,7 @@ Lets see what happens when the deployment requests more than the quota
 
     kubectl -n small delete deploy nginx-nfs
 
-Pods are shoutdown doesnt means that the storage objects are released:
+Pods are shutdown doesn't means that the storage objects are released:
 
 .. code-block:: bash
 
@@ -418,7 +418,7 @@ Pods are shoutdown doesnt means that the storage objects are released:
     No LimitRange resource.
 
 
-Now lets dlele the existing PVC
+Now let's delete the existing PVC
 
 .. code-block:: bash
 
@@ -610,7 +610,7 @@ Edit the `storagequota.yaml` file and lower the capacity to `100Mi`.
 
     * But the namespace is already using 200Mi.
 
-    This is possible beacuse Kubernetes quotas are not retroactive. The `200Mi` PVC was created before the quota was reduced to `100Mi` 
+    This is possible because Kubernetes quotas are not retroactive. The `200Mi` PVC was created before the quota was reduced to `100Mi` 
     (or before a quota existed). Kubernetes does not remove existing resources that exceed a new quota; it only prevents future storage 
     requests that would increase usage further.
 
@@ -755,7 +755,7 @@ If you attempt to create the persistent volume claim again, it will fail.
     Error from server (Forbidden): error when creating "pvc.yaml": persistentvolumeclaims "pvc-one" is forbidden: exceeded quota: storagequota, requested: requests.storage=200Mi, used: requests.storage=0, limited: requests.storage=100Mi
 
 
-Now if we edit the resourcequota to increase the `requests.storage`` to 500mi. Then creating a new 
+Now if we edit the resourcequota to increase the `requests.storage` to 500Mi. Then creating a new 
 PVC will work
 
 
@@ -834,7 +834,7 @@ the shared NFS export and generates the corresponding PV for Kubernetes. This pr
 to multiple pods, making it popular for development clusters, shared datasets, CI/CD workloads, and lightweight on-premise environments. Common 
 implementations include NFS Subdir External Provisioner.
 
-We will first deploy and NFS provisioner:
+We will first deploy an NFS provisioner:
 
 
 .. code-block:: bash
@@ -906,7 +906,7 @@ Now lets create a PVC `pvc-sc.yaml`
 
 The PVCS automatically creates the PV using the NFS-provisioner.
 
-Now letes create a pod that will use this volume, ``:
+Now let's create a pod that will use this volume:
 
 .. code-block:: yaml
 

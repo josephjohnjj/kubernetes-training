@@ -143,7 +143,7 @@ this method cannot be used to update the software version running inside the Pod
     rs-one-9hsmn   1/1     Running   0          85m
     rs-one-chm4f   1/1     Running   0          85m
 
-Now edit pod to isolaate it from the ReplicaSet by changing the label that the ReplicaSet uses to select its pods:
+Now edit pod to isolate it from the ReplicaSet by changing the label that the ReplicaSet uses to select its pods:
 
 .. code-block:: bash
 
@@ -168,7 +168,7 @@ Now check the status of the ReplicaSet again:
     rs-one   2         2         2       6m41s
 
 
-You can see that the ReplicaSet has cteated a new pod to replace the one that was isolated. 
+You can see that the ReplicaSet has created a new pod to replace the one that was isolated. 
 
 
 .. code-block:: bash

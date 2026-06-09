@@ -89,7 +89,7 @@ We can view the number of containers using the command:
 
 
 
-Now, lets create a deplyment that will be schedules on the nodes with the label `status=vip`, `vip.yaml`.
+Now, let's create a deployment that will be scheduled on the nodes with the label `status=vip`, `vip.yaml`.
 
 .. code-block:: bash
 
@@ -144,7 +144,7 @@ Now, lets create a deplyment that will be schedules on the nodes with the label 
     13
 
 
-Now if you change the label of the node to `status=other`, the pod will be scheduled on the worket nodes. If we didnt sepcify the nodeSelector, the 
+Now if you change the label of the node to `status=other`, the pod will be scheduled on the worker nodes. If we didn't specify the nodeSelector, the 
 pods could be scheduled on any of the nodes, including the control-plane node. 
 
 
@@ -178,7 +178,7 @@ PreferNoSchedule, or NoExecute.
     Taints:             bubba=value:PreferNoSchedule
 
 
-Now lts create a deployment that will be scheduled on the nodes with the taint `bubba=value:PreferNoSchedule`, `taint.yaml`.
+Now let's create a deployment that will be scheduled on the nodes with the taint `bubba=value:PreferNoSchedule`, `taint.yaml`.
 
 .. code-block:: bash
 
@@ -281,7 +281,7 @@ The scheduler will try to schedule the pods on the nodes with the taint, but if 
 
 You can see that all the pods are scheduled on the node without the taint `bubba=value:PreferNoSchedule`.
 
-Now lets remove the taint from the nodes and see how the scheduler schedules the pods.
+Now let's remove the taint from the nodes and see how the scheduler schedules the pods.
 
 .. code-block:: bash
 
@@ -308,7 +308,7 @@ You can see that the pods are still scheduled on the node without the taint.
 
 
 
-Now lets taint the node which as the dele the deployment and create it again to see how the scheduler schedules the pods.
+Now let's taint the node which has the dele the deployment and create it again to see how the scheduler schedules the pods.
 
 .. code-block:: bash
 
@@ -337,7 +337,7 @@ Now lets taint the node which as the dele the deployment and create it again to 
 
 Now you can see that the pods are scheduled across all nodes.
 
-Now lets taint one of the worker node with the taint `bubba=value:NoExecute` and see how the scheduler schedules the pods.
+Now let's taint one of the worker nodes with the taint `bubba=value:NoExecute` and see how the scheduler schedules the pods.
 
 .. code-block:: bash
 

@@ -97,7 +97,7 @@ Lest find the details of the pod that is running the container:
 
 .. code-block:: bash
 
-    kubectl describe podhog-8696ccdcc4-jn78s
+    kubectl describe pod hog-8696ccdcc4-jn78s
 
     kubectl logs hog-8696ccdcc4-jn78s
 
@@ -106,9 +106,9 @@ Lest find the details of the pod that is running the container:
 
 
 
-You can use the `top`` command to see the resource usage of the pod in the worker nodes.
+You can use the `top` command to see the resource usage of the pod in the worker nodes.
 
-First finsd the node that is running the pod:
+First find the node that is running the pod:
 
 
 .. code-block:: bash
@@ -136,7 +136,7 @@ which is expected as it is responsible for networking in the cluster. The `conta
 which is expected as they are responsible for running the containers on the node.
 
 
-Now lets change the resource limits againto see how it affects the pod. Edit the `hog.yaml` file and change the limits to:
+Now let's change the resource limits again to see how it affects the pod. Edit the `hog.yaml` file and change the limits to:
 
 
 .. code-block:: yaml
@@ -161,7 +161,7 @@ Now lets change the resource limits againto see how it affects the pod. Edit the
           terminationGracePeriodSeconds: 30
 
 
-Then  lets  delete the existing deployment and create a new one with the updated YAML file:
+Then let's delete the existing deployment and create a new one with the updated YAML file:
 
 .. code-block:: bash
 
@@ -186,7 +186,7 @@ with higher resource limits.
   62120 root      20   0 1369104 163136   7824 S   0.3   2.0     13,41 containerd-shim   
 
 
-When you increae the usage and if there are errors you can find the details in the pods
+When you increase the usage and if there are errors you can find the details in the pods
 
 .. code-block:: bash
 
@@ -195,7 +195,7 @@ When you increae the usage and if there are errors you can find the details in t
     NAME                   READY   STATUS    RESTARTS   AGE    
     hog-8696ccdcc4-jn78s   1/1     Running   0          5s
 
-The you can look at the logs of the pod to see if there are any errors, for example if the pod is using more memory than the limit, 
+Then you can look at the logs of the pod to see if there are any errors, for example if the pod is using more memory than the limit, 
 it will be terminated by the OOM killer and you can see the details in the logs:
 
 .. code-block:: bash

@@ -9,7 +9,7 @@ containerized workloads.
 
     kubectl create ns accounting
 
-Lets create a yaml file for deployment `nginx-one.yaml`:
+Let's create a yaml file for deployment `nginx-one.yaml`:
 
 .. code-block:: yaml
 
@@ -68,7 +68,7 @@ The status of the pods will show as `Pending`
     nginx-one-599887bddb-sb4n4   0/1     Pending   0          48s
 
 
-This because the deployment expects a set of nodes selector labelled as `secondOne`
+This is because the deployment expects a set of node selectors labelled as `secondOne`
 
 
 
@@ -533,7 +533,7 @@ Now let us access the service from the container.
   curl: (6) Could not resolve host: service-lab
 
 
-.. code-block::bash
+.. code-block:: bash
 
 
   curl service-lab.accounting
@@ -590,7 +590,7 @@ Now, exit the container
   exit
 
 
-Let us examine the service in details
+Now let's examine the service in details
 
 .. code-block:: bash
 
@@ -734,7 +734,7 @@ Let us examine the service in details
   disabled for `cluster.local` to keep service discovery fresh), loop detection, configuration 
   reloads, and load balancing of DNS responses across service endpoints.
 
-Now that we can see everything is running. Lets make some changes to the objects related CoreDNS 
+Now that we can see everything is running, let's make some changes to the objects related to CoreDNS 
 
 
 
