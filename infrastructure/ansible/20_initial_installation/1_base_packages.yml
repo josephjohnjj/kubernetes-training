@@ -1,3 +1,4 @@
+---
 # ---------------------------------------------------------
 # Play 1: System Update + Base Preparation (Ubuntu 22.04)
 # ---------------------------------------------------------
@@ -7,24 +8,23 @@
   gather_facts: yes
 
   tasks:
-
     # -----------------------------------------------------
     # APT repair + refresh (IMPORTANT SAFETY STEP)
     # -----------------------------------------------------
     - name: Fix broken packages (safety)
-      command: apt-get -f install -y
+      ansible.builtin.command: apt-get -f install -y
       register: fix_broken
       changed_when: fix_broken.rc == 0
       ignore_errors: yes
       tags: apt_fix
 
     - name: Update apt cache
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
       tags: apt
 
     - name: Upgrade all packages
-      apt:
+      ansible.builtin.apt:
         upgrade: dist
       tags: update
 
@@ -32,7 +32,7 @@
     # Core system libraries
     # -----------------------------------------------------
     - name: Ensure libc and base tools are up to date
-      apt:
+      ansible.builtin.apt:
         name:
           - libc6
           - libc6-dev
@@ -43,7 +43,7 @@
     # Development tools
     # -----------------------------------------------------
     - name: Install build-essential (Development Tools)
-      apt:
+      ansible.builtin.apt:
         name: build-essential
         state: present
       tags: devtools
@@ -52,7 +52,7 @@
     # Base system packages
     # -----------------------------------------------------
     - name: Install required system packages
-      apt:
+      ansible.builtin.apt:
         name:
           - acl
           - curl
@@ -68,26 +68,17 @@
           - dnsutils
           - pciutils
           - xauth
+          - apt-transport-https
+          - gpg
+
         state: present
       tags: packages
-
-    # -----------------------------------------------------
-    # Kernel + NVIDIA driver dependencies
-    # -----------------------------------------------------
-    - name: Install kernel build dependencies
-      apt:
-        name:
-          - linux-headers-{{ ansible_kernel }}
-          - dkms
-          - libelf-dev
-        state: present
-      tags: nvidia_driver
 
     # -----------------------------------------------------
     # Additional dev tools
     # -----------------------------------------------------
     - name: Install additional build tools
-      apt:
+      ansible.builtin.apt:
         name:
           - python3
           - python3-dev
@@ -106,15 +97,20 @@
     # Cleanup
     # -----------------------------------------------------
     - name: Remove unused packages
-      apt:
+      ansible.builtin.apt:
         autoremove: yes
       tags: cleanup
 
     # -----------------------------------------------------
     # Reboot
     # -----------------------------------------------------
-    - name: Reboot nodes
-      reboot:
+    - name: Check if reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Reboot nodes if required
+      ansible.builtin.reboot:
         reboot_timeout: 600
         test_command: whoami
-      tags: reboot
+      when: reboot_required.stat.exists

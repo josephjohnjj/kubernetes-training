@@ -76,6 +76,22 @@ cat <<EOF >> host.ini
 worker_cpu
 worker_gpu
 
+[no_login:children]
+control
+worker
+storage
+
+[control_primary]
+control1
+
+[control_secondary]
+control2
+control3
+
+[haproxy]
+login1 
+
+
 [all:children]
 control
 login
