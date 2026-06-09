@@ -59,8 +59,7 @@ Important:
 - Does not track last-applied configuration like ``apply``.
 - Will fail if the resource does not already exist (unless using ``--force``).
 
-Summary
--------
+General Recommendations:
 
 - Use ``edit`` for quick manual changes.
 - Use ``patch`` for small targeted updates.
