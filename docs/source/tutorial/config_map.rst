@@ -127,7 +127,7 @@ Now apply the Pod definition and check the environment variable:
     * `/bin/bash` starts a Bash shell inside the container.
     * The `-c` flag tells Bash to execute the following string as a command. 
 
-    If I want to run bore tha one command i can use `kubectl exec shell-demo -- /bin/bash -c 'echo $ilike; ls /etc/cars'`.
+    If I want to run more than one command I can use `kubectl exec shell-demo -- /bin/bash -c 'echo $ilike; ls /etc/cars'`.
 
     If my pod has more than one container, I can specify which container to execute the command in using the `-c`:
     `kubectl exec shell-demo -c nginx -- /bin/bash -c 'echo $ilike; ls /etc/cars'`
@@ -269,7 +269,7 @@ Now create another file `car-map.yaml` with the following content:
       uid: c0439849-547e-4882-bdad-84535d74a580
 
 
-Now lest malke this configmap available as a violume in a Pod. Rewrite the  file `simpleshell.yaml` with the following content:
+Now let's make this configmap available as a volume in a Pod. Rewrite the file `simpleshell.yaml` with the following content:
 
 .. code-block:: bash
     
@@ -302,7 +302,7 @@ Now lest malke this configmap available as a violume in a Pod. Rewrite the  file
     * `volumeMounts` mounts that volume into the container at the specified path. 
 
 
-In this case the continer will have a mount at `/etc/cars` with 3 files, `car.make`, `car.model`, and `car.trim` with the content of `Ford`, `Mustang`, 
+In this case the container will have a mount at `/etc/cars` with 3 files, `car.make`, `car.model`, and `car.trim` with the content of `Ford`, `Mustang`, 
 and `Shelby` respectively.
 
 .. code-block:: bash
@@ -337,7 +337,7 @@ Now delete the Pod and the ConfigMap:
 
 .. code-block:: bash
 
-    kubectlctl delete pods shell-demo
+    kubectl delete pods shell-demo
 
     kubectl delete configmap fast-car colors
 
