@@ -3,7 +3,7 @@ set -e
 
 OUTPUTS=$(terraform -chdir=.. output -json)
 
-SSH_KEY="/home/joseph/.ssh/terraform-user"
+SSH_KEY="$HOME/.ssh/terraform-user"
 
 # Helper function
 write_group() {
