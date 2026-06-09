@@ -14,8 +14,22 @@ The documentation is organized into two main sections- Training and Infrastructu
 tutorials. Infrastructure provides guides for setting up a production-ready Kubernetes cluster.
 
 
+Tutorial
+==================
+
 .. toctree::
+   :maxdepth: 1
+   :titlesonly:
 
    tutorial
+
+
+Infratructure
+====================
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
    infrastructure
    references
