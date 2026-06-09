@@ -2,4 +2,4 @@
 
 .. toctree::
 
-   infrastructure/installation
+   infrastructure/overview
