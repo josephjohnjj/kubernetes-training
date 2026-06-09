@@ -1,23 +1,23 @@
 Deploy an application
 ==================
 
-Create a new deployment, which is a Kubernetes object, which will deploy an application in a 
-container. Verify it is running and the desired number of containers matches the available.
+Create a new deployment, which is a Kubernetes object that will deploy an application in a
+container. Verify it is running and that the desired number of containers matches the available.
 
 .. code-block:: bash
 
-    
+
     kubectl create deployment nginx --image=nginx
 
     kubectl get deployments
 
 
-View the details of the deployment. 
+View the details of the deployment.
 
 .. code-block:: bash
 
-    
-    kubectl describe deployment nginx 
+
+    kubectl describe deployment nginx
 
 or
 
@@ -28,7 +28,7 @@ or
     kubectl get deployment nginx -o yaml > first.yaml
 
 
-The details about the decription can be found in :doc:`this page  <describe>`
+The details about the description can be found in :doc:`this page <describe>`
 
 View the basic steps the cluster took in order to pull and deploy the new application.
 
@@ -37,13 +37,15 @@ View the basic steps the cluster took in order to pull and deploy the new applic
 
     kubectl get events
 
+
 Delete the deployment
 
 .. code-block:: bash
 
     kubectl delete deployment nginx
 
-Create from yaml file
+
+Create from YAML file
 
 .. code-block:: bash
 
@@ -51,7 +53,7 @@ Create from yaml file
 
 
 `--dry-run=client` generates the Kubernetes resource locally without creating it in the cluster.
-It does not contact the API server or persist anything. This is especially useful when you want to generate a manifest file for a resource without 
+It does not contact the API server or persist anything. This is especially useful when you want to generate a manifest file for a resource without
 actually creating it in the cluster.
 
 
@@ -61,9 +63,8 @@ actually creating it in the cluster.
 
 
 `--dry-run` lets you simulate a `kubectl` command without creating or modifying resources. `--dry-run=client` performs the check locally using \
-`kubectl`, while `--dry-run=server` sends the request to the Kubernetes API server for full validation and defaulting, but does not save it. 
+`kubectl`, while `--dry-run=server` sends the request to the Kubernetes API server for full validation and defaulting but does not save it.
 Omitting `--dry-run` executes the command normally. It is commonly used to safely preview manifests or validate changes before applying them.
-
 
 
 After creating a Service, it must be exposed so it can accept network traffic.
@@ -75,8 +76,8 @@ Create a Service in front of an existing workload to enable it to receive networ
 
     error: couldn't find port via --port flag or introspection
 
-So we need to change the oject configuration/definition to include the port number. 
-To change an object definition we can use the commands `edit`, `patch` or `apply`.
+So we need to change the object configuration/definition to include the port number.
+To change an object definition we can use the commands `edit`, `patch`, or `apply`.
 
 
 To expose the deployment add this to the deployment definition (`first.yaml`):
@@ -107,11 +108,13 @@ Then expose the deployment again:
 
     kubectl expose deployment/nginx
 
+
 Now the service is created and exposed, we can check the service details:
 
 .. code-block:: bash
 
     kubectl get svc nginx
+
 
 We can also check the endpoints of the service to verify that it is correctly routing to the pods:
 
@@ -120,7 +123,7 @@ We can also check the endpoints of the service to verify that it is correctly ro
     kubectl get ep nginx
 
 
-Now we have a deployment with 1 replica and a service exposing it. We can scale the deployment to 
+Now we have a deployment with 1 replica and a service exposing it. We can scale the deployment to
 have more replicas:
 
 .. code-block:: bash
@@ -131,11 +134,13 @@ have more replicas:
 
     kubectl get pods
 
+
 Now check the endpoints again to see that the service is routing to all the pods:
 
 .. code-block:: bash
 
     kubectl get ep nginx
+
 
 Get the logs of one of the pods:
 
@@ -143,7 +148,8 @@ Get the logs of one of the pods:
 
     kubectl get pods -o wide
 
-Now even if we delete one of the pods, the deployment will automatically create a new one to 
+
+Now even if we delete one of the pods, the deployment will automatically create a new one to
 maintain the desired number of replicas:
 
 .. code-block:: bash
@@ -151,4 +157,3 @@ maintain the desired number of replicas:
     kubectl delete pod nginx-xxxx-xxxx
 
     kubectl get pods -o wide
-
