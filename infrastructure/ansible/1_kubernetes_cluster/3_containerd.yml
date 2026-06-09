@@ -5,6 +5,14 @@
   gather_facts: yes
 
   tasks:
+    - name: Install containerd
+      ansible.builtin.apt:
+        name: containerd.io
+        state: present
+      tags:
+        - containerd
+        - install
+
     # -----------------------------------------------------
     # Ensure containerd config file exists
     # -----------------------------------------------------

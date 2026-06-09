@@ -57,11 +57,3 @@
       tags:
         - apt_update
         - docker_repo
-
-    - name: Install containerd
-      ansible.builtin.apt:
-        name: containerd.io
-        state: present
-      tags:
-        - containerd
-        - install
