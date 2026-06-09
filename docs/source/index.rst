@@ -3,6 +3,9 @@ Kubernetes Training
 
 This repository covers the fundamentals of Kubernetes along with infrastructure-as-code to provision a production-ready cluster.
 
+.. note::
+
+   Copilot agent using Claude Haiku 4.5 has been used to generate the content of this documentation. 
 
 Contents
 --------
