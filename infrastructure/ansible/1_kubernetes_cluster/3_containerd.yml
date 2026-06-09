@@ -4,14 +4,25 @@
   become: yes
   gather_facts: yes
 
+  vars:
+    containerd_version: "2.2.4-1"
+
   tasks:
-    - name: Install containerd
+    - name: Install containerd (pinned version)
       ansible.builtin.apt:
-        name: containerd.io
+        name: "containerd.io={{ containerd_version }}"
         state: present
       tags:
         - containerd
         - install
+
+    - name: Hold containerd package version
+      ansible.builtin.dpkg_selections:
+        name: containerd.io
+        selection: hold
+      tags:
+        - containerd
+        - containerd_hold
 
     # -----------------------------------------------------
     # Ensure containerd config file exists
