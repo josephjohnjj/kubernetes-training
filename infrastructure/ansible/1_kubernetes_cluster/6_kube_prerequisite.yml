@@ -1,6 +1,6 @@
 ---
 - name: Kubernetes prerequisites
-  hosts: all
+  hosts: no_login
   become: true
 
   tasks:
