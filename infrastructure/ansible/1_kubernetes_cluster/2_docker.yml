@@ -1,0 +1,75 @@
+---
+- name: Install and configure Docker repository for containerd
+  hosts: no_login
+  become: true
+
+  tasks:
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+        state: present
+        update_cache: true
+      tags:
+        - packages
+        - docker_repo
+        - prereq
+
+    - name: Create APT keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+      tags:
+        - docker_repo
+        - keyring
+        - setup
+
+    - name: Download Docker GPG key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/debian/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: "0644"
+      tags:
+        - docker_repo
+        - keyring
+
+    - name: Get Debian codename
+      ansible.builtin.command: . /etc/os-release && echo "$VERSION_CODENAME"
+      args:
+        executable: /bin/bash
+      register: debian_codename
+      changed_when: false
+      tags:
+        - docker_repo
+        - facts
+
+    - name: Configure Docker APT repository
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/docker.sources
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: https://download.docker.com/linux/debian
+          Suites: {{ debian_codename.stdout }}
+          Components: stable
+          Signed-By: /etc/apt/keyrings/docker.asc
+      tags:
+        - docker_repo
+        - repo_config
+
+    - name: Update APT cache
+      ansible.builtin.apt:
+        update_cache: true
+      tags:
+        - apt_update
+        - docker_repo
+
+    - name: Install containerd
+      ansible.builtin.apt:
+        name: containerd.io
+        state: present
+      tags:
+        - containerd
+        - install

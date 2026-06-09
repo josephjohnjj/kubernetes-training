@@ -1,0 +1,70 @@
+---
+- name: Initialize primary control plane
+  hosts: control_primary
+  become: true
+
+  vars:
+    pod_cidr: "192.168.0.0/16"
+    haproxy_node: "{{ groups['haproxy'][0] }}"
+    api_endpoint: "{{ hostvars[haproxy_node]['private_ip'] }}:6443"
+
+  tasks:
+    - name: Check cluster already exists
+      stat:
+        path: /etc/kubernetes/admin.conf
+      register: k8s
+
+    - name: Run kubeadm init
+      command: >
+        kubeadm init
+        --control-plane-endpoint "{{ api_endpoint }}"
+        --upload-certs
+        --pod-network-cidr={{ pod_cidr }}
+      when: not k8s.stat.exists
+
+    - name: Create bootstrap directory
+      file:
+        path: /etc/kubernetes/bootstrap
+        state: directory
+        mode: "0700"
+
+    - name: Setup kubeconfig for root
+      shell: |
+        mkdir -p /root/.kube
+        cp -f /etc/kubernetes/admin.conf /root/.kube/config
+
+    - name: Setup kubeconfig for ubuntu
+      shell: |
+        mkdir -p /home/ubuntu/.kube
+        cp -f /etc/kubernetes/admin.conf /home/ubuntu/.kube/config
+        chown -R ubuntu:ubuntu /home/ubuntu/.kube
+
+    - name: Generate worker join command
+      command: kubeadm token create --print-join-command
+      register: worker_join
+      changed_when: false
+
+    - name: Upload certs
+      command: kubeadm init phase upload-certs --upload-certs
+      register: certs
+      changed_when: false
+
+    - name: Save worker join script
+      copy:
+        dest: /etc/kubernetes/bootstrap/worker-join.sh
+        mode: "0700"
+        content: |
+          {{ worker_join.stdout }}
+
+    - name: Save control-plane join script
+      copy:
+        dest: /etc/kubernetes/bootstrap/control-plane-join.sh
+        mode: "0700"
+        content: |
+          {{ worker_join.stdout }} --control-plane --certificate-key {{ certs.stdout_lines[-1] }}
+
+    - name: Save cert key separately
+      copy:
+        dest: /etc/kubernetes/bootstrap/cert-key
+        mode: "0600"
+        content: "{{ certs.stdout_lines[-1] }}"
