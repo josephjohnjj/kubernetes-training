@@ -125,6 +125,27 @@
         autoremove: yes
       tags: cleanup
 
+    - name: Ensure pip is installed
+      apt:
+        name: python3-pip
+        state: present
+        update_cache: true
+      tags:
+        - deps
+        - python
+
+    - name: Install Kubernetes Python client dependencies
+      pip:
+        name:
+          - kubernetes
+          - openshift
+          - pyyaml
+        state: present
+      tags:
+        - deps
+        - python
+        - kubernetes
+
     # -----------------------------------------------------
     # Reboot
     # -----------------------------------------------------
