@@ -1,0 +1,58 @@
+---
+- name: Install Helm v3.19.0 on control-plane nodes
+  hosts: control
+  become: true
+
+  vars:
+    helm_version: "v3.19.0"
+    helm_tar: "helm-v3.19.0-linux-amd64.tar.gz"
+    helm_url: "https://get.helm.sh/{{ helm_tar }}"
+    tmp_dir: "/tmp/helm-install"
+
+  tasks:
+    - name: Ensure required tools are installed
+      apt:
+        name:
+          - wget
+          - tar
+        state: present
+        update_cache: true
+
+    - name: Create temp directory
+      file:
+        path: "{{ tmp_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download Helm tarball
+      get_url:
+        url: "{{ helm_url }}"
+        dest: "{{ tmp_dir }}/{{ helm_tar }}"
+        mode: "0644"
+
+    - name: Extract Helm archive
+      unarchive:
+        src: "{{ tmp_dir }}/{{ helm_tar }}"
+        dest: "{{ tmp_dir }}"
+        remote_src: true
+
+    - name: Move Helm binary to /usr/local/bin
+      copy:
+        src: "{{ tmp_dir }}/linux-amd64/helm"
+        dest: /usr/local/bin/helm
+        mode: "0755"
+        remote_src: true
+
+    - name: Verify Helm installation
+      command: helm version
+      register: helm_output
+      changed_when: false
+
+    - name: Show Helm version
+      debug:
+        var: helm_output.stdout
+
+    - name: Cleanup temporary files
+      file:
+        path: "{{ tmp_dir }}"
+        state: absent
