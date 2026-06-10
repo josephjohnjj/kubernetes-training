@@ -1,0 +1,13 @@
+---
+- name: Generate Ceph cluster YAML dynamically
+  hosts: localhost
+  connection: local
+
+  vars:
+    storage_nodes: "{{ groups['storage'] }}"
+
+  tasks:
+    - name: Render cluster.yaml from template
+      template:
+        src: "{{ playbook_dir }}/templates/ceph.yaml.j2"
+        dest: "{{ playbook_dir }}/manifest/ceph_cluster.yaml"

@@ -1,0 +1,27 @@
+---
+- name: Label storage nodes for Ceph
+  hosts: control[0]
+  become: false
+
+  tasks:
+    - name: Apply ceph-storage label to storage nodes
+      command: kubectl label node {{ item }} ceph-storage=true --overwrite
+      loop: "{{ groups['storage'] }}"
+      tags:
+        - set_labels
+        - labels
+
+    - name: Get all nodes with labels
+      command: kubectl get nodes --show-labels
+      register: nodes_labels
+      changed_when: false
+      tags:
+        - debug
+        - labels
+
+    - name: Display node labels
+      debug:
+        msg: "{{ nodes_labels.stdout_lines }}"
+      tags:
+        - debug
+        - labels

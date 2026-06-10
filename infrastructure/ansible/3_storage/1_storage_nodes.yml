@@ -1,0 +1,19 @@
+---
+- name: Join worker nodes
+  hosts: storage
+  become: true
+
+  vars:
+    primary: "{{ groups['control_primary'][0] }}"
+
+  tasks:
+    - name: Fetch worker join script
+      slurp:
+        src: /etc/kubernetes/bootstrap/worker-join.sh
+      delegate_to: "{{ primary }}"
+      register: worker_join
+
+    - name: Join worker node
+      shell: "{{ worker_join.content | b64decode }}"
+      args:
+        creates: /etc/kubernetes/kubelet.conf

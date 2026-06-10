@@ -1,0 +1,24 @@
+- name: Deploy Storage class
+  hosts: control_primary
+  become: true
+
+  vars:
+    local_file: "{{ playbook_dir }}/manifest/storage_class.yaml"
+    remote_file: /tmp/storage_class.yaml
+
+  tasks:
+    - name: Copy Storage class YAML to control plane
+      copy:
+        src: "{{ local_file }}"
+        dest: "{{ remote_file }}"
+        mode: "0644"
+
+    - name: Apply Storage class
+      command: kubectl apply -f {{ remote_file }}
+
+    - name: Verify Storage class
+      command: kubectl get storageclass
+      register: pods
+
+    - debug:
+        var: pods.stdout

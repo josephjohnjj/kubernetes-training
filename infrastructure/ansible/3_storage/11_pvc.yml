@@ -1,0 +1,24 @@
+- name: Create PVC
+  hosts: control_primary
+  become: true
+
+  vars:
+    local_file: "{{ playbook_dir }}/manifest/pvc_test.yaml"
+    remote_file: /tmp/pvc_test.yaml
+
+  tasks:
+    - name: Copy PVC YAML to control plane
+      copy:
+        src: "{{ local_file }}"
+        dest: "{{ remote_file }}"
+        mode: "0644"
+
+    - name: Apply Storage PVC
+      command: kubectl apply -f {{ remote_file }}
+
+    - name: Verify pvc
+      command: kubectl get pvc
+      register: pods
+
+    - debug:
+        var: pods.stdout

@@ -1,0 +1,24 @@
+- name: Deploy Ceph cluster from CP
+  hosts: control_primary
+  become: true
+
+  vars:
+    local_file: "{{ playbook_dir }}/manifest/ceph_cluster.yaml"
+    remote_file: /tmp/cluster.yaml
+
+  tasks:
+    - name: Copy cluster YAML to control plane
+      copy:
+        src: "{{ local_file }}"
+        dest: "{{ remote_file }}"
+        mode: "0644"
+
+    - name: Apply Ceph cluster
+      command: kubectl apply -f {{ remote_file }}
+
+    - name: Verify pods
+      command: kubectl get pods -n rook-ceph
+      register: pods
+
+    - debug:
+        var: pods.stdout

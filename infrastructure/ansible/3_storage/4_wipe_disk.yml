@@ -1,0 +1,58 @@
+---
+- name: Safely wipe Ceph disks on storage nodes
+  hosts: storage
+  become: true
+
+  vars:
+    ceph_disks:
+      - /dev/nvme1n1
+      - /dev/nvme2n1
+      - /dev/nvme3n1
+
+    protected_disks:
+      - /dev/nvme0n1
+
+  tasks:
+    - name: Fail if protected disk is included
+      fail:
+        msg: "Refusing to wipe OS disk!"
+      when: item in protected_disks
+      loop: "{{ ceph_disks }}"
+      tags:
+        - safety
+
+    - name: Check disk exists
+      stat:
+        path: "{{ item }}"
+      loop: "{{ ceph_disks }}"
+      register: disk_check
+      tags:
+        - check
+
+    - name: Wipe filesystem signatures (Ceph disks only)
+      command: wipefs -a {{ item.item }}
+      when: item.stat.exists
+      loop: "{{ disk_check.results }}"
+      tags:
+        - wipe
+
+    - name: Zero out partition table (extra safety)
+      command: sgdisk --zap-all {{ item.item }}
+      when: item.stat.exists
+      loop: "{{ disk_check.results }}"
+      tags:
+        - wipe
+
+    - name: Confirm wipe completed
+      command: lsblk -f {{ item }}
+      loop: "{{ ceph_disks }}"
+      register: verify
+      changed_when: false
+      tags:
+        - verify
+
+    - name: Show verification output
+      debug:
+        var: verify.results
+      tags:
+        - verify
