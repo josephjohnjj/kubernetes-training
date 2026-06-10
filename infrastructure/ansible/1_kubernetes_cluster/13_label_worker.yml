@@ -1,0 +1,27 @@
+---
+- name: Label worker plane nodes
+  hosts: control_primary
+  become: false
+
+  tasks:
+    - name: Apply worker-node label to worker nodes
+      command: kubectl label node {{ item }} worker-node=true --overwrite
+      loop: "{{ groups['worker'] }}"
+      tags:
+        - set_labels
+        - labels
+
+    - name: Get all nodes with labels
+      command: kubectl get nodes --show-labels
+      register: nodes_labels
+      changed_when: false
+      tags:
+        - debug
+        - labels
+
+    - name: Display node labels
+      debug:
+        msg: "{{ nodes_labels.stdout_lines }}"
+      tags:
+        - debug
+        - labels
