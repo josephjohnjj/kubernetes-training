@@ -1,65 +1,52 @@
 ---
-- name: Install Kubernetes tools (kubeadm, kubelet, kubectl)
-  hosts: no_login
+# playbook: install-k8s-ubuntu.yml
+# Install Kubernetes packages on Ubuntu
+- hosts: no_login
   become: true
 
   vars:
-    k8s_keyring_path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-    k8s_repo_url: https://pkgs.k8s.io/core:/stable:/v1.34/deb/
-    k8s_version: "1.30.0-1.1"
+    k8s_version: "1.34"
+    k8s_package_version: "1.34.1-1.1"
 
   tasks:
-    # -----------------------------------------------------
-    # Ensure keyrings directory exists
-    # -----------------------------------------------------
-    - name: Create APT keyrings directory
+    - name: Create keyrings directory
       ansible.builtin.file:
         path: /etc/apt/keyrings
         state: directory
         mode: "0755"
 
-    # -----------------------------------------------------
-    # Download and install Kubernetes GPG key
-    # -----------------------------------------------------
-    - name: Download Kubernetes release key and dearmor it
-      ansible.builtin.shell: |
-        curl -fsSL {{ k8s_repo_url }}Release.key | gpg --dearmor -o {{ k8s_keyring_path }}
-      args:
-        creates: "{{ k8s_keyring_path }}"
+    - name: Remove existing Kubernetes key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        state: absent
 
-    # -----------------------------------------------------
-    # Add Kubernetes APT repository
-    # -----------------------------------------------------
+    - name: Download Kubernetes GPG key
+      ansible.builtin.get_url:
+        url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/Release.key"
+        dest: /tmp/kubernetes-release.key
+        mode: "0644"
+
+    - name: Dearmor and install Kubernetes GPG key
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/kubernetes-release.key
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
     - name: Add Kubernetes APT repository
       ansible.builtin.apt_repository:
-        repo: "deb [signed-by={{ k8s_keyring_path }}] {{ k8s_repo_url }} /"
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/ /"
         filename: kubernetes
         state: present
 
-    # -----------------------------------------------------
-    # Update apt cache
-    # -----------------------------------------------------
-    - name: Update APT cache
-      ansible.builtin.apt:
-        update_cache: true
-
-    # -----------------------------------------------------
-    # Install Kubernetes packages
-    # -----------------------------------------------------
-
-    - name: Install kubeadm, kubelet, kubectl
+    - name: Install Kubernetes packages
       ansible.builtin.apt:
         name:
-          - kubelet={{ k8s_version }}
-          - kubeadm={{ k8s_version }}
-          - kubectl={{ k8s_version }}
-        update_cache: yes
+          - "kubelet={{ k8s_package_version }}"
+          - "kubeadm={{ k8s_package_version }}"
+          - "kubectl={{ k8s_package_version }}"
         state: present
+        update_cache: true
 
-    # -----------------------------------------------------
-    # Hold package versions
-    # -----------------------------------------------------
-    - name: Hold Kubernetes packages
+    - name: Hold Kubernetes packages to prevent auto-upgrade
       ansible.builtin.dpkg_selections:
         name: "{{ item }}"
         selection: hold
@@ -68,11 +55,8 @@
         - kubeadm
         - kubectl
 
-    # -----------------------------------------------------
-    # Enable and start kubelet service
-    # -----------------------------------------------------
     - name: Enable and start kubelet
       ansible.builtin.systemd:
         name: kubelet
-        enabled: true
         state: started
+        enabled: true

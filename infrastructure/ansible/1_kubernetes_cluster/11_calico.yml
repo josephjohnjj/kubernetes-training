@@ -24,7 +24,7 @@
     - name: Download Calico manifest
       ansible.builtin.get_url:
         url: "{{ calico_manifest_url }}"
-        dest: /tmp/calico.yaml"
+        dest: /tmp/calico.yaml
         mode: "0644"
 
     # --------------------------------------------
