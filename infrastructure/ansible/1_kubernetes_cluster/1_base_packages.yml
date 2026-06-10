@@ -8,6 +8,30 @@
   gather_facts: yes
 
   tasks:
+    - name: Set system hostname
+      hostname:
+        name: "{{ inventory_hostname }}"
+      tags: hostname
+
+    - name: Ensure hostname persists after reboot
+      copy:
+        dest: /etc/hostname
+        content: "{{ inventory_hostname }}\n"
+      tags: hostname
+
+    - name: Get node primary IP
+      set_fact:
+        node_ip: "{{ ansible_default_ipv4.address }}"
+      tags: hostname
+
+    - name: Map hostname to IP in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: ".*{{ inventory_hostname }}$"
+        line: "{{ node_ip }} {{ inventory_hostname }}"
+        state: present
+      tags: hostname
+
     # -----------------------------------------------------
     # APT repair + refresh (IMPORTANT SAFETY STEP)
     # -----------------------------------------------------
