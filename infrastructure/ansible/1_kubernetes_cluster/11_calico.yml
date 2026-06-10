@@ -1,6 +1,6 @@
 ---
 - name: Install Calico CNI for Kubernetes cluster
-  hosts: control[0]
+  hosts: control_primary
   become: false
   gather_facts: false
 
