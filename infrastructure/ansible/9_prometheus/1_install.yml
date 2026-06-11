@@ -1,0 +1,54 @@
+---
+- name: Install Prometheus + Grafana via Helm
+  hosts: control_plane
+  become: false
+
+  vars:
+    prometheus_namespace: prometheus
+    prometheus_repo_name: prometheus-community
+    prometheus_repo_url: https://prometheus-community.github.io/helm-charts
+    prometheus_release: prometheus
+
+    grafana_service: prometheus-grafana
+
+  tasks:
+    - name: Add Prometheus Helm repository
+      kubernetes.core.helm_repository:
+        name: "{{ prometheus_repo_name }}"
+        repo_url: "{{ prometheus_repo_url }}"
+
+    - name: Create namespace prometheus
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ prometheus_namespace }}"
+        state: present
+
+    - name: Install or upgrade Prometheus stack
+      kubernetes.core.helm:
+        name: "{{ prometheus_release }}"
+        chart_ref: "{{ prometheus_repo_name }}/kube-prometheus-stack"
+        release_namespace: "{{ prometheus_namespace }}"
+        create_namespace: false
+
+    - name: Check Prometheus pods (release label)
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: "{{ prometheus_namespace }}"
+        label_selectors:
+          - "release=prometheus"
+      register: prom_pods
+
+    - name: Show Prometheus pods
+      ansible.builtin.debug:
+        var: prom_pods.resources
+
+    - name: Patch Grafana service to NodePort
+      kubernetes.core.k8s:
+        state: patched
+        kind: Service
+        namespace: "{{ prometheus_namespace }}"
+        name: "{{ grafana_service }}"
+        definition:
+          spec:
+            type: NodePort

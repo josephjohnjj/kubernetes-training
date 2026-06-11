@@ -1,0 +1,32 @@
+---
+- name: Install Kyverno via Helm (Ansible Helm module)
+  hosts: control_plane
+  become: false
+
+  vars:
+    kyverno_namespace: kyverno
+    kyverno_release: kyverno
+    kyverno_repo_name: kyverno
+    kyverno_repo_url: https://kyverno.github.io/kyverno/
+
+  tasks:
+    - name: Add Kyverno Helm repository
+      kubernetes.core.helm_repository:
+        name: "{{ kyverno_repo_name }}"
+        repo_url: "{{ kyverno_repo_url }}"
+
+    - name: Install Kyverno
+      kubernetes.core.helm:
+        name: "{{ kyverno_release }}"
+        chart_ref: "{{ kyverno_repo_name }}/kyverno"
+        release_namespace: "{{ kyverno_namespace }}"
+        create_namespace: true
+        values:
+          admissionController:
+            replicas: 3
+          backgroundController:
+            replicas: 2
+          cleanupController:
+            replicas: 2
+          reportsController:
+            replicas: 2

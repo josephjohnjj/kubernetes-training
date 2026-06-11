@@ -1,0 +1,47 @@
+---
+- name: Install and configure Falco via Helm (Ansible Helm module)
+  hosts: control_plane
+  become: false
+
+  vars:
+    falco_namespace: falco
+    falco_release: falco
+    falco_repo_name: falcosecurity
+    falco_repo_url: https://falcosecurity.github.io/charts
+
+  tasks:
+    - name: Add Falco Helm repository
+      kubernetes.core.helm_repository:
+        name: "{{ falco_repo_name }}"
+        repo_url: "{{ falco_repo_url }}"
+
+    - name: Install or upgrade Falco (base install)
+      kubernetes.core.helm:
+        name: "{{ falco_release }}"
+        chart_ref: "{{ falco_repo_name }}/falco"
+        release_namespace: "{{ falco_namespace }}"
+        create_namespace: true
+        replace: true
+        values:
+          tty: true
+
+    - name: Enable Falcosidekick + Web UI (upgrade)
+      kubernetes.core.helm:
+        name: "{{ falco_release }}"
+        chart_ref: "{{ falco_repo_name }}/falco"
+        release_namespace: "{{ falco_namespace }}"
+        values:
+          falcosidekick:
+            enabled: true
+            webui:
+              enabled: true
+
+    - name: Get Falco pods
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: "{{ falco_namespace }}"
+      register: falco_pods
+
+    - name: Show Falco pods
+      ansible.builtin.debug:
+        var: falco_pods.resources

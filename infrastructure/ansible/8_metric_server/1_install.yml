@@ -1,0 +1,49 @@
+---
+- name: Install and configure Metrics Server via Helm
+  hosts: control_plane
+  become: false
+
+  vars:
+    metrics_namespace: kube-system
+    metrics_release: metrics-server
+    metrics_repo_name: metrics-server
+    metrics_repo_url: https://kubernetes-sigs.github.io/metrics-server/
+
+  tasks:
+    - name: Add Metrics Server Helm repository
+      kubernetes.core.helm_repository:
+        name: "{{ metrics_repo_name }}"
+        repo_url: "{{ metrics_repo_url }}"
+
+    - name: Install or upgrade Metrics Server
+      kubernetes.core.helm:
+        name: "{{ metrics_release }}"
+        chart_ref: "{{ metrics_repo_name }}/metrics-server"
+        release_namespace: "{{ metrics_namespace }}"
+        create_namespace: false
+        values:
+          args:
+            - --secure-port=10251
+            - --kubelet-insecure-tls
+          containerPort: 10251
+
+    - name: Check metrics-server pods
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: "{{ metrics_namespace }}"
+        label_selectors:
+          - app.kubernetes.io/name=metrics-server
+      register: metrics_pods
+
+    - name: Show metrics-server pods
+      ansible.builtin.debug:
+        var: metrics_pods.resources
+
+    - name: Test metrics availability (kubectl top pods)
+      ansible.builtin.shell: kubectl top pods -n kube-system
+      register: top_output
+      changed_when: false
+
+    - name: Display metrics output
+      ansible.builtin.debug:
+        var: top_output.stdout_lines
