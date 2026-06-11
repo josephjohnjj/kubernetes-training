@@ -10,7 +10,7 @@
   tasks:
     - name: Install containerd (pinned version)
       ansible.builtin.apt:
-        name: "containerd.io={{ containerd_version }}"
+        name: "containerd.io"
         state: present
       tags:
         - containerd

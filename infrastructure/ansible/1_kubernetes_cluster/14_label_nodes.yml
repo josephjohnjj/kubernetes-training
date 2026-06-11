@@ -1,15 +1,29 @@
 ---
-- name: Label worker plane nodes
+- name: Label control plane nodes
   hosts: control_primary
   become: false
 
   tasks:
+    - name: Apply control-plane label to control nodes
+      command: kubectl label node {{ item }} control-plane=true --overwrite
+      loop: "{{ groups['control'] }}"
+      tags:
+        - set_labels
+        - cp
+
     - name: Apply worker-node label to worker nodes
       command: kubectl label node {{ item }} worker-node=true --overwrite
       loop: "{{ groups['worker'] }}"
       tags:
         - set_labels
-        - labels
+        - worker
+
+    - name: Apply ceph-storage label to storage nodes
+      command: kubectl label node {{ item }} ceph-storage=true --overwrite
+      loop: "{{ groups['storage'] }}"
+      tags:
+        - set_labels
+        - storage
 
     - name: Get all nodes with labels
       command: kubectl get nodes --show-labels
