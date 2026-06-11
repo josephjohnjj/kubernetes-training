@@ -192,7 +192,7 @@ One one of the nodes, run the following command to initialize the control-plane 
     sudo kubeadm init
 
 
-This will output a command that you can run on the worker nodes to join the cluster. 
+This will output a command that you can run on the worker nodes and storage nodes to join the cluster. 
 It will look something like this:
 
 .. code-block:: bash
@@ -247,9 +247,11 @@ From one of the control-plane nodes, check the status of the nodes by running th
     kubectl get nodes
 
     NAME            STATUS     ROLES           AGE   VERSION
-    ip-10-0-1-207   NotReady   control-plane   10m   v1.34.1
-    ip-10-0-1-254   NotReady   control-plane   33s   v1.34.1
-    ip-10-0-1-99    NotReady   control-plane   42s   v1.34.1
+
+    control1      NotReady    control-plane   48m   v1.34.1
+    control2      NotReady    control-plane   46m   v1.34.1
+    control3      NotReady    control-plane   46m   v1.34.1
+
 
 
 Now that the control plane nodes are set up, we can move on to setting up the worker nodes and then join them to the cluster.
@@ -270,14 +272,18 @@ Check the status of the nodes again from one of the control-plane nodes:
 
     kubectl get nodes
 
-    NAME            STATUS     ROLES           AGE     VERSION
-    ip-10-0-1-120   NotReady   <none>          72s     v1.34.1
-    ip-10-0-1-137   NotReady   <none>          72s     v1.34.1
-    ip-10-0-1-207   NotReady   control-plane   15m     v1.34.1
-    ip-10-0-1-228   NotReady   <none>          71s     v1.34.1
-    ip-10-0-1-254   NotReady   control-plane   6m13s   v1.34.1
-    ip-10-0-1-34    NotReady   <none>          72s     v1.34.1
-    ip-10-0-1-99    NotReady   control-plane   6m22s   v1.34.1
+    NAME            STATUS     ROLES           AGE   VERSION
+
+    control1      NotReady    control-plane   48m   v1.34.1
+    control2      NotReady    control-plane   46m   v1.34.1
+    control3      NotReady    control-plane   46m   v1.34.1
+    cpu-worker1   NotReady    <none>          45m   v1.34.1
+    cpu-worker2   NotReady    <none>          45m   v1.34.1
+    gpu-worker1   NotReady    <none>          45m   v1.34.1
+    gpu-worker2   NotReady    <none>          45m   v1.34.1
+    storage1      NotReady    <none>          40m   v1.34.1
+    storage2      NotReady    <none>          40m   v1.34.1
+    storage3      NotReady    <none>          40m   v1.34.1
 
 
 Installing Pod Network Add-on
@@ -294,18 +300,9 @@ Since all control-plane nodes share the same cluster state, applying the manifes
 provides no additional benefit.
 
 
-Run the following command to check if the control-plane node is ready:
 
-.. code-block:: bash
-
-    kubectl get nodes
-
-    NAME              STATUS     ROLES           AGE   VERSION
-    ip-172-31-17-15   NotReady   control-plane   12m   v1.34.4
-
-
-This is expected as we have not installed the Pod Network Add-on yet. Once we install the Pod Network 
-Add-on, the control-plane node will be in Ready state.
+The nodes are not yet ready as we have not installed the Pod Network Add-on yet. Once we install 
+the Pod Network Add-on, the control-plane node will be in Ready state.
 
 
 To install Calico, run the  following command on the control-plane node:
@@ -321,13 +318,17 @@ Wait a few minutes for the control-plane node to be in Ready state. You can chec
     kubectl get nodes
 
     NAME            STATUS   ROLES           AGE   VERSION
-    ip-10-0-1-120   Ready    <none>          17m   v1.34.1
-    ip-10-0-1-137   Ready    <none>          17m   v1.34.1
-    ip-10-0-1-207   Ready    control-plane   31m   v1.34.8
-    ip-10-0-1-228   Ready    <none>          17m   v1.34.1
-    ip-10-0-1-254   Ready    control-plane   22m   v1.34.1
-    ip-10-0-1-34    Ready    <none>          17m   v1.34.1
-    ip-10-0-1-99    Ready    control-plane   22m   v1.34.8
+    control1      Ready    control-plane   48m   v1.34.1
+    control2      Ready    control-plane   46m   v1.34.1
+    control3      Ready    control-plane   46m   v1.34.1
+    cpu-worker1   Ready    <none>          45m   v1.34.1
+    cpu-worker2   Ready    <none>          45m   v1.34.1
+    gpu-worker1   Ready    <none>          45m   v1.34.1
+    gpu-worker2   Ready    <none>          45m   v1.34.1
+    storage1      Ready    <none>          40m   v1.34.1
+    storage2      Ready    <none>          40m   v1.34.1
+    storage3      Ready    <none>          40m   v1.34.1
+
 
 You can see that all the nodes are in Ready state now. You can also check the status of the pods in the kube-system namespace to see if the 
 Calico pods are running:
@@ -370,3 +371,31 @@ Calico pods are running:
 
 
 With this, we have successfully set up a Kubernetes cluster with three control-plane node and four worker nodes. 
+
+
+Lets us label all nodes in the kubernetes cluster
+
+
+
+.. code-block:: bash
+
+    kubectl label node control1 control-plane=true
+    kubectl label node control2 control-plane=true
+    kubectl label node control3 control-plane=true
+
+
+    kubectl label node worker1  worker-node=true
+    kubectl label node worker2  worker-node=true
+    kubectl label node worker3  worker-node=true
+    kubectl label node worker4  worker-node=true
+
+    kubectl label node storage1  ceph-storage=true
+    kubectl label node storage2  ceph-storage=true
+    kubectl label node storage3  ceph-storage=true
+
+Verify the labels:
+
+.. code-block:: bash
+
+   kubectl get nodes --show-labels
+   

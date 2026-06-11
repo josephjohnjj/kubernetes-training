@@ -70,4 +70,33 @@ Get all DaemonSets in the cluster:
 
     The `-A` flag is used to get resources across all namespaces.
 
+
+Patch
+--------
+
+Sometimes configuration deadlock within the cluster when we change the deployment congig. 
+Because the initial deployment lacked some necessary spec due to a YAML parsing 
+overwrite, the pods became stuck in a `Pending` state. This created a bottleneck that blocked 
+standard `kubectl apply` updates from resolving the situation. By utilizing `kubectl patch`, 
+you directly modified the cluster's live database, bypassing the stuck rollout process and 
+immediately injecting the correct tolerations, which allowed the new pod to successfully schedule 
+on your labeled control-plane nodes.
+
+
+
+# Source - https://stackoverflow.com/a/67700916
+# Posted by rajendra sharma, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-06-10, License - CC BY-SA 4.0
+
+for ns in $(kubectl get ns --field-selector status.phase=Terminating -o jsonpath='{.items[*].metadata.name}')
+do
+  kubectl get ns $ns -ojson | jq '.spec.finalizers = []' | kubectl replace --raw "/api/v1/namespaces/$ns/finalize" -f -
+done
+
+for ns in $(kubectl get ns --field-selector status.phase=Terminating -o jsonpath='{.items[*].metadata.name}')
+do
+  kubectl get ns $ns -ojson | jq '.metadata.finalizers = []' | kubectl replace --raw "/api/v1/namespaces/$ns/finalize" -f -
+done
+
+
     
