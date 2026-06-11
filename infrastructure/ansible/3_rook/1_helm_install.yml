@@ -1,0 +1,44 @@
+---
+- name: Setup Rook repos
+  hosts: control_primary
+  become: true
+
+  vars:
+    rook_namespace: rook-ceph
+
+  taks:
+    - name: Add rook-release repository
+      kubernetes.core.helm_repository:
+        name: rook-release
+        repo_url: https://charts.rook.io/release
+
+    - name: Add  ceph-csi-operator repository
+      kubernetes.core.helm_repository:
+        name: ceph-csi-operator
+        repo_url: https://ceph.github.io/ceph-csi-operator
+
+    - name: Create rook-ceph namespace
+      kubernetes.core.k8s:
+        name: "{{ rook_namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Install Rook Ceph
+      kubernetes.core.helm:
+        name: rook-ceph
+        chart_ref: rook-release/rook-ceph
+        release_namespace: "{{ rook_namespace }}"
+        create_namespace: true
+        state: present
+        values_files:
+          - https://raw.githubusercontent.com/rook/rook/master/deploy/charts/rook-ceph/values.yaml
+
+    - name: Install Ceph CSI drivers
+      kubernetes.core.helm:
+        name: ceph-csi-drivers
+        chart_ref: ceph-csi-operator/ceph-csi-drivers
+        release_namespace: "{{ rook_namespace }}"
+        state: present
+        values_files:
+          - https://raw.githubusercontent.com/rook/rook/master/deploy/charts/ceph-csi-drivers/values.yaml

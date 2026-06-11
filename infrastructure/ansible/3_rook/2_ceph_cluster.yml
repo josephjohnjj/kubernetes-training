@@ -1,0 +1,34 @@
+- name: Deploy Ceph cluster from CP
+  hosts: control_primary
+  become: true
+
+  vars:
+    local_file: "{{ playbook_dir }}/manifest/cluster.yaml"
+    remote_file: /tmp/cluster.yaml
+
+  tasks:
+    - name: Copy cluster YAML to control plane
+      ansible.builtin.copy:
+        src: "{{ local_file }}"
+        dest: "{{ remote_file }}"
+        mode: "0644"
+
+    - name: Apply Ceph cluster
+      ansible.builtin.command: kubectl apply -f {{ remote_file }}
+
+    - name: Wait for CephCluster to become Ready
+      ansible.builtin.command: >
+        kubectl get cephcluster rook-ceph -n rook-ceph
+        -o jsonpath='{.status.ceph.state}'
+      register: ceph_status
+      retries: 60
+      delay: 10
+      until: ceph_status.stdout == "HEALTH_OK" or ceph_status.stdout == "HEALTH_WARN"
+
+    - name: Get all rook-ceph pods
+      ansible.builtin.command: kubectl get pods -n rook-ceph
+      register: pods
+
+    - name: Show pods
+      ansible.builtin.debug:
+        var: pods.stdout
