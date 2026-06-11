@@ -22,3 +22,14 @@ kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['dat
 n9!,6YZ9U#@H2PFN0&!
 
 kubectl -n rook-ceph delete pod -l app=rook-ceph-operator
+
+kubectl create -f scratch-fs.yaml 
+
+kubectl -n rook-ceph get cephfilesystem 
+
+kubectl create -f scratch-sc.yaml 
+
+kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph fs ls
+
+kubectl create namespace mlproject
+

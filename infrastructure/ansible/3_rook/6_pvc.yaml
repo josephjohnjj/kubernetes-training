@@ -1,0 +1,33 @@
+- name: Deploy PVC
+  hosts: control_primary
+  become: true
+
+  vars:
+    local_file: "{{ playbook_dir }}/manifest/mlproject-pvc.yaml"
+    remote_file: /tmp/mlproject-pvc
+    ml_namespace: mlproject
+
+  tasks:
+    - name: Create mlproject namespace
+      kubernetes.core.k8s:
+        name: "{{ ml_namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Copy storage class YAML to control plane
+      copy:
+        src: "{{ local_file }}"
+        dest: "{{ remote_file }}"
+        mode: "0644"
+
+    - name: Apply file system
+
+      command: kubectl apply -f {{ remote_file }}
+
+    - name: Verify pods
+      command: kubectl get pvc -n mlproject
+      register: pods
+
+    - debug:
+        var: pods.stdout

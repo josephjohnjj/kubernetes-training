@@ -1,0 +1,25 @@
+- name: Deploy scratch file system
+  hosts: control_primary
+  become: true
+
+  vars:
+    local_file: "{{ playbook_dir }}/manifest/scratch-fs.yaml"
+    remote_file: /tmp/scratch-fs.yaml
+
+  tasks:
+    - name: Copy file system YAML to control plane
+      copy:
+        src: "{{ local_file }}"
+        dest: "{{ remote_file }}"
+        mode: "0644"
+
+    - name: Apply file system
+
+      command: kubectl apply -f {{ remote_file }}
+
+    - name: Verify pods
+      command: kubectl -n rook-ceph get cephfilesystem
+      register: pods
+
+    - debug:
+        var: pods.stdout
