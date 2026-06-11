@@ -1,0 +1,27 @@
+---
+- name: Install Trivy Operator via Helm
+  hosts: control_primary # change to your CP node group
+  become: false
+
+  vars:
+    trivy_namespace: trivy-system
+    trivy_version: "0.33.1"
+
+  tasks:
+    - name: Add Aqua Helm repo
+      kubernetes.core.helm_repository:
+        name: aqua
+        repo_url: https://aquasecurity.github.io/helm-charts/
+
+    - name: Update Helm repositories
+      ansible.builtin.command: helm repo update
+      changed_when: false
+
+    - name: Install Trivy Operator
+      kubernetes.core.helm:
+        name: trivy-operator
+        chart_ref: aqua/trivy-operator
+        release_namespace: "{{ trivy_namespace }}"
+        create_namespace: true
+        chart_version: "{{ trivy_version }}"
+        state: present

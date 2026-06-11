@@ -101,6 +101,8 @@ resource "aws_instance" "login_node" {
     aws_security_group.ssh_access.id, # Security group for SSH access
     aws_security_group.internal.id,   # Internal communication within the VPC
     aws_security_group.efs_sg.id,     # EFS access for file systems
+    aws_security_group.monitoring.id, # Prometheus monitoring
+
   ]
 
   # Ensure the instance gets a public IP address.
