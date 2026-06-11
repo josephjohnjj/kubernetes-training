@@ -1,0 +1,35 @@
+---
+- name: Setup kubectl kubeconfig on control plane nodes
+  hosts: control
+  become: true
+
+  vars:
+    kube_dir: "{{ ansible_env.HOME }}/.kube"
+    kube_config: "{{ ansible_env.HOME }}/.kube/config"
+    admin_conf: /etc/kubernetes/admin.conf
+
+  tasks:
+    - name: Ensure .kube directory exists
+      file:
+        path: "{{ kube_dir }}"
+        state: directory
+        mode: "0700"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid | default(ansible_user_id) }}"
+
+    - name: Copy admin.conf to user kubeconfig
+      copy:
+        src: "{{ admin_conf }}"
+        dest: "{{ kube_config }}"
+        remote_src: true
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid | default(ansible_user_id) }}"
+        mode: "0600"
+
+    - name: Ensure correct ownership recursively (safety)
+      file:
+        path: "{{ kube_dir }}"
+        state: directory
+        recurse: true
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid | default(ansible_user_id) }}"
