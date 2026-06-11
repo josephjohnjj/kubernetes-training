@@ -1,0 +1,43 @@
+---
+- name: Fetch kubeconfig from control plane
+  hosts: control_primary
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Fetch admin.conf
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: /tmp/admin.conf
+        flat: true
+
+- name: Install kubeconfig on login node (HAProxy endpoint = private IP)
+  hosts: login
+  become: false
+  gather_facts: false
+
+  vars:
+    kubeconfig_path: ~/.kube/config
+    api_endpoint: "https://{{ private_ip }}:6443"
+
+  tasks:
+    - name: Ensure kube directory exists
+      file:
+        path: ~/.kube
+        state: directory
+        mode: "0700"
+
+    - name: Copy kubeconfig from CP fetch
+      copy:
+        src: /tmp/admin.conf
+        dest: /tmp/admin.conf
+
+    - name: Rewrite kubeconfig to use login node private IP (HAProxy)
+      shell: |
+        set -e
+
+        cp /tmp/admin.conf {{ kubeconfig_path }}
+
+        sed -i 's#https://.*:6443#{{ api_endpoint }}#g' {{ kubeconfig_path }}
+
+        chmod 600 {{ kubeconfig_path }}
