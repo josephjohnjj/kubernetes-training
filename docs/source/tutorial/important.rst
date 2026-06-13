@@ -98,5 +98,12 @@ do
   kubectl get ns $ns -ojson | jq '.metadata.finalizers = []' | kubectl replace --raw "/api/v1/namespaces/$ns/finalize" -f -
 done
 
+.. code-block:: bash
+
+    kubectl logs -n opensearch opensearch-cluster-master-0 --tail=200
+    
+    kubectl run curl   --rm -it   --image=curlimages/curl   -n opensearch   -- sh
+    
+    kubectl logs -n opensearch opensearch-cluster-master-2 --previous
 
     
