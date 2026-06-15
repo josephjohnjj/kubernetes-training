@@ -374,14 +374,14 @@ Set a StorageClass as the default:
 
 .. code-block:: bash
 
-   kubectl patch storageclass longhorn 
+   kubectl patch storageclass scratch-sc 
    -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 Remove the default designation from a StorageClass:
 
 .. code-block:: bash
 
-   kubectl patch storageclass local-path 
+   kubectl patch storageclass scratch-sc
    -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
 
 Verify the default StorageClass:
@@ -391,9 +391,9 @@ The default StorageClass is indicated by `(default)` in the output:
 
 .. code-block:: text
 
-NAME                     PROVISIONER                     RECLAIMPOLICY   VOLUMEBINDINGMODE
-local-path               rancher.io/local-path          Delete          WaitForFirstConsumer
-longhorn (default)       driver.longhorn.io             Delete          Immediate
+   NAME                     PROVISIONER                     RECLAIMPOLICY   VOLUMEBINDINGMODE
+   
+   scratch-sc (default)       driver.longhorn.io             Delete          Immediate
 
 .. note::
 
