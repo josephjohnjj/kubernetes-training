@@ -74,36 +74,74 @@ Get all DaemonSets in the cluster:
 Patch
 --------
 
-Sometimes configuration deadlock within the cluster when we change the deployment congig. 
-Because the initial deployment lacked some necessary spec due to a YAML parsing 
-overwrite, the pods became stuck in a `Pending` state. This created a bottleneck that blocked 
-standard `kubectl apply` updates from resolving the situation. By utilizing `kubectl patch`, 
-you directly modified the cluster's live database, bypassing the stuck rollout process and 
-immediately injecting the correct tolerations, which allowed the new pod to successfully schedule 
-on your labeled control-plane nodes.
+In some cases, configuration changes can create a deployment deadlock within the cluster. If the 
+initial deployment is missing required specifications due to a YAML parsing overwrite, the pods 
+may remain in a `Pending` state. As a result, normal `kubectl apply` operations may be unable to 
+resolve the issue because the rollout process itself becomes blocked.
+
+Using `kubectl patch` will allow the cluster's live resource definitions to be updated directly, 
+bypassing the stalled deployment workflow. By injecting the correct tolerations into the 
+existing resource, the scheduler will be able to place the new pods onto the designated 
+control-plane nodes, allowing the deployment to proceed successfully.
 
 
 
-# Source - https://stackoverflow.com/a/67700916
-# Posted by rajendra sharma, modified by community. See post 'Timeline' for change history
-# Retrieved 2026-06-10, License - CC BY-SA 4.0
 
-for ns in $(kubectl get ns --field-selector status.phase=Terminating -o jsonpath='{.items[*].metadata.name}')
-do
-  kubectl get ns $ns -ojson | jq '.spec.finalizers = []' | kubectl replace --raw "/api/v1/namespaces/$ns/finalize" -f -
-done
+Command Reference
+----------------------------
 
-for ns in $(kubectl get ns --field-selector status.phase=Terminating -o jsonpath='{.items[*].metadata.name}')
-do
-  kubectl get ns $ns -ojson | jq '.metadata.finalizers = []' | kubectl replace --raw "/api/v1/namespaces/$ns/finalize" -f -
-done
+The following commands are useful for troubleshooting and validating workloads in the cluster.
+
+
+Debug container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+The following command attaches an ephemeral debug container to the existing 
+`nginx-6f7b8d9c4b-abcde` pod using the `nicolaka/netshoot` image. The `--target=nginx` 
+option allows the debug container to share the target container's namespaces, enabling 
+troubleshooting of network connectivity, processes, and other runtime characteristics without 
+modifying or restarting the original application container.
+
+.. code-block:: bash
+
+    kubectl debug -it nginx-6f7b8d9c4b-abcde --image=nicolaka/netshoot --target=nginx
+
+
+View Recent OpenSearch Logs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
     kubectl logs -n opensearch opensearch-cluster-master-0 --tail=200
-    
-    kubectl run curl   --rm -it   --image=curlimages/curl   -n opensearch   -- sh
-    
+
+Launch a Temporary Curl Pod in a Namespace
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    kubectl run curl --rm -it --image=curlimages/curl -n opensearch -- sh
+
+View Logs from a Previously Terminated  Container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
     kubectl logs -n opensearch opensearch-cluster-master-2 --previous
+
+List All Resources in a Namespace
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    kubectl get all -n mlproject
+
+Launch a Temporary Curl Pod
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- sh
+
 
     

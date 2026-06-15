@@ -17,3 +17,8 @@ Reference
 
 #. https://kueue.sigs.k8s.io/docs/getting-started/quick-start/
 #. https://kueue.sigs.k8s.io/docs/concepts/resource_flavor/
+
+#. https://stackoverflow.com/questions/69218884/keycloak-helm-chart-to-use-external-database
+#. https://github.com/codecentric/helm-charts/tree/master/charts/keycloak
+#. https://medium.com/@rajesh.sgr/how-do-you-setup-keycloak-with-an-existing-postgresql-database-and-docker-63c568181ee8
+#. 
