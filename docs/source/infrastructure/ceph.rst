@@ -346,3 +346,60 @@ Verify:
    NAME            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
    mlproject-pvc   Bound    pvc-fc8373b4-e0d4-4feb-b228-53f9d3392b46   20Gi       RWX            scratch-sc     <unset>                 38m
 
+
+Important
+-----------
+
+
+Most applications require a PersistentVolumeClaim (PVC), which in turn requires a StorageClass.
+The challenge is that some Helm charts do not provide a configuration option to specify the 
+StorageClass to use. In such cases, PVCs may remain in a `Pending` state if no default 
+StorageClass is configured in the cluster.
+
+Kubernetes allows only **one default StorageClass** at a time. When a PVC is created without 
+an explicitly defined `storageClassName`, Kubernetes automatically uses the default 
+StorageClass.
+
+To avoid storage provisioning issues, it is recommended to either:
+
+* Configure a default StorageClass for the cluster or
+* Specify the desired StorageClass in the application configuration whenever the Helm chart supports it.
+
+Having a default StorageClass simplifies deployments and ensures that applications can 
+automatically provision storage when required.
+
+
+
+Set a StorageClass as the default:
+
+.. code-block:: bash
+
+   kubectl patch storageclass longhorn 
+   -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+Remove the default designation from a StorageClass:
+
+.. code-block:: bash
+
+   kubectl patch storageclass local-path 
+   -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+
+Verify the default StorageClass:
+
+
+The default StorageClass is indicated by `(default)` in the output:
+
+.. code-block:: text
+
+NAME                     PROVISIONER                     RECLAIMPOLICY   VOLUMEBINDINGMODE
+local-path               rancher.io/local-path          Delete          WaitForFirstConsumer
+longhorn (default)       driver.longhorn.io             Delete          Immediate
+
+.. note::
+
+   Before assigning a new default StorageClass, ensure that any existing default StorageClass 
+   has been unset.
+
+   Additionally, before installing an application, verify that the cluster's default 
+   StorageClass is the one intended for the deployment. If a different StorageClass should 
+   be used, update the default StorageClass accordingly before proceeding with the installation.
