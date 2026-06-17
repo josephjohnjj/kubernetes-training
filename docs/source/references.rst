@@ -35,6 +35,12 @@ Keycloak
 #. https://medium.com/@rajesh.sgr/how-do-you-setup-keycloak-with-an-existing-postgresql-database-and-docker-63c568181ee8
 #. https://github.com/bitnami/charts/blob/main/bitnami/keycloak/values.yaml
 
+
+Kubeflow
+------------
+
+https://www.kubeflow.org/docs/components/trainer/operator-guides/installation/
+
 Rancher
 ------------
 
