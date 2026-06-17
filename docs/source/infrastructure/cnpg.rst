@@ -104,3 +104,98 @@ View operator logs:
 
    kubectl logs -n cnpg-system deployment/cnpg-controller-manager
 
+Database Creation for Keycloak
+------------------------------
+
+After the CloudNativePG PostgreSQL cluster has been deployed, create a
+dedicated database and user for Keycloak.
+
+Create Application User
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Connect to PostgreSQL using the cluster superuser and create a dedicated
+user for Keycloak.
+
+.. code-block:: sql
+
+   CREATE USER keycloak WITH PASSWORD 'keycloak-pwd';
+
+This creates a PostgreSQL role that Keycloak will use to connect to the
+database.
+
+
+Create a database owned by the Keycloak user.
+
+.. code-block:: sql
+
+   CREATE DATABASE keycloak OWNER keycloak;
+
+
+
+Grant full privileges on the database to the Keycloak user.
+
+.. code-block:: sql
+
+   GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
+
+
+
+Switch to the newly created database.
+
+.. code-block:: sql
+
+   \c keycloak
+
+
+
+Transfer ownership of the default ``public`` schema to the Keycloak user.
+
+.. code-block:: sql
+
+   ALTER SCHEMA public OWNER TO keycloak;
+
+
+
+Grant full access to the ``public`` schema.
+
+.. code-block:: sql
+
+   GRANT ALL ON SCHEMA public TO keycloak;
+
+
+
+Ensure all future tables created in the schema automatically grant
+permissions to the Keycloak user.
+
+.. code-block:: sql
+
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public
+   GRANT ALL ON TABLES TO keycloak;
+
+
+
+Ensure all future sequences created in the schema automatically grant
+permissions to the Keycloak user.
+
+.. code-block:: sql
+
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public
+   GRANT ALL ON SEQUENCES TO keycloak;
+
+
+
+Confirm that the ``public`` schema is owned by the Keycloak user.
+
+.. code-block:: sql
+
+   \dn+
+
+Expected output:
+
+.. code-block:: text
+
+   Name   | Owner
+   -------+---------
+   public | keycloak
+
+The database is now ready for use by Keycloak.
