@@ -144,4 +144,12 @@ Launch a Temporary Curl Pod
     kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- sh
 
 
+Explore k8 secrets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    kubectl get secret cnpg-cluster-superuser -n cnpg-database -o jsonpath="{.data.username}" | base64 --decode
+
+    kubectl get secret cnpg-cluster-superuser -n cnpg-database -o jsonpath="{.data.password}" | base64 --decode
     
