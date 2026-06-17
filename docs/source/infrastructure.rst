@@ -17,6 +17,7 @@
    infrastructure/kueue.rst
    infrastructure/jaeger.rst
    infrastructure/cnpg.rst
+   infrastructure/keycloak.rst
 
   
 
