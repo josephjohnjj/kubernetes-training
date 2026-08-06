@@ -1,0 +1,32 @@
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ResourceFlavor
+metadata:
+  name: gpu-flavor
+spec:
+  nodeLabels:
+    worker-type: gpu
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata:
+  name: gpu-normal-cq
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+    - coveredResources: ["cpu", "memory"]
+      flavors:
+        - name: gpu-flavor
+          resources:
+            - name: cpu
+              nominalQuota: 8
+            - name: memory
+              nominalQuota: 10Gi
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata:
+  namespace: mlproject
+  name: gpu-normal-queue
+spec:
+  clusterQueue: gpu-normal-cq
+

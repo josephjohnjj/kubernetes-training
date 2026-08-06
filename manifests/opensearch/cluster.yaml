@@ -1,0 +1,52 @@
+apiVersion: opensearch.org/v1
+kind: OpenSearchCluster
+metadata:
+  name: opensearch-cluster
+  namespace: opensearch
+
+spec:
+  general:
+    serviceName: opensearch-cluster
+    version: "3"
+
+  dashboards:
+    enable: true
+    version: "3"
+    replicas: 1
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "200m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
+
+  nodePools:
+    - component: data
+      replicas: 3
+
+      diskSize: "5Gi"
+
+      nodeSelector: {}
+
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "500m"
+        limits:
+          memory: "2Gi"
+          cpu: "500m"
+
+      roles:
+        - "cluster_manager"
+        - "data"
+
+      persistence:
+        pvc:
+          storageClass: opensearch-sc
+          accessModes:
+            - ReadWriteOnce
+          annotations:
+            ceph.io/description: "OpenSearch volume"
+          labels:
+            team: "opensearch-data"

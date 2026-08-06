@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gpu-binding
+  namespace: gpu-users
+subjects:
+  - kind: Group
+    name: gpu-users
+roleRef:
+  kind: Role
+  name: gpu-role
+  apiGroup: rbac.authorization.k8s.io
