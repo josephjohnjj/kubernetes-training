@@ -165,9 +165,17 @@ resource "aws_security_group" "monitoring" {
   }
 
   ingress {
-    description = "Keycloak port 80"
+    description = "HTTP access through HAProxy and Ingress"
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS access through HAProxy and Ingress"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
