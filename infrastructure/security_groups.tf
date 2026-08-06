@@ -125,46 +125,6 @@ resource "aws_security_group" "monitoring" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description = "Prometheus port 9090"
-    from_port   = 9090
-    to_port     = 9090
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Grafana port 3000"
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Ceph Dashboard port 7000"
-    from_port   = 7000
-    to_port     = 7000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "OpenSearch Dashboard port 5601"
-    from_port   = 5601
-    to_port     = 5601
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Jaeger port 16686"
-    from_port   = 16686
-    to_port     = 16686
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
     description = "HTTP access through HAProxy and Ingress"
     from_port   = 80
     to_port     = 80
