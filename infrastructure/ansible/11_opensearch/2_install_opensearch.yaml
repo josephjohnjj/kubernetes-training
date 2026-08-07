@@ -1,0 +1,82 @@
+---
+- name: Install OpenSearch and OpenSearch Dashboards using Helm
+  hosts: control1
+  become: true
+
+  collections:
+    - kubernetes.core
+
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+  vars:
+    opensearch_namespace: opensearch
+    values_src: "./opensearch_values.yaml"
+    values_dest: "/tmp/opensearch_values.yaml"
+
+  tasks:
+    - name: Copy OpenSearch Helm values file to control1
+      ansible.builtin.copy:
+        src: "{{ values_src }}"
+        dest: "{{ values_dest }}"
+        mode: "0644"
+
+    - name: Set opensearch-sc as default storage class temporarily
+      kubernetes.core.k8s:
+        state: patched
+        api_version: storage.k8s.io/v1
+        kind: StorageClass
+        name: opensearch-sc
+        definition:
+          metadata:
+            annotations:
+              storageclass.kubernetes.io/is-default-class: "true"
+
+    - name: Add OpenSearch Helm repository
+      kubernetes.core.helm_repository:
+        name: opensearch
+        repo_url: https://opensearch-project.github.io/helm-charts/
+
+    - name: Update Helm repositories
+      ansible.builtin.command:
+        cmd: helm repo update
+
+    - name: Create OpenSearch namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ opensearch_namespace }}"
+
+    - name: Install OpenSearch
+      kubernetes.core.helm:
+        name: opensearch
+        chart_ref: opensearch/opensearch
+        release_namespace: "{{ opensearch_namespace }}"
+        values_files:
+          - "{{ values_dest }}"
+        create_namespace: false
+        state: present
+        wait: true
+
+    - name: Install OpenSearch Dashboards
+      kubernetes.core.helm:
+        name: opensearch-dashboard
+        chart_ref: opensearch/opensearch-dashboards
+        release_namespace: "{{ opensearch_namespace }}"
+        create_namespace: false
+        state: present
+        wait: true
+
+    - name: Remove default annotation from opensearch-sc
+      kubernetes.core.k8s:
+        state: patched
+        api_version: storage.k8s.io/v1
+        kind: StorageClass
+        name: opensearch-sc
+        definition:
+          metadata:
+            annotations:
+              storageclass.kubernetes.io/is-default-class: "false"
