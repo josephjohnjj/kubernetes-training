@@ -1,6 +1,6 @@
 ---
 - name: Install Kyverno via Helm (Ansible Helm module)
-  hosts: control_plane
+  hosts: control1
   become: false
 
   vars:
