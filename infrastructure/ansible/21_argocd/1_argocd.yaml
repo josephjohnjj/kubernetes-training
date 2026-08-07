@@ -1,0 +1,46 @@
+---
+- name: Install ArgoCD using Kubernetes Ansible module
+  hosts: control1
+  become: true
+
+  collections:
+    - kubernetes.core
+
+  tasks:
+    - name: Create argocd namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: argocd
+
+    - name: Set mgmnt-sc as default storage class temporarily
+      kubernetes.core.k8s:
+        state: patched
+        api_version: storage.k8s.io/v1
+        kind: StorageClass
+        name: mgmnt-sc
+        definition:
+          metadata:
+            annotations:
+              storageclass.kubernetes.io/is-default-class: "true"
+
+    - name: Download and install ArgoCD manifests
+      kubernetes.core.k8s:
+        state: present
+        namespace: argocd
+        src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+        apply: true
+
+    - name: Remove default annotation from mgmnt-sc
+      kubernetes.core.k8s:
+        state: patched
+        api_version: storage.k8s.io/v1
+        kind: StorageClass
+        name: mgmnt-sc
+        definition:
+          metadata:
+            annotations:
+              storageclass.kubernetes.io/is-default-class: "false"
