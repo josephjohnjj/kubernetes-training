@@ -1,0 +1,38 @@
+---
+- name: Deploy Keycloak storage resources
+  hosts: control1
+  become: true
+
+  collections:
+    - kubernetes.core
+
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+  vars:
+    manifest_src_dir: "./storage_manifests"
+    manifest_dest_dir: "/tmp/storage_manifests"
+
+    storage_manifests:
+      - keycloak-pool.yaml
+      - keycloak-sc.yaml
+
+  tasks:
+    - name: Create storage manifest directory on control1
+      ansible.builtin.file:
+        path: "{{ manifest_dest_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy Keycloak storage manifests to control1
+      ansible.builtin.copy:
+        src: "{{ manifest_src_dir }}/{{ item }}"
+        dest: "{{ manifest_dest_dir }}/{{ item }}"
+        mode: "0644"
+      loop: "{{ storage_manifests }}"
+
+    - name: Apply Keycloak storage manifests
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ manifest_dest_dir }}/{{ item }}"
+      loop: "{{ storage_manifests }}"
