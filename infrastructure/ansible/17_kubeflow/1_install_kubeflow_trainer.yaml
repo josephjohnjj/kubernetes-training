@@ -1,0 +1,39 @@
+---
+- name: Install Kubeflow Trainer using Helm
+  hosts: control
+  become: true
+  gather_facts: false
+
+  vars:
+    kubeflow_namespace: kubeflow-system
+    kubeflow_release_name: kubeflow-trainer
+    kubeflow_chart: oci://ghcr.io/kubeflow/charts/kubeflow-trainer
+
+  tasks:
+    - name: Ensure kubeflow namespace exists
+      kubernetes.core.k8s:
+        name: "{{ kubeflow_namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Install Kubeflow Trainer Helm chart
+      kubernetes.core.helm:
+        name: "{{ kubeflow_release_name }}"
+        chart_ref: "{{ kubeflow_chart }}"
+        release_namespace: "{{ kubeflow_namespace }}"
+        create_namespace: true
+        state: present
+        wait: true
+        timeout: 10m
+
+    - name: Verify Kubeflow Trainer pods
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ kubeflow_namespace }}"
+      register: kubeflow_pods
+
+    - name: Display Kubeflow Trainer pods
+      ansible.builtin.debug:
+        msg: "{{ kubeflow_pods.resources | map(attribute='metadata.name') | list }}"
