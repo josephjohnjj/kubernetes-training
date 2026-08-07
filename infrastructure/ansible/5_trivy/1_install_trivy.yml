@@ -1,6 +1,6 @@
 ---
 - name: Install Trivy Operator via Helm
-  hosts: control_primary # change to your CP node group
+  hosts: control1 # change to your CP node group
   become: false
 
   vars:
