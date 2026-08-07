@@ -1,6 +1,6 @@
 ---
 - name: Install Prometheus + Grafana via Helm
-  hosts: control_plane
+  hosts: control1
   become: false
 
   vars:
@@ -8,8 +8,6 @@
     prometheus_repo_name: prometheus-community
     prometheus_repo_url: https://prometheus-community.github.io/helm-charts
     prometheus_release: prometheus
-
-    grafana_service: prometheus-grafana
 
   tasks:
     - name: Add Prometheus Helm repository
@@ -38,17 +36,3 @@
         label_selectors:
           - "release=prometheus"
       register: prom_pods
-
-    - name: Show Prometheus pods
-      ansible.builtin.debug:
-        var: prom_pods.resources
-
-    - name: Patch Grafana service to NodePort
-      kubernetes.core.k8s:
-        state: patched
-        kind: Service
-        namespace: "{{ prometheus_namespace }}"
-        name: "{{ grafana_service }}"
-        definition:
-          spec:
-            type: NodePort
