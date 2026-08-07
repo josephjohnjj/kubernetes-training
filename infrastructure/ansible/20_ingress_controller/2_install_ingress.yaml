@@ -10,8 +10,8 @@
     KUBECONFIG: /etc/kubernetes/admin.conf
 
   vars:
-    manifest_src_dir: "./ingress-manifests"
-    manifest_dest_dir: "/tmp/ingress-manifests"
+    manifest_src_dir: "./ingress_manifests"
+    manifest_dest_dir: "/tmp/ingress_manifests"
 
     ingress_manifests:
       - file: keycloak-ingress.yaml
