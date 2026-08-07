@@ -1,6 +1,6 @@
 ---
 - name: Install and configure Falco via Helm (Ansible Helm module)
-  hosts: control_plane
+  hosts: control1
   become: false
 
   vars:
