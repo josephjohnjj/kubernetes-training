@@ -1,10 +1,13 @@
 ---
-- name: Configure Kubernetes API Load Balancer on Login Node
+- name: Configure HAProxy Load Balancer for Kubernetes
   hosts: haproxy
   become: true
+  gather_facts: true
 
   vars:
     k8s_api_port: 6443
+    nginx_http_nodeport: 30253
+    nginx_https_nodeport: 31917
 
   tasks:
     - name: Install HAProxy
@@ -13,7 +16,7 @@
         state: present
         update_cache: true
 
-    - name: Backup existing config
+    - name: Backup existing HAProxy config
       ansible.builtin.copy:
         src: /etc/haproxy/haproxy.cfg
         dest: /etc/haproxy/haproxy.cfg.bak
@@ -30,35 +33,91 @@
               log /dev/log local1 notice
               daemon
 
+
           defaults
               log global
               mode tcp
               timeout connect 10s
-              timeout client  1m
-              timeout server  1m
+              timeout client 1m
+              timeout server 1m
               option tcplog
 
+
+          # =====================================================
+          # Kubernetes API Server
+          # =====================================================
+
           frontend k8s_api_frontend
-              bind 0.0.0.0:{{ k8s_api_port }}
+              bind *:{{ k8s_api_port }}
               default_backend k8s_api_backend
+
 
           backend k8s_api_backend
               balance roundrobin
               option tcp-check
               default-server inter 3s fall 3 rise 2
           {% for host in groups['control'] %}
-              server {{ host }} {{ hostvars[host]['private_ip'] }}:{{ k8s_api_port }} check
+              server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ k8s_api_port }} check
           {% endfor %}
 
-    - name: Enable HAProxy
+
+          # =====================================================
+          # NGINX Ingress HTTP
+          # =====================================================
+
+          frontend nginx_ingress_http_frontend
+              bind *:80
+              mode http
+              option httplog
+              default_backend nginx_ingress_http_backend
+
+
+          backend nginx_ingress_http_backend
+              mode http
+              balance roundrobin
+
+          {% for host in groups['control'] %}
+              server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ nginx_http_nodeport }} check
+          {% endfor %}
+
+
+          # =====================================================
+          # NGINX Ingress HTTPS
+          # =====================================================
+
+          frontend nginx_ingress_https_frontend
+              bind *:443
+              mode tcp
+              option tcplog
+              default_backend nginx_ingress_https_backend
+
+
+          backend nginx_ingress_https_backend
+              mode tcp
+              balance roundrobin
+
+          {% for host in groups['control'] %}
+              server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ nginx_https_nodeport }} check
+          {% endfor %}
+
+    - name: Validate HAProxy configuration
+      ansible.builtin.command:
+        cmd: haproxy -c -f /etc/haproxy/haproxy.cfg
+      changed_when: false
+
+    - name: Enable and restart HAProxy
       ansible.builtin.systemd:
         name: haproxy
         enabled: true
         state: restarted
 
-    - name: Allow API port (UFW)
+    - name: Allow HAProxy ports through UFW
       ansible.builtin.ufw:
         rule: allow
-        port: "{{ k8s_api_port }}"
+        port: "{{ item }}"
         proto: tcp
+      loop:
+        - "{{ k8s_api_port }}"
+        - 80
+        - 443
       ignore_errors: true
