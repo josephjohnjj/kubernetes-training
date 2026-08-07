@@ -1,0 +1,54 @@
+---
+- name: Deploy Kubernetes Ingress resources
+  hosts: control1
+  become: true
+
+  collections:
+    - kubernetes.core
+
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+  vars:
+    manifest_src_dir: "./ingress-manifests"
+    manifest_dest_dir: "/tmp/ingress-manifests"
+
+    ingress_manifests:
+      - file: keycloak-ingress.yaml
+        namespace: keycloak
+
+      - file: opensearch-ingress.yaml
+        namespace: opensearch
+
+      - file: jaeger-ingress.yaml
+        namespace: jaeger
+
+      - file: grafana-ingress.yaml
+        namespace: observability
+
+      - file: ceph-dashboard-ingress.yaml
+        namespace: rook-ceph
+
+      - file: argocd-ingress.yaml
+        namespace: argocd
+
+  tasks:
+    - name: Create manifest directory on control1
+      ansible.builtin.file:
+        path: "{{ manifest_dest_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy ingress manifests to control1
+      ansible.builtin.copy:
+        src: "{{ manifest_src_dir }}/{{ item.file }}"
+        dest: "{{ manifest_dest_dir }}/{{ item.file }}"
+        mode: "0644"
+      loop: "{{ ingress_manifests }}"
+
+    - name: Apply ingress manifests
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ manifest_dest_dir }}/{{ item.file }}"
+        namespace: "{{ item.namespace }}"
+      loop: "{{ ingress_manifests }}"
