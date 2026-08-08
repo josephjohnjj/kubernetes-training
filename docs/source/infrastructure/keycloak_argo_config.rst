@@ -21,9 +21,10 @@ This document describes how to configure **Keycloak** as the OpenID Connect (OID
 | PKCE                 | S256                                                         |
 +----------------------+--------------------------------------------------------------+
 
-1. Create the Keycloak Client
+Create the Keycloak Client
+-----------------------------
 
----
+
 
 Log in to the Keycloak Admin Console and switch to the `genome` realm.
 
@@ -58,7 +59,7 @@ The important setting is::
 With PKCE, Argo CD does not require a client secret for the browser authentication flow.
 
 
-2. Configure the Client URLs
+Configure the Client URLs
 ----------------------------
 
 Configure the client with the following values.
@@ -101,7 +102,7 @@ Set::
     https://argocd.44.203.188.20.nip.io
 
 
-3. Configure PKCE
+Configure PKCE
 -----------------
 
 Configure the Keycloak client to use::
@@ -125,7 +126,7 @@ The resulting configuration is::
     S256
 
 
-4. Keycloak OIDC Issuer
+Keycloak OIDC Issuer
 -----------------------
 
 The OIDC issuer is the URL of the ``genome`` realm::
@@ -139,7 +140,7 @@ The OpenID Connect discovery document is available at::
 The discovery document contains the endpoints that Argo CD uses for authentication.
 
 
-5. Argo CD OIDC Configuration
+Argo CD OIDC Configuration
 -----------------------------
 
 Argo CD uses the ``argocd-cm`` ConfigMap for its OIDC configuration.
@@ -183,7 +184,7 @@ and::
       - openid
 
 
-6. Why Only ``openid`` Is Requested
+Why Only ``openid`` Is Requested
 -----------------------------------
 
 Initially, only the mandatory OIDC scope should be requested::
@@ -210,7 +211,7 @@ For example, eventually the configuration may request::
 The ``groups`` scope is particularly useful when integrating Keycloak groups with Argo CD RBAC.
 
 
-7. Restart Argo CD
+Restart Argo CD
 ------------------
 
 After modifying ``argocd-cm``, restart the Argo CD server::
@@ -226,7 +227,7 @@ Expected output::
     deployment "argocd-server" successfully rolled out
 
 
-8. Verify the Argo CD Configuration
+Verify the Argo CD Configuration
 -----------------------------------
 
 Check the external URL::
@@ -253,7 +254,7 @@ Expected::
       - openid
 
 
-9. Verify Argo CD Logs
+Verify Argo CD Logs
 ----------------------
 
 Check the Argo CD server logs::
@@ -273,7 +274,7 @@ and::
 The ``sso: true`` message indicates that SSO has been enabled.
 
 
-10. Test the Login
+Test the Login
 ------------------
 
 Open::
@@ -313,7 +314,7 @@ The authentication flow is::
 The Keycloak username and password are **not validated by Argo CD**. Keycloak performs the authentication.
 
 
-11. Troubleshooting
+Troubleshooting
 -------------------
 
 ``Client not found``
@@ -409,7 +410,7 @@ check::
 for the ``argocd`` Keycloak client when using the PKCE/public-client configuration.
 
 
-12. Authentication vs Authorization
+Authentication vs Authorization
 -----------------------------------
 
 Successful Keycloak login only establishes **authentication**.
