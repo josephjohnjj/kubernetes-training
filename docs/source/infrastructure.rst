@@ -19,6 +19,8 @@
    infrastructure/cnpg.rst
    infrastructure/keycloak.rst
 
+   infrastructure/keycloak_argo_config.rst
+
   
 
 

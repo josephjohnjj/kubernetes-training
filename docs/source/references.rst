@@ -34,6 +34,8 @@ Keycloak
 #. https://github.com/codecentric/helm-charts/tree/master/charts/keycloak
 #. https://medium.com/@rajesh.sgr/how-do-you-setup-keycloak-with-an-existing-postgresql-database-and-docker-63c568181ee8
 #. https://github.com/bitnami/charts/blob/main/bitnami/keycloak/values.yaml
+#. https://youtu.be/d3Vg3IoT768?si=_2N97kzME_UWCLSh
+#. https://oneuptime.com/blog/post/2026-02-26-argocd-sso-keycloak/view
 
 
 Kubeflow
