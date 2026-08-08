@@ -10,6 +10,8 @@ spec:
     - https://github.com/josephjohnjj/kubernetes-training.git
 
   destinations:
+    - namespace: argocd
+      server: https://kubernetes.default.svc
     - namespace: jaeger
       server: https://kubernetes.default.svc
     - namespace: prometheus
