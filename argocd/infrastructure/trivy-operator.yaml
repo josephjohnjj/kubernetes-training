@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: trivy-operator
+  namespace: argocd
+spec:
+  project: infrastructure
+
+  source:
+    repoURL: https://github.com/josephjohnjj/kubernetes-training.git
+    targetRevision: main
+    path: charts/trivy-operator
+    #helm:
+    #  valueFiles:
+    #    - values-custom.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: trivy-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
