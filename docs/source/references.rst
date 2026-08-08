@@ -47,3 +47,8 @@ Rancher
 ------------
 
 #. https://www.youtube.com/watch?v=LK6KbAlQRIg
+
+GEN3
+------------
+
+#. https://docs.gen3.org/gen3-resources/operator-guide/helm/#deploy-with-minikube-and-helm
