@@ -39,6 +39,8 @@ spec:
       namespace: fluentbit
     - server: https://kubernetes.default.svc
       namespace: prometheus
+    - server: https://kubernetes.default.svc
+      namespace: rook-ceph
 
   clusterResourceWhitelist:
     - group: "*"
