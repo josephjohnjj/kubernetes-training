@@ -46,6 +46,8 @@ spec:
       namespace: ingress-nginx
     - server: https://kubernetes.default.svc
       namespace: opensearch
+    - server: https://kubernetes.default.svc
+      namespace: cnpg-system
 
   clusterResourceWhitelist:
     - group: "*"
