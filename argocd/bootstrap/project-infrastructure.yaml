@@ -29,6 +29,8 @@ spec:
       namespace: kube-system
     - server: https://kubernetes.default.svc
       namespace: kubeflow-system
+    - server: https://kubernetes.default.svc
+      namespace: kyverno
 
   clusterResourceWhitelist:
     - group: "*"
