@@ -171,6 +171,18 @@ kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph fs ls
 kubectl create namespace mlproject
 ```
 
+Nginx
+-------
+
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+
+helm repo update
+
+helm install ingress-nginx ingress-nginx/ingress-nginx   --namespace ingress-nginx   --create-namespace
+  
+```
+
 
 
 
