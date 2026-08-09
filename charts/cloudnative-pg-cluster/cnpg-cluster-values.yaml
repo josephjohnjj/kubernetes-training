@@ -1,5 +1,4 @@
 type: postgresql
-
 mode: standalone
 
 version:
@@ -10,6 +9,19 @@ cluster:
   storage:
     size: 8Gi
     storageClass: cnpg-sc
+
+  enableSuperuserAccess: true
+
+roles:
+  - name: keycloak
+    ensure: present
+    login: true
+    superuser: false
+
+databases:
+  - name: keycloak
+    ensure: present
+    owner: keycloak
 
 backups:
   enabled: false
