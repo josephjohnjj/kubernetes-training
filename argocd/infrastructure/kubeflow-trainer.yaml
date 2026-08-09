@@ -8,9 +8,9 @@ spec:
   project: infrastructure
 
   source:
-    repoURL: https://ghcr.io/kubeflow/charts
-    chart: kubeflow-trainer
-    targetRevision: "2.2.0"
+    repoURL: https://github.com/josephjohnjj/kubernetes-training.git
+    path: charts/kubeflow-trainer
+    targetRevision: main
 
   destination:
     server: https://kubernetes.default.svc

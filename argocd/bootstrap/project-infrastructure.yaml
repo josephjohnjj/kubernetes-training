@@ -9,7 +9,6 @@ spec:
   sourceRepos:
     - https://github.com/josephjohnjj/kubernetes-training.git
     - https://charts.jetstack.io
-    - ghcr.io/kubeflow/charts
 
   destinations:
     - namespace: argocd
