@@ -8,6 +8,7 @@ spec:
 
   sourceRepos:
     - https://github.com/josephjohnjj/kubernetes-training.git
+    - https://charts.jetstack.io
 
   destinations:
     - namespace: argocd
