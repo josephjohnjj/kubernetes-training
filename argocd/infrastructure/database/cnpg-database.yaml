@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cnpg-database
+  namespace: argocd
+spec:
+  project: infrastructure
+
+  source:
+    repoURL: https://github.com/josephjohnjj/kubernetes-training.git
+    targetRevision: main
+    path: charts/cloudnative-pg-cluster
+    helm:
+      releaseName: cnpg
+      valueFiles:
+        - cnpg-cluster-values.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cnpg-database
+
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+
+    syncOptions:
+      - CreateNamespace=true
