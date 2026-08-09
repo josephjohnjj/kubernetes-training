@@ -42,6 +42,8 @@ spec:
       namespace: prometheus
     - server: https://kubernetes.default.svc
       namespace: rook-ceph
+    - server: https://kubernetes.default.svc
+      namespace: ingress-nginx
 
   clusterResourceWhitelist:
     - group: "*"
