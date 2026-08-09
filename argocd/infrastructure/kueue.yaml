@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kueue
+  namespace: argocd
+spec:
+  project: infrastructure
+
+  source:
+    repoURL: https://github.com/josephjohnjj/kubernetes-training.git
+    path: charts/kueue
+    targetRevision: main
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kueue-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
