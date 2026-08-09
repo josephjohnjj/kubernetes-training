@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opensearch-dashboard
+  namespace: argocd
+spec:
+  project: infrastructure
+
+  source:
+    repoURL: https://github.com/josephjohnjj/kubernetes-training.git
+    targetRevision: main
+    path: charts/opensearch-dashboards
+    helm:
+      releaseName: opensearch-dashboard
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: opensearch
+
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+
+  syncOptions:
+    - CreateNamespace=true
