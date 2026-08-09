@@ -42,7 +42,17 @@ Cert-manager
 
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.20.2/cert-manager.yaml
 
-``
+```
+
+Kubeflow-Trainer
+------------------
+
+
+```bash
+helm install kubeflow-trainer oci://ghcr.io/kubeflow/charts/kubeflow-trainer  --namespace kubeflow-system  --create-namespace
+```
+
+
 
 
 
