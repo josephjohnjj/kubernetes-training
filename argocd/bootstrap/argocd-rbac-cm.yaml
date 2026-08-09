@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-rbac-cm
+    app.kubernetes.io/part-of: argocd
+
+data:
+  policy.default: role:readonly
+
+  policy.csv: |
+    # Infrastructure administrator role
+    p, role:infrastructure-admin, applications, get, infrastructure/*, allow
+    p, role:infrastructure-admin, applications, sync, infrastructure/*, allow
+    p, role:infrastructure-admin, applications, update, infrastructure/*, allow
+    p, role:infrastructure-admin, applications, delete, infrastructure/*, allow
+
+    # Assign the Keycloak user to the infrastructure-admin role
+    g, joseph.john@anu.edu.au, role:infrastructure-admin
