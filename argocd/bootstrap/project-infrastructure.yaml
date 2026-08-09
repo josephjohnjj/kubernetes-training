@@ -22,6 +22,8 @@ spec:
       namespace: trivy-system
     - server: https://kubernetes.default.svc
       namespace: falco
+    - server: https://kubernetes.default.svc
+      namespace: cert-manager
 
   clusterResourceWhitelist:
     - group: "*"
