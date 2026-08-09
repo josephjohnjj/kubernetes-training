@@ -1,0 +1,18 @@
+config:
+  outputs: |
+    [OUTPUT]
+        Name opensearch
+        Match kube.*
+
+        Host opensearch-cluster-master.opensearch.svc.cluster.local
+        Port 9200
+        Index fluent-bit
+
+        HTTP_User admin
+        HTTP_Passwd Opensearch@123
+
+        TLS On
+        TLS.Verify Off
+
+        Suppress_Type_Name On
+        Retry_Limit False
