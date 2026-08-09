@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rook-ceph-tools
+  namespace: argocd
+spec:
+  project: infrastructure
+
+  source:
+    repoURL: https://github.com/josephjohnjj/platform-gitops.git
+    targetRevision: main
+    path: tools/rook-ceph
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rook-ceph
+
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
