@@ -11,6 +11,7 @@ spec:
     targetRevision: main
     path: charts/rook-ceph
     helm:
+      releaseName: rook-ceph
       valueFiles:
         - rook-ceph-op-values.yaml
 
