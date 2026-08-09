@@ -37,6 +37,8 @@ spec:
       namespace: mlproject
     - server: https://kubernetes.default.svc
       namespace: fluentbit
+    - server: https://kubernetes.default.svc
+      namespace: prometheus
 
   clusterResourceWhitelist:
     - group: "*"

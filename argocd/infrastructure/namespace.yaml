@@ -47,3 +47,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: mlproject
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prometheus
