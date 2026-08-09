@@ -1,5 +1,0 @@
-Host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
-DB: keycloak
-User: keycloak
-Password: keycloak-pwd
-Port: 5432
