@@ -1,0 +1,4 @@
+args:
+- --secure-port=10251
+- --kubelet-insecure-tls
+containerPort: 10251
