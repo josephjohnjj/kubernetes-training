@@ -29,3 +29,12 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: prometheus-grafana
+      namespace: prometheus
+      jsonPointers:
+        - /data/admin-password
+        - /metadata/annotations/checksum~1secret
