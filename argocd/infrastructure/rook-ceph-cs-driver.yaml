@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rook-ceph-csi
+  namespace: argocd
+spec:
+  project: infrastructure
+
+  source:
+    repoURL: https://github.com/josephjohnjj/kubernetes-training.git
+    targetRevision: main
+    path: charts/ceph-csi-drivers
+    helm:
+      valueFiles:
+        - rook-ceph-csi-values.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rook-ceph
+
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+
+  syncOptions:
+    - CreateNamespace=true
