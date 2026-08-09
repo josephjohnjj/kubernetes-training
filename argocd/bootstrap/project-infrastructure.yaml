@@ -9,6 +9,7 @@ spec:
   sourceRepos:
     - https://github.com/josephjohnjj/kubernetes-training.git
     - https://charts.jetstack.io
+    - ghcr.io/kubeflow/charts
 
   destinations:
     - namespace: argocd
@@ -27,6 +28,8 @@ spec:
       namespace: cert-manager
     - server: https://kubernetes.default.svc
       namespace: kube-system
+    - server: https://kubernetes.default.svc
+      namespace: kubeflow-system
 
   clusterResourceWhitelist:
     - group: "*"
