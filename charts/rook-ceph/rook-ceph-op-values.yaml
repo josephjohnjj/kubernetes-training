@@ -1,0 +1,94 @@
+USER-SUPPLIED VALUES:
+allowLoopDevices: false
+annotations: {}
+ceph-csi-operator:
+  controllerManager:
+    manager:
+      env:
+        csiServiceAccountPrefix: ""
+  fullnameOverride: ceph-csi
+  nameOverride: ceph-csi
+cephCommandsTimeoutSeconds: "15"
+containerSecurityContext:
+  capabilities:
+    drop:
+    - ALL
+  runAsGroup: 2016
+  runAsNonRoot: true
+  runAsUser: 2016
+crds:
+  enabled: true
+csi:
+  attacher:
+    repository: registry.k8s.io/sig-storage/csi-attacher
+    tag: v4.12.0
+  cephcsi:
+    repository: quay.io/cephcsi/cephcsi
+    tag: v3.17.0
+  csiAddons:
+    repository: quay.io/csiaddons/k8s-sidecar
+    tag: v0.14.0
+  installCsiOperator: true
+  provisioner:
+    repository: registry.k8s.io/sig-storage/csi-provisioner
+    tag: v6.2.0
+  registrar:
+    repository: registry.k8s.io/sig-storage/csi-node-driver-registrar
+    tag: v2.17.0
+  resizer:
+    repository: registry.k8s.io/sig-storage/csi-resizer
+    tag: v2.1.0
+  serviceMonitor:
+    enabled: false
+    interval: 5s
+    labels: {}
+    namespace: null
+  snapshotter:
+    repository: registry.k8s.io/sig-storage/csi-snapshotter
+    tag: v8.5.0
+currentNamespaceOnly: false
+customHostnameLabel: null
+deleteUnusedCrushRules: true
+disableDeviceHotplug: false
+discover:
+  nodeAffinity: null
+  podLabels: null
+  resources: null
+  toleration: null
+  tolerationKey: null
+  tolerations: null
+discoverDaemonUdev: null
+discoveryDaemonInterval: 60m
+enableDiscoveryDaemon: false
+enableOBCWatchOperatorNamespace: true
+enforceHostNetwork: false
+hostpathRequiresPrivileged: false
+image:
+  pullPolicy: IfNotPresent
+  repository: docker.io/rook/ceph
+  tag: master
+imagePullSecrets: null
+logLevel: INFO
+monRunAsRoot: false
+monitoring:
+  enabled: false
+nodeSelector: {}
+obcAllowAdditionalConfigFields: maxObjects,maxSize
+obcProvisionerNamePrefix: null
+operatorPodLabels: {}
+priorityClassName: null
+rbacAggregate:
+  enableOBCs: false
+rbacEnable: true
+reconcileConcurrentClusters: 1
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 128Mi
+revisionHistoryLimit: null
+scaleDownOperator: false
+tolerations: []
+unreachableNodeTolerationSeconds: 5
+useOperatorHostNetwork: null
