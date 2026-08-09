@@ -1,8 +1,12 @@
-USER-SUPPLIED VALUES:
 config:
   opensearch.yml: |-
     cluster.name: opensearch-cluster
     network.host: 0.0.0.0
+
 extraEnvs:
-- name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
-  value: Opensearch@123
+  - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+    value: "Opensearch@123"
+
+persistence:
+  enabled: true
+  storageClass: opensearch-sc
