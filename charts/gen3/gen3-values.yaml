@@ -1,0 +1,116 @@
+# -----------------------------------------------------------------------------
+# GEN3
+# -----------------------------------------------------------------------------
+
+global:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL
+  # ---------------------------------------------------------------------------
+  postgres:
+    # Do NOT let GEN3 create databases.
+    # The databases are managed by CloudNativePG.
+    dbCreate: false
+
+    dbRestore: false
+
+    master:
+      # Existing CloudNativePG read/write service
+      host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
+      port: "5432"
+
+      # For the moment we are using the GEN3 database user.
+      # Change this later to a Secret/externalSecret.
+      username: gen3_1000g
+      password: "CHANGE-ME-LATER"
+
+    # We are not using an external secret yet.
+    externalSecret: ""
+
+  # ---------------------------------------------------------------------------
+  # Disable GEN3 development PostgreSQL
+  # ---------------------------------------------------------------------------
+  dev: false
+
+# -----------------------------------------------------------------------------
+# GEN3 services
+# -----------------------------------------------------------------------------
+#
+# All services that use the global PostgreSQL configuration will connect to:
+#
+#   host:     cnpg-cluster-rw.cnpg-database.svc.cluster.local
+#   port:     5432
+#   user:     gen3_1000g
+#   password: CHANGE-ME-LATER
+#
+# The database must already exist in CNPG.
+# -----------------------------------------------------------------------------
+
+fence:
+  postgres:
+    dbCreate: false
+    host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
+    database: gen3_1000g
+    username: gen3_1000g
+    port: "5432"
+    password: "CHANGE-ME-LATER"
+    separate: false
+
+indexd:
+  postgres:
+    dbCreate: false
+    host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
+    database: gen3_1000g
+    username: gen3_1000g
+    port: "5432"
+    password: "CHANGE-ME-LATER"
+    separate: false
+
+peregrine:
+  postgres:
+    dbCreate: false
+    host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
+    database: gen3_1000g
+    username: gen3_1000g
+    port: "5432"
+    password: "CHANGE-ME-LATER"
+    separate: false
+
+sheepdog:
+  postgres:
+    dbCreate: false
+    host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
+    database: gen3_1000g
+    username: gen3_1000g
+    port: "5432"
+    password: "CHANGE-ME-LATER"
+    separate: false
+
+audit:
+  postgres:
+    dbCreate: false
+    host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
+    database: gen3_1000g
+    username: gen3_1000g
+    port: "5432"
+    password: "CHANGE-ME-LATER"
+    separate: false
+
+metadata:
+  postgres:
+    dbCreate: false
+    host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
+    database: gen3_1000g
+    username: gen3_1000g
+    port: "5432"
+    password: "CHANGE-ME-LATER"
+    separate: false
+
+# -----------------------------------------------------------------------------
+# Bundled PostgreSQL
+# -----------------------------------------------------------------------------
+#
+# We already have CloudNativePG, so do NOT deploy the PostgreSQL subchart.
+# -----------------------------------------------------------------------------
+
+postgresql:
+  enabled: false
