@@ -1,4 +1,5 @@
 type: postgresql
+
 mode: standalone
 
 version:
@@ -6,22 +7,32 @@ version:
 
 cluster:
   instances: 1
+
   storage:
     size: 8Gi
     storageClass: cnpg-sc
 
-  enableSuperuserAccess: true
+  roles:
+    - name: keycloak
+      ensure: present
+      login: true
+      superuser: false
 
-roles:
-  - name: keycloak
-    ensure: present
-    login: true
-    superuser: false
+    - name: gen3_1000g
+      ensure: present
+      login: true
+      superuser: false
+
+enableSuperuserAccess: true
 
 databases:
   - name: keycloak
     ensure: present
     owner: keycloak
+
+  - name: gen3_1000g
+    ensure: present
+    owner: gen3_1000g
 
 backups:
   enabled: false
