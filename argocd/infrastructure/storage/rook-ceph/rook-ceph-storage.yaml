@@ -10,6 +10,8 @@ spec:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     targetRevision: main
     path: storage/rook-ceph/storage
+    directory:
+      recurse: true
 
   destination:
     server: https://kubernetes.default.svc
