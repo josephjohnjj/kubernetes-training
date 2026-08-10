@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 1.16.0
+description: NeuVector Kubernetes Security Policy templates to protect Gen3
+name: neuvector
+type: application
+version: 0.1.2

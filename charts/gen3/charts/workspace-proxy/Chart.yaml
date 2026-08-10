@@ -1,0 +1,12 @@
+apiVersion: v2
+appVersion: "1.0"
+dependencies:
+- name: common
+  repository: file://../common
+  version: 0.1.38
+description: 'Per-user workspace HTTP/WebSocket router for gen3 vectis. Replaces Emissary/Ambassador.
+  Reads Service annotations written by Hatchery to resolve each user''s workspace
+  upstream, then proxies traffic from revproxy. '
+name: workspace-proxy
+type: application
+version: 0.1.3

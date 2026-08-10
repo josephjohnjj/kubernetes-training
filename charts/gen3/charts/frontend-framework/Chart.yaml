@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: develop
+dependencies:
+- name: common
+  repository: file://../common
+  version: 0.1.38
+description: A Helm chart for the gen3 frontend framework
+name: frontend-framework
+type: application
+version: 0.1.31
