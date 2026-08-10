@@ -52,6 +52,8 @@ spec:
       namespace: cnpg-database
     - server: https://kubernetes.default.svc
       namespace: gen3-1000g
+    - server: https://kubernetes.default.svc
+      namespace: argo-workflows
 
   clusterResourceWhitelist:
     - group: "*"
