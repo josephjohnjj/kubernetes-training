@@ -50,6 +50,8 @@ spec:
       namespace: cnpg-system
     - server: https://kubernetes.default.svc
       namespace: cnpg-database
+    - server: https://kubernetes.default.svc
+      namespace: gen3-1000g
 
   clusterResourceWhitelist:
     - group: "*"

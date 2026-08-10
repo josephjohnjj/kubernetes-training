@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gen3-1000g
+  namespace: argocd
+spec:
+  project: infrastructure
+
+  source:
+    repoURL: https://github.com/josephjohnjj/kubernetes-training.git
+    targetRevision: HEAD
+    path: charts/gen3
+    helm:
+      releaseName: gen3-1000g
+      valueFiles:
+        - gen3-values.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gen3-1000g
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
