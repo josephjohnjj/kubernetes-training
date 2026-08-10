@@ -166,7 +166,7 @@ serviceAccount:
   # Annotations to add to the service account
   annotations:
     # -- (string) The Amazon Resource Name (ARN) of the role to associate with the service account
-    eks.amazonaws.com/role-arn:
+    eks.amazonaws.com/role-arn: ""
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   # -- (string) The name of the service account
@@ -179,8 +179,7 @@ podAnnotations: {}
 podSecurityContext: {}
 
 # -- (map) Security context for the containers in the pod
-securityContext:
-  {}
+securityContext: {}
 
   # capabilities:
   #   drop:
