@@ -398,7 +398,7 @@ ssjdispatcher:
 
 wts:
   # -- (bool) Whether to deploy the wts subchart.
-  enabled: true
+  enabled: fale
 
 zendesk-wrapper:
   # -- (bool) Whether to deploy the zendesk-wrapper subchart.
