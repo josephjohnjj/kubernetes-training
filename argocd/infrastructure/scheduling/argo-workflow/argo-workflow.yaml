@@ -13,6 +13,8 @@ spec:
     path: charts/argo-workflows
     helm:
       releaseName: argo-workflows
+      valueFiles:
+        - argo-workflow-values.yaml
 
   destination:
     server: https://kubernetes.default.svc
