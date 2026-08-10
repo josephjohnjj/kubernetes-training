@@ -1,0 +1,16 @@
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStore
+metadata:
+  name: gen3-store
+  namespace: rook-ceph
+spec:
+  metadataPool:
+    replicated:
+      size: 3
+  dataPool:
+    replicated:
+      size: 3
+  preservePoolsOnDelete: true
+  gateway:
+    port: 80
+    instances: 1
