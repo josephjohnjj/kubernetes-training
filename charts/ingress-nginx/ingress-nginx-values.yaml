@@ -1,2 +1,4 @@
-USER-SUPPLIED VALUES:
-null
+controller:
+  service:
+    enabled: true
+    type: NodePort

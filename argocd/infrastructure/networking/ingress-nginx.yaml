@@ -12,8 +12,8 @@ spec:
     path: charts/ingress-nginx
     helm:
       releaseName: ingress-nginx
-      #valueFiles:
-      #  - ingress-nginx-values.yaml
+      valueFiles:
+        - ingress-nginx-values.yaml
 
   destination:
     server: https://kubernetes.default.svc
