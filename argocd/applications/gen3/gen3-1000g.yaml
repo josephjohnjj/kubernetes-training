@@ -3,6 +3,7 @@ kind: Application
 metadata:
   name: gen3-1000g
   namespace: argocd
+
 spec:
   project: infrastructure
 
@@ -10,10 +11,15 @@ spec:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     targetRevision: HEAD
     path: charts/gen3
+
     helm:
       releaseName: gen3-1000g
       valueFiles:
-        - gen3-values.yaml
+        - values/gen3-values.yaml
+        - values.d/00-etl-mapping.yaml
+        - values.d/01-usersync.yaml
+        - values.d/02-portal-gitops-css.yaml
+        - values.d/03-portal-gitops-json.yaml
 
   destination:
     server: https://kubernetes.default.svc
@@ -23,5 +29,6 @@ spec:
     automated:
       prune: true
       selfHeal: true
+
     syncOptions:
       - CreateNamespace=true
