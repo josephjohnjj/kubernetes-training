@@ -1,0 +1,23 @@
+fence:
+  usersync:
+    usersync: true
+
+    schedule: "*/30 * * * *"
+
+    env:
+      - name: AWS_ENDPOINT_URL
+        value: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
+
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: gen3-user-yaml
+            key: AWS_ACCESS_KEY_ID
+
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: gen3-user-yaml
+            key: AWS_SECRET_ACCESS_KEY
+
+    userYamlS3Path: "s3://gen3-user-yaml--d605646d-2f9b-425a-a22c-268700cc4374/user.yaml"
