@@ -14,11 +14,14 @@ kubectl edit configmap argocd-cm -n argocd
 
   oidc.config: |
     name: Keycloak
-    issuer: http://keycloak.44.203.188.20.nip.io/realms/genome
-    clientID: argocd
+    issuer: http://keycloak.44.203.188.20.nip.io/realms/infrastructure
+    clientID: argocd-infra
     enablePKCEAuthentication: true
     requestedScopes:
       - openid
+      - profile
+      - email
+      - groups
 
 
 kubectl get configmap argocd-cm -n argocd -o yaml
