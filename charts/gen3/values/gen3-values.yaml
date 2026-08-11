@@ -4,15 +4,20 @@ global:
   hostname: gen3.44.203.188.20.nip.io
 
   postgres:
-    dbCreate: true
-    dbRestore: false
-    master:
-      username: postgres
-      password: "Gen3TestPostgres123!"
+  dbCreate: true
+  externalSecret: ""
+  master:
+    username: postgres
+    password: gen3-1000g-postgresql
+    host: gen3-1000g-postgresql
+    port: "5432"
 
   postgresql:
     auth:
       postgresPassword: "Gen3TestPostgres123!"
+
+  DB_HOST: gen3-1000g-postgresql
+  ES_HOST: gen3-elasticsearch-master
 
 indexd:
   defaultPrefix: "TEST/"
