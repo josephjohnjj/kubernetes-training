@@ -1,64 +1,73 @@
 global:
   dictionaryUrl: ""
 
-indexd:
-  defaultPrefix: "gen31k/"
+#indexd:
+#  defaultPrefix: "gen31k/"
+
+etl:
+  enabled: false
 
 guppy:
-  enabled: true
+  enabled: false
 
-  esEndpoint: "http://gen3-elasticsearch-master.gen3-1000g.svc:9200"
+peregrine:
+  enabled: false
 
-  # One entry per ES index Tube wrote. The `type` value is what
-  # gitops.json's explorerConfig uses as `dataType` — it must match
-  # the doc_type declared in etlMapping.yaml, NOT the index name.
-  #
-  # In our etlMapping.yaml the two mappings are:
-  #   - name: subject   type: aggregator   doc_type: subject
-  #   - name: file      type: collector    doc_type: file
-  # Tube writes ES indices using `name` (optionally with a deployment
-  # prefix); the `type` Guppy needs is the `doc_type` value.
-  # One entry per ES index Tube wrote. The `type` value is what
-  # gitops.json's explorerConfig uses as `dataType` — it must match
-  # the doc_type declared in etlMapping.yaml, NOT the index name.
-  #
-  # `_cat/indices` on this deployment shows the actual names are
-  # versioned: `subject_0`, `file_0`. Tube also creates an alias for
-  # each (e.g. `subject` -> `subject_0`); using the alias is preferred
-  # because Guppy then follows version rotations automatically.
-  # Check with: curl <es>/_cat/aliases?v
-  # If aliases exist, use the bare name (subject, file).
-  # If not, use the versioned name (subject_0, file_0).
-  indices:
-    - index: subject
-      type: subject
-    - index: file
-      type: file
-
-  # Sidecar index Tube auto-creates to tell Guppy which fields are
-  # multi-valued (arrays). On this deployment Tube created two — one
-  # per data index — so point configIndex at the one corresponding to
-  # the PRIMARY data index (subject). Per-index discovery isn't
-  # supported in this Guppy version; the single configIndex value
-  # below is used for both indices.
-  configIndex: "subject-array-config" # alias preferred: "subject-array-config"
-
-  # Field in each document that Guppy checks against the caller's
-  # Arborist permissions. "auth_resource_path" is the Gen3 standard
-  # (e.g. "/programs/1KG/projects/PHASE3"). Under libre this is
-  # effectively unused, but Guppy still requires the key to be set.
-  authFilterField: "auth_resource_path"
-
-  # Only consulted when global.tierAccessLevel == "regular". Counts
-  # below this number are returned as the threshold to prevent
-  # re-identification from small bins. Harmless under libre.
-  tierAccessLimit: 1000
-
-  # Field-level encryption is for "regular" tier deployments that want
-  # to expose some columns (e.g. submitter_id) only as hashed values.
-  # We don't need it under libre.
-  enableEncryptWhitelist: false
-  encryptWhitelist: ""
+#guppy:
+#  enabled: true
+#
+#  esEndpoint: "http://gen3-elasticsearch-master.gen3-1000g.svc:9200"
+#
+#  # One entry per ES index Tube wrote. The `type` value is what
+#  # gitops.json's explorerConfig uses as `dataType` — it must match
+#  # the doc_type declared in etlMapping.yaml, NOT the index name.
+#  #
+#  # In our etlMapping.yaml the two mappings are:
+#  #   - name: subject   type: aggregator   doc_type: subject
+#  #   - name: file      type: collector    doc_type: file
+#  # Tube writes ES indices using `name` (optionally with a deployment
+#  # prefix); the `type` Guppy needs is the `doc_type` value.
+#  # One entry per ES index Tube wrote. The `type` value is what
+#  # gitops.json's explorerConfig uses as `dataType` — it must match
+#  # the doc_type declared in etlMapping.yaml, NOT the index name.
+#  #
+#  # `_cat/indices` on this deployment shows the actual names are
+#  # versioned: `subject_0`, `file_0`. Tube also creates an alias for
+#  # each (e.g. `subject` -> `subject_0`); using the alias is preferred
+#  # because Guppy then follows version rotations automatically.
+#  # Check with: curl <es>/_cat/aliases?v
+#  # If aliases exist, use the bare name (subject, file).
+#  # If not, use the versioned name (subject_0, file_0).
+#  indices:
+#    - index: subject
+#      type: subject
+#    - index: file
+#      type: file
+#
+#  # Sidecar index Tube auto-creates to tell Guppy which fields are
+#  # multi-valued (arrays). On this deployment Tube created two — one
+#  # per data index — so point configIndex at the one corresponding to
+#  # the PRIMARY data index (subject). Per-index discovery isn't
+#  # supported in this Guppy version; the single configIndex value
+#  # below is used for both indices.
+#  configIndex: "subject-array-config" # alias preferred: "subject-array-config"
+#
+#  # Field in each document that Guppy checks against the caller's
+#  # Arborist permissions. "auth_resource_path" is the Gen3 standard
+#  # (e.g. "/programs/1KG/projects/PHASE3"). Under libre this is
+#  # effectively unused, but Guppy still requires the key to be set.
+#  authFilterField: "auth_resource_path"
+#
+#  # Only consulted when global.tierAccessLevel == "regular". Counts
+#  # below this number are returned as the threshold to prevent
+#  # re-identification from small bins. Harmless under libre.
+#  tierAccessLimit: 1000
+#
+#  # Field-level encryption is for "regular" tier deployments that want
+#  # to expose some columns (e.g. submitter_id) only as hashed values.
+#  # We don't need it under libre.
+#  enableEncryptWhitelist: false
+#  encryptWhitelist: ""
 
 wts:
   oidc_client_id: "gen3-wts"
@@ -72,23 +81,23 @@ revproxy:
   service:
     type: ClusterIP
 
-etl:
-  enabled: true
-  image:
-    tube:
-      repository: quay.io/cdis/tube
-      pullPolicy: IfNotPresent
-    spark:
-      repository: quay.io/cdis/gen3-spark
-      pullPolicy: IfNotPresent
-  spark:
-    requests:
-      cpu: 0.3
-      memory: 128Mi
-    limits:
-      cpu: 1.0
-      memory: 4Gi
-  esEndpoint: "http://gen3-elasticsearch-master.gen3-1000g.svc:9200"
+#etl:
+#  enabled: true
+#  image:
+#    tube:
+#      repository: quay.io/cdis/tube
+#      pullPolicy: IfNotPresent
+#    spark:
+#      repository: quay.io/cdis/gen3-spark
+#      pullPolicy: IfNotPresent
+#  spark:
+#    requests:
+#      cpu: 0.3
+#      memory: 128Mi
+#    limits:
+#      cpu: 1.0
+#      memory: 4Gi
+#  esEndpoint: "http://gen3-elasticsearch-master.gen3-1000g.svc:9200"
 
 portal:
   enabled: true
