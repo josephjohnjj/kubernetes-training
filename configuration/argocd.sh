@@ -19,9 +19,12 @@ kubectl edit configmap argocd-cm -n argocd
     enablePKCEAuthentication: true
     requestedScopes:
       - openid
-      - profile
-      - email
-      - groups
+
+
+kubectl -n argocd patch configmap argocd-cm \
+  --type merge \
+  -p '{"data":{"oidc.config":"name: Keycloak\nissuer: http://keycloak.44.203.188.20.nip.io/realms/infrastructure\nclientID: argocd-infra\nenablePKCEAuthentication: true\nrequestedScopes:\n  - openid\nusernameClaim: preferred_username"}}'
+
 
 
 kubectl get configmap argocd-cm -n argocd -o yaml
