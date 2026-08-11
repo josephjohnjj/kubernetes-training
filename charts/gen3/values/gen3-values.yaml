@@ -1,5 +1,5 @@
 global:
-  dictionaryUrl: "https://cloud.nci.org.au:8080/gen31k-dictionary/1kg_V5noDir_bundled_schemaV2.json?AWSAccessKeyId=14cb027a5f664cf895355e0cfeac8da5&Expires=4102444799&Signature=MoujiBq%2BYPJkkt6GFy3sSBl0QZc%3D"
+  dictionaryUrl: ""
 
 indexd:
   defaultPrefix: "gen31k/"
@@ -7,7 +7,7 @@ indexd:
 guppy:
   enabled: true
 
-  esEndpoint: http://opensearch-cluster-master.opensearch.svc:9200
+  esEndpoint: "http://gen3-elasticsearch-master.gen3-1000g.svc:9200"
 
   # One entry per ES index Tube wrote. The `type` value is what
   # gitops.json's explorerConfig uses as `dataType` — it must match
@@ -88,7 +88,7 @@ etl:
     limits:
       cpu: 1.0
       memory: 4Gi
-  esEndpoint: "http://opensearch-cluster-master.opensearch.svc:9200"
+  esEndpoint: "http://gen3-elasticsearch-master.gen3-1000g.svc:9200"
 
 portal:
   enabled: true
@@ -101,3 +101,28 @@ portal:
     limits:
       cpu: 2.0
       memory: 8Gi
+
+elasticsearch:
+  image: "quay.io/cdis/elasticsearch"
+  imageTag: "7.10.2"
+  clusterName: gen3-elasticsearch
+  maxUnavailable: 0
+  singleNode: true
+  replicas: 1
+
+  clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
+
+  esConfig:
+    elasticsearch.yml: |
+
+  volumeClaimTemplate:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: gen3-elasticsearch-sc
+    resources:
+      requests:
+        storage: 30Gi
+
+  resources:
+    requests:
+      cpu: "500m"
