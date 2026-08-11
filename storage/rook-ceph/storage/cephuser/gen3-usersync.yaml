@@ -1,0 +1,8 @@
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStoreUser
+metadata:
+  name: gen3-usersync
+  namespace: rook-ceph
+spec:
+  store: gen3-store
+  displayName: "Gen3 Fence user.yaml sync"
