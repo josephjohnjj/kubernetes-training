@@ -1,0 +1,7 @@
+# Request smaller persistent volumes.
+volumeClaimTemplate:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: " gen3-elasticsearch-sc"
+  resources:
+    requests:
+      storage: 5G
