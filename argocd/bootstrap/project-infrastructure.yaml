@@ -54,6 +54,8 @@ spec:
       namespace: gen3-1000g
     - server: https://kubernetes.default.svc
       namespace: argo-workflows
+    - server: https://kubernetes.default.svc
+      namespace: elasticsearch
 
   clusterResourceWhitelist:
     - group: "*"
