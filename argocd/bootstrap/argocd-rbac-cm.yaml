@@ -17,5 +17,8 @@ data:
     p, role:infrastructure-admin, applications, update, infrastructure/*, allow
     p, role:infrastructure-admin, applications, delete, infrastructure/*, allow
 
+    # Keycloak group -> Argo CD role
+    g, infrastructure-admin, role:infrastructure-admin
+
     # Assign the Keycloak user to the infrastructure-admin role
     g, joseph.john@anu.edu.au, role:infrastructure-admin
