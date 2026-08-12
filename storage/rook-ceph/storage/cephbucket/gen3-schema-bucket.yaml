@@ -1,0 +1,8 @@
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: schema-bucket
+  namespace: gen3
+spec:
+  bucketName: schema-bucket
+  storageClassName: gen3-bucket
