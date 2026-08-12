@@ -11,7 +11,7 @@ spec:
     targetRevision: main
     path: charts/eck-stack
     helm:
-      releaseName: elasticsearch
+      releaseName: eck-stack
       valueFiles:
         - elasticsearch-values.yaml
 

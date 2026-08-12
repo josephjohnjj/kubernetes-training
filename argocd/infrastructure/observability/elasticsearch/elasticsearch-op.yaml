@@ -11,13 +11,13 @@ spec:
     targetRevision: main
     path: charts/eck-operator
     helm:
-      releaseName: elasticsearch
+      releaseName: eck-operator
       valueFiles:
-        - elasticsearch-values.yaml
+        - values.yaml
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: values.yaml
+    namespace: elasticsearch
 
   syncPolicy:
     automated:
