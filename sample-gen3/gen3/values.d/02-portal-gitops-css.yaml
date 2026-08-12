@@ -1,0 +1,146 @@
+portal:
+  gitops:
+    css: |
+      @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+      :root {
+        --blue: #34495E;        /* Baker primary deep blue */
+        --light-blue: #0077c0;  /* Lighter Baker blue for hover/accents */
+        --dark-red: #971e1f;    /* Baker dark red accent */
+        --very-dark-red: #d31145; /* Very dark red for header/footer */
+        --top-bar-green: #426b20; /* Heading color for Dev environment */
+        --font-base: "Montserrat", "Source Sans Pro", Arial, sans-serif;
+      }
+        
+
+            /* Buttons */
+      .g3-button--primary,
+      .g3-dropdown-button__button--primary,
+      .data-dictionary__switch-button--active,
+      .popup__title, .button-primary-orange {
+        background-color: var(--blue);
+      }
+
+      .g3-button--primary:hover,
+      .g3-dropdown-button__button--primary:hover,
+      .data-dictionary__switch-button:hover,
+      .button-primary-orange:hover {
+        background-color: var(--light-blue);
+      }
+
+      .g3-button--default:active, .g3-button--default:active svg path {
+        border: 1px solid var(--blue);
+        color: var(--blue);
+        fill: var(--blue);
+      }
+      /* ----------------------------------------------------- */
+      /* Nav Bars and Footer */
+      .top-bar,
+      .top-bar__header,
+      .top-icon-button.body-typo {
+        background-color: var(--blue);
+      }
+
+      .top-bar__link {
+        border-right: 2px solid #fff;
+      }
+
+      .nav-button:hover,
+      .button-active,
+      .nav-bar__link--home:hover {
+        border-bottom: 3px solid var(--blue);
+      }
+
+      .nav-bar__logo {
+        padding: 15px 0;
+      }
+
+      .nav-bar__logo-img {
+        height: 50px;
+      }
+
+      .footer,
+      .footer-container,
+      .footer__nav {
+        background-color: var(--blue);
+      }
+      /* ----------------------------------------------------- */
+
+      /* Top Bar & Navigation Elements */
+      .top-bar,\n.top-bar__header,
+      .top-icon-button.body-typo,
+      .footer,
+      .footer-container {
+        background-color: var(--blue);
+      }
+      
+      /* Selected Data Explorer Tabs */
+      .filter-group__tab--selected,
+      .g3-filter-group__tab--selected {
+        background-color: var(--blue);
+        color: #fff;
+      }
+
+
+      /* layout row */
+      .percentage-bar-chart__content {
+        display: flex !important;
+        align-items: flex-start;
+        width: 100%;
+      }
+
+      /* Chart side (2 parts) minum 60% width */
+      .percentage-bar-chart__chart {
+        flex: 2 1 0;
+        min-width: 60%;
+
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      .percentage-bar-chart__chart .recharts-responsive-container {
+        width: 100% !important;
+      }
+
+      .percentage-bar-chart__chart .recharts-wrapper {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+      }
+
+      /* Legend side: smaller (1 part) */
+      .percentage-bar-chart__legend {
+        flex: 1 1 0;
+      }
+
+      /* Legend layout */
+      .percentage-bar-chart__ul {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr); /* 4 Columns */
+        gap: 6px 12px;
+
+        padding: 0;
+        margin: 0;
+        list-style: none;
+
+        align-content: start;
+      }
+
+      /* Legend items */
+      .percentage-bar-chart__legend-item {
+        margin: 0 !important;
+        padding: 2px 0 !important;
+        line-height: 1.2;
+
+        display: flex;
+        align-items: center;
+      }
+
+
+      # /* Red Text For Dev 1000 Genomes TExt */
+      # a.nav-bar__link.nav-bar__link--home {
+      #   color: red !important;
+      # }
+
+      # h1.login-page__title {
+      #   color: red !important;
+      # }

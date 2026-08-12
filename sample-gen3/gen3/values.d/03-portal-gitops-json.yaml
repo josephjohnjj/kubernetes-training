@@ -1,0 +1,291 @@
+portal:
+  gitops:
+    json: |
+      {
+        "_comment": "Gen3 frontend (data-portal) gitops config for the 1000 Genomes data commons. Renders against the Elasticsearch indices produced by etlMapping.yaml: 'subject' and 'file'. Index names below assume the deployment manifest prepends no extra prefix; if your manifest sets one (e.g. '1kg_'), update the guppyConfig.dataType values accordingly.",
+
+        "title": "Gen3 1000 Genomes Data Portal",
+        "subTitle": "Phenotype, pedigree, and joint-called variants from the 1000 Genomes Project",
+        "graphql": {
+          "boardCounts": [
+            {
+              "graphql": "_subject_count",
+              "name": "Subject",
+              "plural": "Subjects"
+            },
+            {
+              "graphql": "_vcf_file_count",
+              "name": "VCF File",
+              "plural": "VCF Files"
+            },
+            {
+              "graphql": "_supplement_count",
+              "name": "Supplement",
+              "plural": "Supplements"
+            }
+          ],
+          "chartCounts": [
+            { "graphql": "_subject_count", "name": "Subjects" },
+            { "graphql": "_vcf_file_count", "name": "VCF Files" }
+          ],
+          "projectDetails": [
+            { "graphql": "_subject_count", "name": "Subjects" },
+            { "graphql": "_vcf_file_count", "name": "VCF Files" },
+            { "graphql": "_supplement_count", "name": "Supplements" }
+          ]
+        },
+
+        "components": {
+          "appName": "Gen3 1000 Genomes Data Commons",
+
+          "index": {
+            "introduction": {
+              "heading": "Gen3 1000 Genomes Data Commons",
+              "text": "Explore phenotype, pedigree, and joint-called variant data from the 1000 Genomes Project. Build cohorts on the Exploration page and export them as a download manifest or a PFB.",
+              "link": "/explorer",
+              "buttonText": "Explore Data"
+            },
+            "buttons": [
+              {
+                "name": "Define Data Field",
+                "icon": "data-field-define",
+                "link": "/DD",
+                "body": "The Gen3 1000 Genomes Data Commons defines the data model fields by category and node. Find the field of interest, learn how it is defined, and see which values are allowed.",
+                "label": "Define Data",
+                "color": "#4b5196"
+              },
+              {
+                "name": "Explore Data",
+                "icon": "exploration",
+                "link": "/explorer",
+                "body": "Filter the 1000 Genomes cohort by population, super-population, sex, and family. Inspect the VCF shard inventory in the File tab. Build a cohort and export it as a manifest or a PFB.",
+                "label": "Explore Data",
+                "color": "#4b5196"
+              }
+            ]
+          },
+
+          "navigation": {
+            "title": "1000 Genomes",
+            "items": [
+              { "icon": "dictionary", "link": "/DD", "name": "Dictionary" },
+              { "icon": "exploration", "link": "/explorer", "name": "Exploration" },
+              { "icon": "profile", "link": "/identity", "name": "Profile" }
+            ]
+          },
+
+          "topBar": {
+            "items": [
+              { "link": "https://www.internationalgenome.org/", "name": "About 1000 Genomes" },
+              { "link": "/submission", "name": "Submit Data" }
+            ]
+          },
+
+          "login": {
+            "title": "Gen3 1000 Genomes Data Commons",
+            "subTitle": "Sign in to explore phenotype and variant data from the 1000 Genomes Project.",
+            "text": "The 1000 Genomes data is made available for research use under the terms set out by the International Genome Sample Resource (IGSR).",
+            "contact": "For access questions, contact your data commons administrator."
+          },
+
+          "footerLogos": [
+            {
+              "src": "/src/img/gen3.png",
+              "href": "https://gen3.org/",
+              "alt": "NCI 1000 Genomes Gen3 Environment"
+            },
+            {
+              "src": "/dex/static/logo-white-background.jpg",
+              "href": "https://www.nci.org.au",
+              "alt": "NCI"
+            }
+          ],
+          "categorical9Colors": [
+            "#3283c8", "#7ec500", "#ad91ff", "#f4b940", "#e74c3c",
+            "#05b8ee", "#ff7f00", "#26d9b1", "#c97287"
+          ],
+          "categorical2Colors": ["#3283c8", "#7ec500"]
+        },
+
+        "featureFlags": {
+          "explorer": true,
+          "explorerPublic": true,
+          "discovery": false
+        },
+
+        "explorerConfig": [
+          {
+            "tabTitle": "Subject",
+            "charts": {
+              "pop": {
+                "chartType": "stackedBar",
+                "title": "Subjects by Population"
+              },
+              "reg": {
+                "chartType": "stackedBar",
+                "title": "Subjects by Super-Population"
+              },
+              "sexf": {
+                "chartType": "stackedBar",
+                "title": "Subjects by Sex"
+              }
+            },
+            "filters": {
+              "tabs": [
+                {
+                  "title": "Demographics",
+                  "fields": ["pop", "reg", "sexf", "phase3"]
+                },
+                {
+                  "title": "Family",
+                  "fields": ["fid", "pid", "mid"]
+                },
+                {
+                  "title": "Project",
+                  "fields": ["project_id", "project_code", "program_name"]
+                }
+              ]
+            },
+            "table": {
+              "enabled": true,
+              "fields": [
+                "submitter_id",
+                "fid",
+                "sexf",
+                "pop",
+                "reg",
+                "phase3",
+                "genomic_variant_set_count",
+                "vcf_file_count"
+              ]
+            },
+            "buttons": [
+              {
+                "enabled": true,
+                "type": "manifest",
+                "title": "Download Manifest",
+                "leftIcon": "datafile",
+                "rightIcon": "download",
+                "fileName": "1kg-manifest.json"
+              },
+              {
+                "enabled": true,
+                "type": "export-to-pfb",
+                "title": "Export to PFB",
+                "leftIcon": "datafile",
+                "rightIcon": "export",
+                "fileName": "1kg-subjects.pfb"
+              }
+            ],
+            "dropdowns": {},
+            "guppyConfig": {
+              "dataType": "subject",
+              "nodeCountTitle": "Subjects",
+              "fieldMapping": [
+                { "field": "submitter_id", "name": "Subject ID" },
+                { "field": "fid", "name": "Family ID" },
+                { "field": "pid", "name": "Paternal ID" },
+                { "field": "mid", "name": "Maternal ID" },
+                { "field": "sexf", "name": "Sex" },
+                { "field": "pop", "name": "Population" },
+                { "field": "reg", "name": "Super-Population" },
+                { "field": "phase3", "name": "Phase 3 Resequencing" },
+                { "field": "vcf_file_count", "name": "VCF File Count" },
+                { "field": "genomic_variant_set_count", "name": "Callset Count" },
+                { "field": "project_id", "name": "Project ID" },
+                { "field": "project_code", "name": "Project Code" },
+                { "field": "project_name", "name": "Project Name" },
+                { "field": "program_name", "name": "Program" }
+              ],
+              "manifestMapping": {
+                "_comment": "Tube's collector cannot emit a per-file set of subject_submitter_ids (see etlMapping.yaml note), so the Subject-tab manifest export joins file<->subject on project_id instead. With a single-project deployment this returns every VCF shard the cohort lives in. Revisit if/when multi-project loading is added.",
+                "resourceIndexType": "file",
+                "resourceIdField": "object_id",
+                "referenceIdFieldInResourceIndex": "project_id",
+                "referenceIdFieldInDataIndex": "project_id"
+              },
+              "accessibleFieldCheckList": ["project_id"],
+              "accessibleValidationField": "project_id"
+            }
+          },
+
+          {
+            "tabTitle": "File",
+            "charts": {
+              "chromosome": {
+                "chartType": "stackedBar",
+                "title": "VCF Shards by Chromosome"
+              }
+            },
+            "filters": {
+              "tabs": [
+                {
+                  "title": "File",
+                  "fields": ["data_format", "data_type", "data_category", "file_state"]
+                },
+                {
+                  "title": "Variants",
+                  "fields": ["chromosome"]
+                },
+                {
+                  "title": "Project",
+                  "fields": ["project_id"]
+                }
+              ]
+            },
+            "table": {
+              "enabled": true,
+              "fields": [
+                "file_name",
+                "file_size",
+                "data_format",
+                "data_type",
+                "chromosome",
+                "object_id"
+              ]
+            },
+            "buttons": [
+              {
+                "enabled": true,
+                "type": "manifest",
+                "title": "Download Manifest",
+                "leftIcon": "datafile",
+                "rightIcon": "download",
+                "fileName": "1kg-file-manifest.json"
+              },
+              {
+                "enabled": true,
+                "type": "export-to-pfb",
+                "title": "Export to PFB",
+                "leftIcon": "datafile",
+                "rightIcon": "export",
+                "fileName": "1kg-files.pfb"
+              }
+            ],
+            "guppyConfig": {
+              "dataType": "file",
+              "nodeCountTitle": "Files",
+              "downloadAccessor": "object_id",
+              "fieldMapping": [
+                { "field": "file_name", "name": "File Name" },
+                { "field": "file_size", "name": "File Size" },
+                { "field": "md5sum", "name": "MD5" },
+                { "field": "data_format", "name": "Format" },
+                { "field": "data_type", "name": "Data Type" },
+                { "field": "data_category", "name": "Data Category" },
+                { "field": "chromosome", "name": "Chromosome" },
+                { "field": "object_id", "name": "GUID" },
+                { "field": "tbi_file_name", "name": ".tbi Index File" }
+              ],
+              "manifestMapping": {
+                "resourceIndexType": "file",
+                "resourceIdField": "object_id",
+                "referenceIdFieldInResourceIndex": "object_id",
+                "referenceIdFieldInDataIndex": "object_id"
+              },
+              "accessibleFieldCheckList": ["project_id"],
+              "accessibleValidationField": "project_id"
+            }
+          }
+        ]
+      }

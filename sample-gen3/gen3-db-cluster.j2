@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: Cluster
+metadata:
+  name: gen3-db-cluster
+  namespace: gen3-db
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:13
+  logLevel: debug
+
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required
+
+  postgresql:
+    parameters:
+      shared_buffers: "512MB"
+
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "2"
+    limits:
+      memory: "1Gi"
+      cpu: "2"
+
+  bootstrap:
+    initdb:
+      database: gen3db
+      owner: gen3db
+      secret:
+        name: gen3db-secret
+      postInitSQL:
+        - ALTER USER gen3db CREATEDB CREATEROLE;
+
+  backup:
+    barmanObjectStore:
+      destinationPath: "s3://{{ gen3_backup_bucket }}/database"
+      endpointURL: "{{ s3_host_base }}"
+      s3Credentials:
+        accessKeyId:
+          name: s3-creds
+          key: "ACCESS_KEY_ID"
+        secretAccessKey:
+          name: s3-creds
+          key: "ACCESS_SECRET_KEY"
+      wal:
+        compression: gzip
+
+
+    retentionPolicy: "7d"
+
+
+  superuserSecret:
+    name: superuser-secret
+
+  enableSuperuserAccess: true
+
+  storage:
+    storageClass: csi-cinder-sc-delete
+    size: 50Gi
+
+  monitoring:
+    enablePodMonitor: true

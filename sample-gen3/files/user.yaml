@@ -1,0 +1,127 @@
+# =====================================================================
+# user.yaml — Gen3 authorization config (Arborist)
+# =====================================================================
+
+authz:
+
+  # -----------------------------------------------------------------
+  # Resources — hierarchical authorization tree
+  # -----------------------------------------------------------------
+  resources:
+
+    - name: programs
+      subresources:
+        - name: NCIGuardians
+          subresources:
+            - name: projects
+              subresources:
+                - name: PathFinder
+                # Add future projects here
+
+    - name: open
+
+    # ✅ REQUIRED for file upload (Fence checks this)
+    - name: data_file
+
+
+  # -----------------------------------------------------------------
+  # Roles — sets of permissions (service + method)
+  # -----------------------------------------------------------------
+  roles:
+
+    - id: admin
+      description: Full administrative access across all Gen3 services
+      permissions:
+        - id: full_access
+          action:
+            service: '*'
+            method: '*'
+
+    - id: reader
+      description: Read-only access
+      permissions:
+        - id: peregrine_reader
+          action: { service: peregrine, method: read }
+        - id: guppy_reader
+          action: { service: guppy, method: read }
+        - id: fence_reader
+          action: { service: fence, method: read }
+        - id: indexd_reader
+          action: { service: indexd, method: read }
+
+    - id: submitter
+      description: Metadata submitter (Sheepdog)
+      permissions:
+        - id: sheepdog_create
+          action: { service: sheepdog, method: create }
+        - id: sheepdog_update
+          action: { service: sheepdog, method: update }
+        - id: sheepdog_delete
+          action: { service: sheepdog, method: delete }
+
+    - id: file_uploader
+      description: Upload files via Fence
+      permissions:
+        - id: file_upload
+          action:
+            service: fence
+            method: file_upload
+
+
+  # -----------------------------------------------------------------
+  # Policies — bind roles to resources
+  # -----------------------------------------------------------------
+  policies:
+
+    - id: NCIGuardians_admin
+      description: Full access across NCIGuardians program
+      role_ids:
+        - admin
+        - submitter
+        - file_uploader
+      resource_paths:
+        - /programs/NCIGuardians
+        - /data_file   # ✅ critical for upload
+
+    - id: NCIGuardians_reader
+      description: Read-only access to NCIGuardians
+      role_ids:
+        - reader
+      resource_paths:
+        - /programs/NCIGuardians
+
+
+  # -----------------------------------------------------------------
+  # Default policy sets
+  # -----------------------------------------------------------------
+  anonymous_policies:
+    - NCIGuardians_reader
+
+  all_users_policies: []
+
+
+# =====================================================================
+# Users — assign policies to actual accounts
+# =====================================================================
+users:
+
+  warren.kaplan@anu.edu.au:
+    policies:
+      - NCIGuardians_admin
+
+  david.peters@anu.edu.au:
+    policies:
+      - NCIGuardians_admin
+
+  conrad@biocommons.org.au:
+    policies:
+      - NCIGuardians_admin
+
+  zhuochen.wu@anu.edu.au:
+    policies:
+      - NCIGuardians_admin
+
+  joseph.john@anu.edu.au:
+    policies:
+      - NCIGuardians_admin
+

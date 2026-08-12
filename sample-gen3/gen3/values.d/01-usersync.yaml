@@ -1,0 +1,25 @@
+  ## Sync AuthZ user.yaml 
+  fence:
+    usersync:
+      usersync: true
+      # The cron schedule expression to use in the usersync cron job
+      # Runs every 30 minutes by default.
+      schedule: "*/5 * * * *"
+      
+      # Set Access Keys for the user yaml process
+      # This relies on the secret aws-creds
+      env:
+        - name: AWS_ENDPOINT_URL
+          value: "https://cloud.nci.org.au:8080"
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-creds
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-creds
+              key: AWS_SECRET_ACCESS_KEY
+
+      userYamlS3Path: "s3://gen31k-user-yaml/user.yaml"
