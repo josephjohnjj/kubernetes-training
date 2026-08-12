@@ -7,7 +7,7 @@ global:
 
   postgres:
     dbCreate: true
-    #externalSecret: postgres-dbcreds
+    externalSecret: postgres-dbcreds
     master:
       host: gen3-db-cluster-rw.gen3-db
       database: gen3db
