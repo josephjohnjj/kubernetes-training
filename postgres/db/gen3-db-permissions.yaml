@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gen3-db-permissions
+  namespace: gen3-db
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: postgres-permissions
+          image: postgres:13
+          env:
+            - name: PGHOST
+              value: gen3-db-cluster-rw.gen3-db.svc.cluster.local
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: superuser-secret
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: superuser-secret
+                  key: password
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              for db in \
+                sheepdog_gen3 \
+                fence_gen3 \
+                arborist_gen3 \
+                audit_gen3 \
+                indexd_gen3 \
+                metadata_gen3 \
+                peregrine_gen3 \
+                wts_gen3
+              do
+                echo "Configuring $db"
+
+                psql -d "$db" -c \
+                  "ALTER SCHEMA public OWNER TO gen3db;"
+
+                psql -d "$db" -c \
+                  "GRANT ALL ON SCHEMA public TO gen3db;"
+              done
