@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: elasticsearch-operator
+  namespace: argocd
+spec:
+  project: infrastructure
+
+  source:
+    repoURL: https://github.com/josephjohnjj/kubernetes-training.git
+    targetRevision: main
+    path: charts/eck-operator
+    helm:
+      releaseName: elasticsearch
+      valueFiles:
+        - elasticsearch-values.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: values.yaml
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true
