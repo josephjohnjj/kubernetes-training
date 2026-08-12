@@ -1,5 +1,5 @@
 global:
-  dictionaryUrl: "https://cloud.nci.org.au:8080/gen31k-dictionary/1kg_V5noDir_bundled_schemaV2.json?AWSAccessKeyId=14cb027a5f664cf895355e0cfeac8da5&Expires=4102444799&Signature=MoujiBq%2BYPJkkt6GFy3sSBl0QZc%3D"
+  dictionaryUrl: "https://s3.amazonaws.com/dictionary-artifacts/datadictionary/develop/schema.json"
 
 indexd:
   defaultPrefix: "gen31k/"
@@ -41,7 +41,7 @@ guppy:
   # the PRIMARY data index (subject). Per-index discovery isn't
   # supported in this Guppy version; the single configIndex value
   # below is used for both indices.
-  configIndex: "subject-array-config"  # alias preferred: "subject-array-config"
+  configIndex: "subject-array-config" # alias preferred: "subject-array-config"
 
   # Field in each document that Guppy checks against the caller's
   # Arborist permissions. "auth_resource_path" is the Gen3 standard
@@ -60,7 +60,6 @@ guppy:
   enableEncryptWhitelist: false
   encryptWhitelist: ""
 
-
 wts:
   oidc_client_id: "yI2HX9rDQuQ1GbxnjlNDhdL4QAj9SQTLR0KzTzUA"
   oidc_client_secret: "8EN5QLyiBePkNSl5kTxfQYrbPbwF9hC7X4vL165wcpOGe2IPNTU196R"
@@ -72,7 +71,6 @@ revproxy:
     className: "nginx"
   service:
     type: ClusterIP
-
 
 etl:
   enabled: true
@@ -106,4 +104,3 @@ portal:
   extraImages:
     - name: nci-300x300.jpg
       url: https://gen31k.nci.org.au/dex/static/logo-white-background.jpg
-

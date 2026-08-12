@@ -1,5 +1,5 @@
 global:
-  dictionaryUrl: "https://cloud.nci.org.au:8080/gen31k-dictionary/1kg_V5noDir_bundled_schemaV2.json?AWSAccessKeyId=14cb027a5f664cf"
+  dictionaryUrl: "https://s3.amazonaws.com/dictionary-artifacts/datadictionary/develop/schema.json"
 
   hostname: gen3.44.203.188.20.nip.io
 
