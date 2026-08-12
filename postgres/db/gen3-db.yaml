@@ -34,21 +34,21 @@ spec:
       postInitSQL:
         - ALTER USER gen3db CREATEDB CREATEROLE;
 
-  backup:
-    barmanObjectStore:
-      destinationPath: "s3://{{ gen3_backup_bucket }}/database"
-      endpointURL: "{{ s3_host_base }}"
-      s3Credentials:
-        accessKeyId:
-          name: s3-creds
-          key: "ACCESS_KEY_ID"
-        secretAccessKey:
-          name: s3-creds
-          key: "ACCESS_SECRET_KEY"
-      wal:
-        compression: gzip
-
-    retentionPolicy: "7d"
+  #backup:
+  #  barmanObjectStore:
+  #    destinationPath: "s3://{{ gen3_backup_bucket }}/database"
+  #    endpointURL: "{{ s3_host_base }}"
+  #    s3Credentials:
+  #      accessKeyId:
+  #        name: s3-creds
+  #        key: "ACCESS_KEY_ID"
+  #      secretAccessKey:
+  #        name: s3-creds
+  #        key: "ACCESS_SECRET_KEY"
+  #    wal:
+  #      compression: gzip
+  #
+  #  retentionPolicy: "7d"
 
   superuserSecret:
     name: superuser-secret
@@ -56,7 +56,7 @@ spec:
   enableSuperuserAccess: true
 
   storage:
-    storageClass: csi-cinder-sc-delete
+    storageClass: cnpg-sc
     size: 50Gi
 
   monitoring:
