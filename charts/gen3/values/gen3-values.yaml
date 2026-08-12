@@ -87,8 +87,8 @@ fence:
 
 sheepdog:
   postgres:
-    username: sheepdog_gen3
-    password: sheepdog_gen3
+    username: gen3db
+    password: gen3db-password
 
 arborist:
   postgres:
