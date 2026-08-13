@@ -153,6 +153,8 @@ spec:
                   value: hdfs://localhost:9000
                 - name: ES_URL
                   value: {{ .Values.esEndpoint  }}
+                - name: ES_USE_SSL
+                  value: "true"
                 - name: HADOOP_HOST
                   value: localhost
                 - name: HADOOP_CLIENT_OPTS
