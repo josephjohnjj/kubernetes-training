@@ -188,8 +188,11 @@ metadata:
 
 indexd:
   postgres:
-    username: indexd_gen3
-    password: indexd_gen3
+    host: "gen3-db-cluster-rw.gen3-db.svc.cluster.local"
+    port: "5432"
+    database: "indexd_gen3"
+    username: "indexd_gen3"
+    password: "indexd_gen3"
 
 peregrine:
   postgres:
