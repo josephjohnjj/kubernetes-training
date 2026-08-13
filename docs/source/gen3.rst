@@ -18,4 +18,5 @@ by Argo CD.
    gen3/keycloak
    gen3/nginx_ingress
    gen3/components
+   gen3/sample_data_flow
    gen3/readiness
