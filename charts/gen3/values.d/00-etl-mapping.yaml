@@ -43,7 +43,7 @@ etl:
     limits:
       cpu: 1.0
       memory: 4Gi
-  esEndpoint: "http://opensearch-cluster-master.opensearch.svc:9200"
+  esEndpoint: "https://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
   etlMapping:
     #-->mappings - etlMapping25MayV5.yaml start ========================
     mappings:
