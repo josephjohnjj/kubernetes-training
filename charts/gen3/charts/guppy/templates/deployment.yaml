@@ -77,6 +77,8 @@ spec:
               value: /guppy/guppy_config.json
             - name: GEN3_ES_ENDPOINT
               value: {{ default "gen3-elasticsearch-master:9200"  .Values.esEndpoint }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /guppy/certs/ca.crt
             {{- with .Values.arboristUrl }}
             - name: GEN3_ARBORIST_ENDPOINT
               value: {{ . }}
