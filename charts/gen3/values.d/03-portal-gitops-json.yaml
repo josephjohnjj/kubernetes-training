@@ -9,29 +9,29 @@ portal:
         "graphql": {
           "boardCounts": [
             {
-              "graphql": "_subject_count",
-              "name": "Subject",
-              "plural": "Subjects"
+              "graphql": "_case_count",
+              "name": "Case",
+              "plural": "Cases"
             },
             {
-              "graphql": "_vcf_file_count",
-              "name": "VCF File",
-              "plural": "VCF Files"
+              "graphql": "_sample_count",
+              "name": "Sample",
+              "plural": "Samples"
             },
             {
-              "graphql": "_supplement_count",
-              "name": "Supplement",
-              "plural": "Supplements"
+              "graphql": "_aliquot_count",
+              "name": "Aliquot",
+              "plural": "Aliquots"
             }
           ],
           "chartCounts": [
-            { "graphql": "_subject_count", "name": "Subjects" },
-            { "graphql": "_vcf_file_count", "name": "VCF Files" }
+            { "graphql": "_case_count", "name": "Cases" },
+            { "graphql": "_sample_count", "name": "Samples" }
           ],
           "projectDetails": [
-            { "graphql": "_subject_count", "name": "Subjects" },
-            { "graphql": "_vcf_file_count", "name": "VCF Files" },
-            { "graphql": "_supplement_count", "name": "Supplements" }
+            { "graphql": "_case_count", "name": "Cases" },
+            { "graphql": "_sample_count", "name": "Samples" },
+            { "graphql": "_aliquot_count", "name": "Aliquots" }
           ]
         },
 
