@@ -136,7 +136,8 @@ ambassador:
 guppy:
   enabled: true
 
-  esEndpoint: "https://elasticsearch-es-http.elasticsearch.svc:9200"
+  #esEndpoint: "https://elasticsearch-es-http.elasticsearch.svc:9200"
+  esEndpoint: "https://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
 
   extraEnv:
     - name: NODE_EXTRA_CA_CERTS
