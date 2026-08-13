@@ -302,6 +302,24 @@ kubectl get secret cnpg-cluster-superuser -n cnpg-database -o jsonpath="{.data.p
 
 ```
 
+Postgres DB
+--------------
+
+```bash
+sheepdog_gen3=# ALTER SCHEMA public OWNER TO gen3db;
+ALTER SCHEMA
+sheepdog_gen3=# GRANT ALL ON SCHEMA public TO gen3db;
+GRANT
+sheepdog_gen3=# \dn+
+                       List of schemas
+  Name  | Owner  | Access privileges |      Description       
+--------+--------+-------------------+------------------------
+ public | gen3db | gen3db=UC/gen3db +| standard public schema
+        |        | =UC/gen3db        | 
+(1 row)
+```
+
+
 
 
 
