@@ -155,6 +155,10 @@ spec:
                   value: {{ .Values.esEndpoint  }}
                 - name: ES_USE_SSL
                   value: "true"
+                - name: ES_AUTH_USERNAME
+                  value: "elastic"
+                - name: ES_AUTH_PASSWORD
+                  value: "41RTyGJQEi63tmab18jCiJLE"
                 - name: HADOOP_HOST
                   value: localhost
                 - name: HADOOP_CLIENT_OPTS
