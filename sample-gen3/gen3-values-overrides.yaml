@@ -1,0 +1,124 @@
+global:
+  # dictionaryUrl is now in the gen3 argocd repo
+  hostname: "{{gen3_hostname}}"
+  dev: false
+
+  postgres:
+    dbCreate: true
+    externalSecret: postgres-dbcreds
+    master:
+      host: gen3-db-cluster-rw.gen3-db
+      database: gen3db
+      port: 5432
+
+fence:
+  postgres:
+    username: fence_gen3
+    password: { { gen3_db_role_password | b64decode } }
+
+  # Configure S3 Access Keys values for the user sync process
+  # Other configuraiton is in the usersync values file in argocd repo
+  usersync:
+    userYamlS3AccessKeyId: "{{s3_access_key | b64decode}}"
+    userYamlS3SecretAccessKey: "{{s3_secret_key | b64decode}}"
+
+  # I added the service account section because in this version by default the
+  # eks.amazonaws.com/role-arn is set to null which breaks the deployment
+  serviceAccount:
+    create: true
+    annotations:
+      eks.amazonaws.com/role-arn: ""
+    name: "fence-service-sa"
+
+  indexd:
+    url: "http://indexd-service"
+    basic_auth: false
+    defaultPrefix: "gen31k/"
+
+  # Access Keys for the FENCE_CONFIG section.
+  extraEnv:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: aws-creds
+          key: AWS_ACCESS_KEY_ID
+
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: aws-creds
+          key: AWS_SECRET_ACCESS_KEY
+
+  FENCE_CONFIG:
+    OPENID_CONNECT:
+      generic_oidc_idp:
+        name: "NCI LDAP"
+        discovery_url: "{{gen3_oidc_discovery}}"
+        redirect_url: "{% raw %}{{BASE_URL}}/login/generic_oidc_idp/login{% endraw %}"
+        client_id: "{{gen3_oidc_client_id}}"
+        client_secret: ZXhhbXBsZS1hcHAtc2VjcmV0
+        user_id_field: "email"
+        scope: "openid email"
+    LOGIN_OPTIONS:
+      - name: "NCI LDAP Login"
+        description: "{{gen3_env_title}}"
+        idp: generic_oidc_idp
+    DEFAULT_LOGIN_IDP: generic_oidc_idp
+    DATA_UPLOAD_BUCKET: "{{gen3_upload_bucket}}"
+    ENABLE_S3_UPLOAD: true
+    AWS_CREDENTIALS:
+      "CRED1":
+        aws_access_key_id: "{{s3_access_key | b64decode}}"
+        aws_secret_access_key: "{{s3_secret_key | b64decode}}"
+    S3_BUCKETS:
+      "{{gen3_upload_bucket}}":
+        cred: "CRED1"
+        endpoint_url: "{{s3_host_base}}"
+
+sheepdog:
+  postgres:
+    username: sheepdog_gen3
+    password: { { gen3_db_role_password | b64decode } }
+
+arborist:
+  postgres:
+    username: arborist_gen3
+    password: { { gen3_db_role_password | b64decode } }
+
+indexd:
+  postgres:
+    username: indexd_gen3
+    password: { { gen3_db_role_password | b64decode } }
+
+metadata:
+  postgres:
+    username: metadata_gen3
+    password: { { gen3_db_role_password | b64decode } }
+
+peregrine:
+  postgres:
+    username: peregrine_gen3
+    password: { { gen3_db_role_password | b64decode } }
+
+metadata:
+  postgres:
+    username: metadata_gen3
+    password: { { gen3_db_role_password | b64decode } }
+
+audit:
+  postgres:
+    username: audit_gen3
+    password: { { gen3_db_role_password | b64decode } }
+
+  # I added the service account section because in this version by default the
+  # eks.amazonaws.com/role-arn is set to null which breaks the deployment
+  serviceAccount:
+    create: true ## Testing ##
+    annotations:
+      eks.amazonaws.com/role-arn: ""
+    name: "audit-service-sa"
+
+wts:
+  postgres:
+    username: wts_gen3
+    password: { { gen3_db_role_password | b64decode } }
