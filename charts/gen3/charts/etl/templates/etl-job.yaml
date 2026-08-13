@@ -152,7 +152,15 @@ spec:
                 - name: HADOOP_URL
                   value: hdfs://localhost:9000
                 - name: ES_URL
-                  value: {{ .Values.esEndpoint  }}
+                  value: {{ .Values.esEndpoint | quote }}
+                - name: ES_PORT
+                  value: {{ .Values.esPort | default "9200" | quote }}
+                - name: ES_USE_SSL
+                  value: {{ .Values.esUseSsl | default false | quote }}
+                - name: ES_AUTH_USERNAME
+                  value: {{ .Values.esUser | quote }}
+                - name: ES_AUTH_PASSWORD
+                  value: {{ .Values.esPassword | quote }}
                 - name: HADOOP_HOST
                   value: localhost
                 - name: HADOOP_CLIENT_OPTS

@@ -45,7 +45,16 @@ etl:
       memory: 4Gi
   #esEndpoint: "https://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
   #esEndpoint: "elasticsearch-es-http.elasticsearch.svc:9200"
+  #esEndpoint: "elasticsearch-es-http.elasticsearch.svc"
+  #esEndpoint: "http://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
+  #esPort: "9200"
+  esUser: "elastic"
+  esPassword: "41RTyGJQEi63tmab18jCiJLE"
+  esUseSsl: false
   esEndpoint: "elasticsearch-es-http.elasticsearch.svc"
+  esPort: "9200"
+  #esUseSsl: true
+  #esUser: "elastic"
   etlMapping:
     #-->mappings - etlMapping25MayV5.yaml start ========================
     mappings:
