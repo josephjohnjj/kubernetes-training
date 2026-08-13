@@ -223,7 +223,8 @@ guppy:
   enabled: true
 
   #esEndpoint: "https://elasticsearch-es-http.elasticsearch.svc:9200"
-  esEndpoint: "https://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
+  #esEndpoint: "https://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
+  esEndpoint: "http://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
 
   extraEnv:
     - name: NODE_EXTRA_CA_CERTS
@@ -234,27 +235,31 @@ guppy:
       value: "elastic"
     - name: GEN3_ES_PASSWORD
       value: "41RTyGJQEi63tmab18jCiJLE"
-    - name: NODE_TLS_REJECT_UNAUTHORIZED
-      value: "0"
+    #- name: NODE_TLS_REJECT_UNAUTHORIZED
+    #  value: "0"
 
-  volumes:
-    - name: elasticsearch-ca
-      secret:
-        secretName: elasticsearch-ca
-        items:
-          - key: ca.crt
-            path: ca.crt
+  #volumes:
+  #  - name: elasticsearch-ca
+  #    secret:
+  #      secretName: elasticsearch-ca
+  #      items:
+  #        - key: ca.crt
+  #          path: ca.crt
+  #
+  #volumeMounts:
+  #  - name: elasticsearch-ca
+  #    readOnly: true
+  #    mountPath: /guppy/certs
 
-  volumeMounts:
-    - name: elasticsearch-ca
-      readOnly: true
-      mountPath: /guppy/certs
+  #indices:
+  #  - index: subject
+  #    type: subject
+  #  - index: file
+  #    type: file
 
-  indices:
-    - index: subject
-      type: subject
-    - index: file
-      type: file
+   indices:
+    - index: dev_case
+      type: case
 
   # Sidecar index Tube auto-creates to tell Guppy which fields are
   # multi-valued (arrays). On this deployment Tube created two — one
@@ -262,7 +267,9 @@ guppy:
   # the PRIMARY data index (subject). Per-index discovery isn't
   # supported in this Guppy version; the single configIndex value
   # below is used for both indices.
-  configIndex: "subject-array-config" # alias preferred: "subject-array-config"
+  #configIndex: "subject-array-config" # alias preferred: "subject-array-config"
+  configIndex: "dev_case-array-config"
+
 
   # Field in each document that Guppy checks against the caller's
   # Arborist permissions. "auth_resource_path" is the Gen3 standard
