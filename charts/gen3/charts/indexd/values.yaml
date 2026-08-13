@@ -272,8 +272,8 @@ volumeMounts:
     subPath: "gunicorn.conf.py"
   - name: "gunicorn-conf"
     readOnly: true
-    mountPath: "/indexd/deployment/wsgi/chart_wsgi.py"
-    subPath: "chart_wsgi.py"
+    mountPath: "/indexd/deployment/wsgi/wsgi.py"
+    subPath: "wsgi.py"
 
 # -- (list) Environment variables to pass to the container
 env:

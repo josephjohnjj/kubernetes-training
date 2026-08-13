@@ -4,7 +4,7 @@ metadata:
   name: gunicorn-conf
 data:
   gunicorn.conf.py: |
-    wsgi_app = "deployment.wsgi.chart_wsgi:application"
+    wsgi_app = "deployment.wsgi.wsgi:application"
     bind = "0.0.0.0:8000"
     workers = 5
     preload_app = True
@@ -13,7 +13,7 @@ data:
     timeout = 300
     keepalive = 2
     keepalive_timeout = 5
-  chart_wsgi.py: |
+  wsgi.py: |
     from indexd.app import get_app
     from indexd.local_settings import settings
 
