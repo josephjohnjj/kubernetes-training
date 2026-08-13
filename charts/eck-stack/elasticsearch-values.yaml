@@ -62,6 +62,10 @@ eck-kibana:
           # This deploys a load balancer in a cloud service provider, where supported.
           #
           type: ClusterIP
+
+      tls:
+        selfSignedCertificate:
+          disabled: true
       # tls:
       #   selfSignedCertificate:
       #     subjectAltNames:
