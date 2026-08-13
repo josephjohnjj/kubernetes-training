@@ -1,0 +1,129 @@
+GEN3 Secret Templates
+=====================
+
+These templates document required object names and keys without embedding real
+credentials. Prefer External Secrets, Sealed Secrets, or another encrypted
+GitOps mechanism. Plain Kubernetes Secret manifests with ``stringData`` are not
+encrypted and must not be committed after substitution.
+
+Generate values
+---------------
+
+Generate each password independently with an approved password manager. Never
+reuse the example values already present in the repository.
+
+CloudNativePG bootstrap owner
+-----------------------------
+
+Create ``gen3db-secret`` in ``gen3-db`` because the CloudNativePG Cluster
+references this exact name::
+
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: gen3db-secret
+     namespace: gen3-db
+   type: kubernetes.io/basic-auth
+   stringData:
+     username: gen3db
+     password: REPLACE_WITH_GENERATED_PASSWORD
+
+CloudNativePG superuser
+-----------------------
+
+::
+
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: superuser-secret
+     namespace: gen3-db
+   type: kubernetes.io/basic-auth
+   stringData:
+     username: postgres
+     password: REPLACE_WITH_GENERATED_PASSWORD
+
+GEN3 database-creation credentials
+----------------------------------
+
+The GEN3 chart expects ``postgres-dbcreds`` in ``gen3``. Confirm the precise
+keys required by the rendered chart before applying this template::
+
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: postgres-dbcreds
+     namespace: gen3
+   type: Opaque
+   stringData:
+     username: postgres
+     password: REPLACE_WITH_SUPERUSER_PASSWORD
+     host: gen3-db-cluster-rw.gen3-db.svc.cluster.local
+     port: "5432"
+     database: postgres
+
+Keep exactly one desired definition of this Secret. The repository currently
+contains duplicate ``postgres-dbcreds`` manifests and must be corrected.
+
+Ceph S3 bucket credentials
+--------------------------
+
+Rook normally creates the ``users-bucket`` Secret when its ObjectBucketClaim is
+bound. Fence expects these keys::
+
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: users-bucket
+     namespace: gen3
+   type: Opaque
+   stringData:
+     AWS_ACCESS_KEY_ID: REPLACE_WITH_RADOSGW_ACCESS_KEY
+     AWS_SECRET_ACCESS_KEY: REPLACE_WITH_RADOSGW_SECRET_KEY
+
+Do not create a competing Secret if the OBC provisioner already owns it.
+
+Fence OIDC client secret
+------------------------
+
+Store the Keycloak client secret separately and wire it into the chart using an
+existing Secret or external-secret option::
+
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: fence-keycloak-oidc
+     namespace: gen3
+   type: Opaque
+   stringData:
+     client-secret: REPLACE_WITH_KEYCLOAK_CLIENT_SECRET
+
+Keycloak database Secret
+------------------------
+
+::
+
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: keycloak-db
+     namespace: keycloak
+   type: Opaque
+   stringData:
+     db-password: REPLACE_WITH_GENERATED_PASSWORD
+
+Safe creation from a terminal
+-----------------------------
+
+Avoid placing passwords directly in shell history. Create a protected temporary
+file, use ``kubectl create secret --from-file`` where the chart supports it, or
+use the organization's secret-management CLI. Verify only metadata and key
+names::
+
+   kubectl -n gen3-db get secret gen3db-secret superuser-secret
+   kubectl -n gen3 get secret postgres-dbcreds users-bucket
+   kubectl -n gen3 get secret postgres-dbcreds \
+     -o jsonpath='{range $k,$v := .data}{$k}{"\n"}{end}'
+
+Never include ``-o yaml`` output for Secrets in tickets or documentation.
+
