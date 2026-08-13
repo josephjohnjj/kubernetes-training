@@ -260,7 +260,7 @@ guppy:
   #  - index: file
   #    type: file
 
-   indices:
+  indices:
     - index: dev_case
       type: case
 
@@ -272,7 +272,6 @@ guppy:
   # below is used for both indices.
   #configIndex: "subject-array-config" # alias preferred: "subject-array-config"
   configIndex: "dev_case-array-config"
-
 
   # Field in each document that Guppy checks against the caller's
   # Arborist permissions. "auth_resource_path" is the Gen3 standard
