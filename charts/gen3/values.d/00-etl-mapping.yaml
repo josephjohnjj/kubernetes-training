@@ -55,149 +55,33 @@ etl:
   esPort: "9200"
   #esUseSsl: true
   #esUser: "elastic"
-  etlMapping:
-    #-->mappings - etlMapping25MayV5.yaml start ========================
-    mappings:
-      # ---------------------------------------------------------------
-      # SUBJECT INDEX
-      # ---------------------------------------------------------------
-      - name: subject
-        doc_type: subject
-        type: aggregator
-        root: subject
 
-        # Direct fields on the subject node. submitter_id is the Gen3
-        # system identifier and carries the kgpe.csv 'id' value. project_id
-        # is also a Gen3 system property (namespaced "PROGRAM-PROJECT" code)
-        # that Tube does NOT auto-promote — declaring it here makes it land
-        # on the subject doc, which the explorer's project filter and the
-        # gitops manifestMapping both need.
+  etlMapping:
+    mappings:
+      - name: dev_case
+        doc_type: case
+        type: aggregator
+        root: case
+
         props:
           - name: submitter_id
           - name: project_id
-          - name: fid
-          - name: pid
-          - name: mid
-          - name: sexf
-          - name: pop
-          - name: reg
-          - name: phase3
-          - name: state
-          - name: created_datetime
-          - name: updated_datetime
+          - name: disease_type
+          - name: primary_site
 
-        # Walk UP the graph to project, then up again to program. Project is
-        # subject's PARENT (project --one_to_many--> subject), so its fields
-        # must be pulled via parent_props, NOT flatten_props. Tube's
-        # flatten_props is reserved for downstream child nodes; using it for
-        # an upstream node sends get_direct_children() off-graph and produces
-        # the KeyError seen in earlier runs.
-        #
-        # Bracketed syntax: path[out_name:src,out_name2,...]
-        #   project_id                       — kept as project_id (system prop)
-        #   project_code                     — renamed from project.code
-        #   project_name                     — renamed from project.name
-        #   project_dbgap_accession_number   — renamed from project.dbgap_accession_number
-        #   program_name                     — renamed from program.name (one more hop up)
-        # NOTE: project_id is deliberately NOT in the bracketed extraction
-        # below. It's already declared as a direct `prop` above (and Sheepdog
-        # populates it automatically as "<program>-<project>"). Including it
-        # here would cause Tube to collect it as a set (array<string>) and
-        # then try to join the parent DF back to subject on
-        # (project_id [string] = project_id [array<string>]),
-        # which Spark refuses with:
-        #   AnalysisException: cannot resolve '(project_id = project_id)'
-        #   due to data type mismatch: ... (string and array<string>).
-        parent_props:
-          - path: projects[project_code:code,project_name:name,project_dbgap_accession_number:dbgap_accession_number].programs[program_name:name]
-
-        # Counts computed across the many_to_many gvs membership and the
-        # one_to_many gvs -> vcf_file edge.
-        aggregated_props:
-          - name: genomic_variant_set_count
-            path: genomic_variant_sets
-            fn: count
-          - name: vcf_file_count
-            path: genomic_variant_sets.vcf_files
-            fn: count
-
-        # NOTE: joining_props is intentionally NOT used here.
-        # Tube's joining_props emits a Spark `USING <col>` equi-join, which
-        # only works when the same scalar column already exists in BOTH
-        # indices. For subject <-> file the relationship is many_to_many via
-        # genomic_variant_set, so no single shared scalar key exists. The
-        # subject -> file lookup is instead driven from the file side: the
-        # file index carries a `subject_submitter_ids` set (see below), and
-        # the gitops manifestMapping resolves cohorts through that array.
-
-      # ---------------------------------------------------------------
-      # FILE INDEX
-      # ---------------------------------------------------------------
-      # Single collector index covering every node with category: data_file
-      # (vcf_file shards and the kgpe.csv supplement). The base props are
-      # the common file fields; per-subtype extras are layered in via
-      # injecting_props so the index isn't sparse.
-      - name: file
-        doc_type: file
-        type: collector
-        root: None
-        category: data_file
-
-        props:
-          - name: object_id
-          - name: submitter_id
-          - name:
-              project_id # system prop; collector mappings don't
-              # auto-promote it, so we declare it explicitly
-              # — required by the gitops Subject-tab
-              # manifestMapping which joins file<->subject
-              # on project_id.
-          - name: file_name
-          - name: file_size
-          - name: md5sum
-          - name: state
-          - name: file_state
-          - name: data_format
-          - name: data_type
-          - name: data_category
-          - name: created_datetime
-          - name: updated_datetime
-
-        # Project ancestry: both vcf_file and supplement chain up to project.
-        # vcf_file goes vcf_file -> genomic_variant_set -> project.
-        # supplement goes supplement -> project directly.
-        # parent_props handles either path by listing both expressions.
-        # NOTE: project_id is deliberately NOT in either bracket — same
-        # string-vs-array<string> Spark join issue described in the subject
-        # mapping above. project_id is a system prop on every data_file
-        # node, so it's already on the file doc without us having to fetch
-        # it from the project node here.
-        parent_props:
-          - path: genomic_variant_sets.projects.programs[program_name:name]
-          - path: projects.programs[program_name:name]
-
-        # Per-source-node extras. vcf_file adds its native fields only —
-        # chromosome and the two tbi label fields. supplement adds nothing.
-        #
-        # NOTE: variant_set_name and genome_build (which live on the parent
-        # genomic_variant_set node) were previously pulled here via
-        # dotted-path src (src: genomic_variant_sets.variant_set_name).
-        # Tube treats a dotted-path src as needing aggregation and the
-        # collector's type-inference leaves p.type = None for it, which
-        # crashes flatten_nested_list at injection/new_translator.py:238.
-        # They have been removed; if the file index needs callset and
-        # genome-build columns later, the cleanest route is a post-ETL
-        # enrichment step (or a separate aggregator index rooted on
-        # genomic_variant_set that the explorer queries alongside file).
-        injecting_props:
-          vcf_file:
+        flatten_props:
+          - path: demographics
             props:
-              - name: chromosome
-              - name: tbi_file_name
-              - name: tbi_md5sum
+              - name: gender
+              - name: race
+              - name: ethnicity
+              - name: year_of_birth
 
-          supplement:
-            # No subtype-specific properties — the base props cover it.
-            props: []
+        aggregated_props:
+          - name: _samples_count
+            path: samples
+            fn: count
 
-#-->mappings end ======================================================
+          - name: _aliquots_count
+            path: samples.aliquots
+            fn: count
