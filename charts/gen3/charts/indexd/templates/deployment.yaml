@@ -78,6 +78,12 @@ spec:
                   name: indexd-dbcreds
                   key: database
                   optional: false
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: indexd-dbcreds
+                  key: port
+                  optional: false
             - name: DBREADY
               valueFrom:
                 secretKeyRef:
