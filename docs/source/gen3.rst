@@ -17,4 +17,5 @@ by Argo CD.
    gen3/postgres
    gen3/keycloak
    gen3/nginx_ingress
+   gen3/components
    gen3/readiness
