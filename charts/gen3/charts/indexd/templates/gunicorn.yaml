@@ -13,8 +13,3 @@ data:
     timeout = 300
     keepalive = 2
     keepalive_timeout = 5
-  wsgi.py: |
-    from indexd.app import get_app
-    from indexd.local_settings import settings
-
-    application = get_app(settings)

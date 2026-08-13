@@ -187,12 +187,31 @@ metadata:
     password: metadata_gen3
 
 indexd:
+  image:
+    repository: quay.io/cdis/indexd
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+
   postgres:
     host: "gen3-db-cluster-rw.gen3-db.svc.cluster.local"
     port: "5432"
     database: "indexd_gen3"
     username: "indexd_gen3"
     password: "indexd_gen3"
+
+  # Indexd 2025.08 imports local_settings from its /indexd working directory.
+  volumeMounts:
+    - name: uwsgi-config
+      mountPath: /etc/uwsgi/uwsgi.ini
+      subPath: uwsgi.ini
+    - name: config-volume
+      readOnly: true
+      mountPath: /indexd/local_settings.py
+      subPath: local_settings.py
+    - name: gunicorn-conf
+      readOnly: true
+      mountPath: /indexd/deployment/wsgi/gunicorn.conf.py
+      subPath: gunicorn.conf.py
 
 peregrine:
   postgres:
