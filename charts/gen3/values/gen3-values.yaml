@@ -305,7 +305,8 @@ etl:
     limits:
       cpu: 1.0
       memory: 4Gi
-  esEndpoint: "https://elasticsearch-es-http.elasticsearch.svc:9200"
+  #esEndpoint: "elasticsearch-es-http.elasticsearch.svc:9200"
+  esEndpoint: "elasticsearch-es-http.elasticsearch.svc"
 
 portal:
   enabled: true

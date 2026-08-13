@@ -103,6 +103,17 @@ spec:
                   hdfs dfs -mkdir /result
                   hdfs dfs -mkdir /jars
                   hdfs dfs -mkdir /archive
+
+                  mkdir -p /home/gen3/.ssh
+                  chmod 700 /home/gen3/.ssh
+                  if [ ! -f /home/gen3/.ssh/id_rsa ]; then
+                    ssh-keygen -q -t rsa -N "" -f /home/gen3/.ssh/id_rsa
+                  fi
+                  cp /home/gen3/.ssh/id_rsa.pub /home/gen3/.ssh/authorized_keys
+                  chmod 600 /home/gen3/.ssh/authorized_keys
+                  chown -R gen3:gen3 /home/gen3/.ssh
+
+                  /usr/sbin/sshd
                   /spark/sbin/start-all.sh
                   while true; do [ -f "/usr/share/pod/exit" ] && { exit_code=$(cat /usr/share/pod/exit); [[ "$exit_code" =~ ^[0-9]+$ ]] && echo "Exiting with exit code $exit_code" && exit $exit_code || exit 1; }; sleep 5; done
             - name: tube

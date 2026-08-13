@@ -43,7 +43,9 @@ etl:
     limits:
       cpu: 1.0
       memory: 4Gi
-  esEndpoint: "https://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
+  #esEndpoint: "https://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
+  #esEndpoint: "elasticsearch-es-http.elasticsearch.svc:9200"
+  esEndpoint: "elasticsearch-es-http.elasticsearch.svc"
   etlMapping:
     #-->mappings - etlMapping25MayV5.yaml start ========================
     mappings:
