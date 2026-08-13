@@ -1,0 +1,237 @@
+# Environment-specific configuration for the Gen3 2025.08 release train.
+# Component images are deliberately pinned together; do not use master/latest.
+
+global:
+  dictionaryUrl: "https://s3.amazonaws.com/dictionary-artifacts/datadictionary/develop/schema.json"
+  hostname: gen3.44.203.188.20.nip.io
+  dev: false
+  tierAccessLevel: libre
+  postgres:
+    dbCreate: true
+    externalSecret: postgres-dbcreds
+    master:
+      host: gen3-db-cluster-rw.gen3-db
+      database: gen3db
+      port: "5432"
+
+ambassador:
+  enabled: false
+
+arborist:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  postgres:
+    username: arborist_gen3
+    password: arborist_gen3
+
+audit:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  postgres:
+    username: audit_gen3
+    password: audit_gen3
+  serviceAccount:
+    create: true
+    annotations:
+      eks.amazonaws.com/role-arn: ""
+    name: audit-service-sa
+
+fence:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  postgres:
+    host: gen3-db-cluster-rw.gen3-db
+    port: "5432"
+    database: fence_gen3
+    username: fence_gen3
+    password: fence_gen3
+  usersync:
+    userYamlS3AccessKeyId: "MOZX23BEC0RAAD35MBJ7"
+    userYamlS3SecretAccessKey: "SeDmbojoOCywDvncu87YqJjGNAPxcOoguNIBzMC7"
+    userYamlS3Endpoint: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
+    userYamlS3Path: "s3://users-bucket/users.yaml"
+  serviceAccount:
+    create: true
+    annotations:
+      eks.amazonaws.com/role-arn: ""
+    name: fence-service-sa
+  indexd:
+    url: "http://indexd-service"
+    basic_auth: false
+    defaultPrefix: "gen31k/"
+  extraEnv: &fenceEnv
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: users-bucket
+          key: AWS_ACCESS_KEY_ID
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: users-bucket
+          key: AWS_SECRET_ACCESS_KEY
+    - name: AWS_ENDPOINT_URL
+      value: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
+    - name: DB
+      value: "postgresql://fence_gen3:fence_gen3@gen3-db-cluster-rw.gen3-db:5432/fence_gen3"
+    - name: FENCE_DB
+      value: "postgresql://fence_gen3:fence_gen3@gen3-db-cluster-rw.gen3-db:5432/fence_gen3"
+  env: *fenceEnv
+  FENCE_CONFIG:
+    OPENID_CONNECT:
+      generic_oidc_idp:
+        name: Keycloak
+        discovery_url: "http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration"
+        redirect_url: "http://gen3.44.203.188.20.nip.io/login/generic_oidc_idp/login"
+        client_id: gen3-fence
+        client_secret: "10FeHUHWPu8G2xFE1pTcQ5B8hTbBcmfT"
+        user_id_field: email
+        scope: "openid email"
+    LOGIN_OPTIONS:
+      - name: Keycloak Login
+        description: Gen3 Keycloak Login
+        idp: generic_oidc_idp
+    DEFAULT_LOGIN_IDP: generic_oidc_idp
+
+guppy:
+  enabled: true
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  esEndpoint: "http://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
+  indices:
+    - index: dev_case
+      type: case
+  configIndex: dev_case-array-config
+  authFilterField: auth_resource_path
+  enableEncryptWhitelist: false
+  encryptWhitelist: ""
+
+# Guppy exits if its configured indices do not exist. This PreSync hook creates
+# empty indices once; Tube can then replace/populate them after data is loaded.
+elasticsearchBootstrap:
+  enabled: true
+  endpoint: "http://elasticsearch-es-http.elasticsearch.svc:9200"
+  username: elastic
+  password: "41RTyGJQEi63tmab18jCiJLE"
+  index: dev_case
+  configIndex: dev_case-array-config
+
+hatchery:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+
+indexd:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  postgres:
+    host: gen3-db-cluster-rw.gen3-db.svc.cluster.local
+    port: "5432"
+    database: indexd_gen3
+    username: indexd_gen3
+    password: indexd_gen3
+  # Indexd 2025.08 imports this module from its /indexd working directory.
+  volumeMounts:
+    - name: uwsgi-config
+      mountPath: /etc/uwsgi/uwsgi.ini
+      subPath: uwsgi.ini
+    - name: config-volume
+      readOnly: true
+      mountPath: /indexd/local_settings.py
+      subPath: local_settings.py
+    - name: gunicorn-conf
+      readOnly: true
+      mountPath: /indexd/deployment/wsgi/gunicorn.conf.py
+      subPath: gunicorn.conf.py
+
+manifestservice:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+
+metadata:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  postgres:
+    username: metadata_gen3
+    password: metadata_gen3
+
+peregrine:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  postgres:
+    username: peregrine_gen3
+    password: peregrine_gen3
+
+portal:
+  enabled: true
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  annotations:
+    secret.reloader.stakater.com/reload: portal-config
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
+
+revproxy:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  hostname: gen3.44.203.188.20.nip.io
+  ingress:
+    enabled: false
+    className: nginx
+  service:
+    type: ClusterIP
+
+sheepdog:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  postgres:
+    username: gen3db
+    password: gen3db-password
+
+wts:
+  image:
+    tag: "2025.08"
+    pullPolicy: IfNotPresent
+  postgres:
+    username: wts_gen3
+    password: wts_gen3
+
+etl:
+  enabled: true
+  image:
+    tube:
+      tag: "2025.08"
+      pullPolicy: IfNotPresent
+    spark:
+      tag: "2025.08"
+      pullPolicy: IfNotPresent
+  esEndpoint: elasticsearch-es-http.elasticsearch.svc
+  esPort: "9200"
+  esUseSsl: false
+  esUser: elastic
+  esPassword: "41RTyGJQEi63tmab18jCiJLE"
+  resources:
+    tube:
+      requests:
+        cpu: 300m
+        memory: 128Mi
+    spark:
+      requests:
+        cpu: 300m
+        memory: 128Mi

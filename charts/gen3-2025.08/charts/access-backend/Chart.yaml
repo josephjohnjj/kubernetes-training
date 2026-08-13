@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: 1.6.1
+dependencies:
+- name: common
+  repository: file://../common
+  version: 0.1.20
+description: A Helm chart for Kubernetes
+name: access-backend
+type: application
+version: 0.1.8

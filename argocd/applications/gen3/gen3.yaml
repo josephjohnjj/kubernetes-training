@@ -10,7 +10,8 @@ spec:
   source:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     targetRevision: HEAD
-    path: charts/gen3
+    # Vendored official gen3-0.2.21 chart, aligned with 2025.08 images.
+    path: charts/gen3-2025.08
 
     helm:
       releaseName: gen3

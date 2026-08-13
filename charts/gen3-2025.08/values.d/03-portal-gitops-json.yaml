@@ -1,0 +1,129 @@
+portal:
+  gitops:
+    json: |
+      {
+        "title": "Gen3 Proof of Concept",
+        "subTitle": "A small generic Gen3 data commons",
+        "graphql": {
+          "boardCounts": [
+            { "graphql": "_case_count", "name": "Case", "plural": "Cases" },
+            { "graphql": "_sample_count", "name": "Sample", "plural": "Samples" },
+            { "graphql": "_aliquot_count", "name": "Aliquot", "plural": "Aliquots" }
+          ],
+          "chartCounts": [
+            { "graphql": "_case_count", "name": "Cases" },
+            { "graphql": "_sample_count", "name": "Samples" }
+          ],
+          "projectDetails": "boardCounts"
+        },
+        "components": {
+          "appName": "Gen3 Proof of Concept",
+          "index": {
+            "introduction": {
+              "heading": "Gen3 Proof of Concept",
+              "text": "Explore a small generic case dataset loaded through Sheepdog and indexed by Tube.",
+              "link": "/explorer",
+              "buttonText": "Explore Data"
+            },
+            "buttons": [
+              {
+                "name": "Dictionary",
+                "icon": "data-field-define",
+                "link": "/DD",
+                "body": "Browse the generic Gen3 data dictionary.",
+                "label": "View Dictionary"
+              },
+              {
+                "name": "Explore Data",
+                "icon": "data-explore",
+                "link": "/explorer",
+                "body": "Filter and inspect the proof-of-concept case records.",
+                "label": "Explore Data"
+              }
+            ]
+          },
+          "navigation": {
+            "title": "Gen3 POC",
+            "items": [
+              { "icon": "dictionary", "link": "/DD", "name": "Dictionary" },
+              { "icon": "exploration", "link": "/explorer", "name": "Exploration" },
+              { "icon": "profile", "link": "/identity", "name": "Profile" }
+            ]
+          },
+          "topBar": {
+            "items": [
+              { "link": "/submission", "name": "Submit Data" },
+              { "link": "https://gen3.org/resources/user", "name": "Documentation" }
+            ]
+          },
+          "login": {
+            "title": "Gen3 Proof of Concept",
+            "subTitle": "Explore a generic Gen3 dataset",
+            "text": "Sign in to submit and explore proof-of-concept data.",
+            "contact": "Contact your Gen3 administrator for access."
+          }
+        },
+        "requiredCerts": [],
+        "featureFlags": {
+          "explorer": true,
+          "explorerPublic": true,
+          "noIndex": true,
+          "analysis": false,
+          "discovery": false
+        },
+        "explorerConfig": [
+          {
+            "tabTitle": "Cases",
+            "charts": {
+              "project_id": { "chartType": "count", "title": "Projects" },
+              "disease_type": { "chartType": "bar", "title": "Disease Type" },
+              "primary_site": { "chartType": "bar", "title": "Primary Site" },
+              "gender": { "chartType": "pie", "title": "Gender" }
+            },
+            "filters": {
+              "tabs": [
+                {
+                  "title": "Case",
+                  "fields": [
+                    "project_id",
+                    "disease_type",
+                    "primary_site",
+                    "gender",
+                    "race",
+                    "ethnicity"
+                  ]
+                }
+              ]
+            },
+            "table": {
+              "enabled": true,
+              "fields": [
+                "submitter_id",
+                "project_id",
+                "disease_type",
+                "primary_site",
+                "gender",
+                "race",
+                "ethnicity"
+              ]
+            },
+            "buttons": [],
+            "dropdowns": {},
+            "guppyConfig": {
+              "dataType": "case",
+              "nodeCountTitle": "Cases",
+              "fieldMapping": [
+                { "field": "submitter_id", "name": "Case ID" },
+                { "field": "project_id", "name": "Project" },
+                { "field": "disease_type", "name": "Disease Type" },
+                { "field": "primary_site", "name": "Primary Site" },
+                { "field": "gender", "name": "Gender" },
+                { "field": "race", "name": "Race" },
+                { "field": "ethnicity", "name": "Ethnicity" }
+              ],
+              "accessibleFieldCheckList": ["project_id"],
+              "accessibleValidationField": "project_id"
+            }
+          }
+        ]
+      }

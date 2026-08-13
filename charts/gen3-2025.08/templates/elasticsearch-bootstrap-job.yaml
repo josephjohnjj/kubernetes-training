@@ -1,0 +1,54 @@
+{{- if .Values.elasticsearchBootstrap.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "gen3.fullname" . }}-elasticsearch-bootstrap
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        app: gen3job
+        component: elasticsearch-bootstrap
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+        - name: create-indices
+          image: curlimages/curl:8.15.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: ES_ENDPOINT
+              value: {{ .Values.elasticsearchBootstrap.endpoint | quote }}
+            - name: ES_USER
+              value: {{ .Values.elasticsearchBootstrap.username | quote }}
+            - name: ES_PASSWORD
+              value: {{ .Values.elasticsearchBootstrap.password | quote }}
+            - name: DATA_INDEX
+              value: {{ .Values.elasticsearchBootstrap.index | quote }}
+            - name: CONFIG_INDEX
+              value: {{ .Values.elasticsearchBootstrap.configIndex | quote }}
+          command: ["/bin/sh", "-ec"]
+          args:
+            - |
+              until curl -fsS -u "${ES_USER}:${ES_PASSWORD}" "${ES_ENDPOINT}/_cluster/health" >/dev/null; do
+                echo "Waiting for Elasticsearch..."
+                sleep 5
+              done
+
+              curl -fsS -u "${ES_USER}:${ES_PASSWORD}" \
+                -X PUT "${ES_ENDPOINT}/${DATA_INDEX}" \
+                -H "Content-Type: application/json" \
+                -d '{"mappings":{"dynamic":true,"properties":{"submitter_id":{"type":"keyword"},"project_id":{"type":"keyword"},"disease_type":{"type":"keyword"},"primary_site":{"type":"keyword"},"gender":{"type":"keyword"},"race":{"type":"keyword"},"ethnicity":{"type":"keyword"},"auth_resource_path":{"type":"keyword"}}}}' \
+                || test "$(curl -sS -o /dev/null -w '%{http_code}' -u "${ES_USER}:${ES_PASSWORD}" "${ES_ENDPOINT}/${DATA_INDEX}")" = "200"
+
+              curl -fsS -u "${ES_USER}:${ES_PASSWORD}" \
+                -X PUT "${ES_ENDPOINT}/${CONFIG_INDEX}" \
+                -H "Content-Type: application/json" \
+                -d '{"mappings":{"properties":{"array":{"type":"keyword"},"timestamp":{"type":"date"}}}}' \
+                || test "$(curl -sS -o /dev/null -w '%{http_code}' -u "${ES_USER}:${ES_PASSWORD}" "${ES_ENDPOINT}/${CONFIG_INDEX}")" = "200"
+{{- end }}

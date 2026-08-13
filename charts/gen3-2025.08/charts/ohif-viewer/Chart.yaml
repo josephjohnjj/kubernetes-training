@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: master
+dependencies:
+- name: common
+  repository: file://../common
+  version: 0.1.20
+description: A Helm chart for gen3 Ohif Viewer
+name: ohif-viewer
+type: application
+version: 0.1.3

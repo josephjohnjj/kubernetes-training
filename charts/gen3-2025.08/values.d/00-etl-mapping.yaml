@@ -1,0 +1,82 @@
+# =====================================================================
+# etlMapping.yaml — Gen3 Tube ETL configuration for the 1000 Genomes Gen3
+#
+# Builds two Elasticsearch indices off the graph defined in
+# 1kg_V5noDir_bundled_schema.json:
+#
+#   1) "subject"  - one doc per subject (aggregator on the subject node).
+#                   Carries phenotype + family fields, a flattened
+#                   project/program ancestry, and a vcf_file_count
+#                   computed via genomic_variant_set membership.
+#
+#   2) "file"     - one doc per data_file node (collector on
+#                   category: data_file). Captures both vcf_file shards
+#                   and supplement files; per-node-type extras (chromosome,
+#                   tbi info) are layered in via injecting_props.
+#
+# The mapping follows the standard Gen3 Tube format:
+#   props            — direct fields on the root node
+#   flatten_props    — pull fields from a directly linked node
+#   parent_props     — walk N hops up the graph (path-style)
+#   aggregated_props — count/sum/set across nested edges
+#   joining_props    — cross-index join (subject doc pulls file fields)
+#   injecting_props  — for collector indices, per-source-node extras
+#
+# Index name prefix is normally set in your gitops/manifest config
+# (e.g. "1kg_genomes_") and prepended to the values in `name:` below.
+# =====================================================================
+
+etl:
+  enabled: true
+
+  image:
+    tube:
+      repository: quay.io/cdis/tube
+      pullPolicy: IfNotPresent
+      tag: "2025.08"
+    spark:
+      repository: quay.io/cdis/gen3-spark
+      pullPolicy: IfNotPresent
+      tag: "2025.08"
+  #esEndpoint: "https://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
+  #esEndpoint: "elasticsearch-es-http.elasticsearch.svc:9200"
+  #esEndpoint: "elasticsearch-es-http.elasticsearch.svc"
+  #esEndpoint: "http://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
+  #esPort: "9200"
+  esUser: "elastic"
+  esPassword: "41RTyGJQEi63tmab18jCiJLE"
+  esUseSsl: false
+  esEndpoint: "elasticsearch-es-http.elasticsearch.svc"
+  esPort: "9200"
+  #esUseSsl: true
+  #esUser: "elastic"
+
+  etlMapping:
+    mappings:
+      - name: dev_case
+        doc_type: case
+        type: aggregator
+        root: case
+
+        props:
+          - name: submitter_id
+          - name: project_id
+          - name: disease_type
+          - name: primary_site
+
+        flatten_props:
+          - path: demographics
+            props:
+              - name: gender
+              - name: race
+              - name: ethnicity
+              - name: year_of_birth
+
+        aggregated_props:
+          - name: _samples_count
+            path: samples
+            fn: count
+
+          - name: _aliquots_count
+            path: samples.aliquots
+            fn: count
