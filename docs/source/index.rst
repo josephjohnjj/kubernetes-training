@@ -10,7 +10,8 @@ This repository covers the fundamentals of Kubernetes along with infrastructure-
 Contents
 --------
 
-The documentation is organized into two main sections- Training and Infrastructure. Training covers Kubernetes concepts, components, and hands-on 
+The documentation is organized into three main sections: Training,
+Infrastructure, and GEN3. Training covers Kubernetes concepts, components, and hands-on
 tutorials. Infrastructure provides guides for setting up a production-ready Kubernetes cluster.
 
 
@@ -33,3 +34,12 @@ Infratructure
 
    infrastructure
    references
+
+GEN3
+====
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   gen3
