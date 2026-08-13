@@ -11,20 +11,23 @@ global:
     master:
       host: gen3-db-cluster-rw.gen3-db
       database: gen3db
-      port: 5432
+      port: "5432"
 
 fence:
   postgres:
+    host: gen3-db-cluster-rw.gen3-db
+    port: "5432"
+    database: fence_gen3
     username: fence_gen3
     password: fence_gen3
 
   # Configure S3 Access Keys values for the user sync process
   # Other configuraiton is in the usersync values file in argocd repo
   usersync:
-    userYamlS3AccessKeyId: "DKO7YQDEUG5WND5M2ZUF"
-    userYamlS3SecretAccessKey: "mpHu0Bz2pFZds0ezwNQX1l9UAC3NuLGeQSNCRCFl"
+    userYamlS3AccessKeyId: "MOZX23BEC0RAAD35MBJ7"
+    userYamlS3SecretAccessKey: "SeDmbojoOCywDvncu87YqJjGNAPxcOoguNIBzMC7"
     userYamlS3Endpoint: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
-    userYamlS3Path: "s3://gen3-user-yaml--7d98910d-a1be-40f8-bf1c-414b89c41aaa/users.yaml"
+    userYamlS3Path: "s3://users-bucket/users.yaml"
 
   serviceAccount:
     create: true
@@ -50,14 +53,97 @@ fence:
     - name: AWS_ACCESS_KEY_ID
       valueFrom:
         secretKeyRef:
-          name: gen3-user-yaml
+          name: users-bucket
           key: AWS_ACCESS_KEY_ID
 
     - name: AWS_SECRET_ACCESS_KEY
       valueFrom:
         secretKeyRef:
-          name: gen3-user-yaml
+          name: users-bucket
           key: AWS_SECRET_ACCESS_KEY
+
+    - name: AWS_ENDPOINT_URL
+      value: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
+
+    - name: PGHOST
+      valueFrom:
+        secretKeyRef:
+          name: fence-dbcreds
+          key: host
+
+    - name: PGUSER
+      valueFrom:
+        secretKeyRef:
+          name: fence-dbcreds
+          key: username
+
+    - name: PGPASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: fence-dbcreds
+          key: password
+
+    - name: PGDB
+      valueFrom:
+        secretKeyRef:
+          name: fence-dbcreds
+          key: database
+
+    - name: DB
+      #value: "postgresql://$(PGUSER):$(PGPASSWORD)@$(PGHOST):5432/$(PGDB)"
+      value: "postgresql://fence_gen3:fence_gen3@gen3-db-cluster-rw.gen3-db:5432/fence_gen3"
+
+    - name: FENCE_DB
+      #value: "postgresql://$(PGUSER):$(PGPASSWORD)@$(PGHOST):5432/$(PGDB)"
+      value: "postgresql://fence_gen3:fence_gen3@gen3-db-cluster-rw.gen3-db:5432/fence_gen3"
+
+  env:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: users-bucket
+          key: AWS_ACCESS_KEY_ID
+
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: users-bucket
+          key: AWS_SECRET_ACCESS_KEY
+
+    - name: AWS_ENDPOINT_URL
+      value: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
+
+    - name: PGHOST
+      valueFrom:
+        secretKeyRef:
+          name: fence-dbcreds
+          key: host
+
+    - name: PGUSER
+      valueFrom:
+        secretKeyRef:
+          name: fence-dbcreds
+          key: username
+
+    - name: PGPASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: fence-dbcreds
+          key: password
+
+    - name: PGDB
+      valueFrom:
+        secretKeyRef:
+          name: fence-dbcreds
+          key: database
+
+    - name: DB
+      #value: "postgresql://$(PGUSER):$(PGPASSWORD)@$(PGHOST):5432/$(PGDB)"
+      value: "postgresql://fence_gen3:fence_gen3@gen3-db-cluster-rw.gen3-db:5432/fence_gen3"
+
+    - name: FENCE_DB
+      #value: "postgresql://$(PGUSER):$(PGPASSWORD)@$(PGHOST):5432/$(PGDB)"
+      value: "postgresql://fence_gen3:fence_gen3@gen3-db-cluster-rw.gen3-db:5432/fence_gen3"
 
   FENCE_CONFIG:
     OPENID_CONNECT:

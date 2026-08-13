@@ -11,13 +11,16 @@ fence:
       - name: AWS_ACCESS_KEY_ID
         valueFrom:
           secretKeyRef:
-            name: gen3-user-yaml
+            name: users-bucket
             key: AWS_ACCESS_KEY_ID
 
       - name: AWS_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
-            name: gen3-user-yaml
+            name: users-bucket
             key: AWS_SECRET_ACCESS_KEY
 
-    userYamlS3Path: "s3://gen3-user-yaml--d605646d-2f9b-425a-a22c-268700cc4374/user.yaml"
+    userYamlS3AccessKeyId: "MOZX23BEC0RAAD35MBJ7"
+    userYamlS3SecretAccessKey: "SeDmbojoOCywDvncu87YqJjGNAPxcOoguNIBzMC7"
+    userYamlS3Endpoint: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
+    userYamlS3Path: "s3://users-bucket/users.yaml"

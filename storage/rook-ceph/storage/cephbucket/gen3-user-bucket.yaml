@@ -1,8 +1,8 @@
 apiVersion: objectbucket.io/v1alpha1
 kind: ObjectBucketClaim
 metadata:
-  name: gen3-user-yaml
-  namespace: gen3-1000g
+  name: users-bucket
+  namespace: gen3
 spec:
-  generateBucketName: gen3-user-yaml-
+  bucketName: users-bucket
   storageClassName: gen3-bucket
