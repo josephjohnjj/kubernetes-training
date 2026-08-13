@@ -8,6 +8,11 @@ eck-elasticsearch:
   #
   version: 9.5.0
 
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+
   nodeSets:
     - name: default
       count: 1

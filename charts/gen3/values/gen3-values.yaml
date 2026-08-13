@@ -138,26 +138,31 @@ guppy:
 
   esEndpoint: "https://elasticsearch-es-http.elasticsearch.svc:9200"
 
-  # One entry per ES index Tube wrote. The `type` value is what
-  # gitops.json's explorerConfig uses as `dataType` — it must match
-  # the doc_type declared in etlMapping.yaml, NOT the index name.
-  #
-  # In our etlMapping.yaml the two mappings are:
-  #   - name: subject   type: aggregator   doc_type: subject
-  #   - name: file      type: collector    doc_type: file
-  # Tube writes ES indices using `name` (optionally with a deployment
-  # prefix); the `type` Guppy needs is the `doc_type` value.
-  # One entry per ES index Tube wrote. The `type` value is what
-  # gitops.json's explorerConfig uses as `dataType` — it must match
-  # the doc_type declared in etlMapping.yaml, NOT the index name.
-  #
-  # `_cat/indices` on this deployment shows the actual names are
-  # versioned: `subject_0`, `file_0`. Tube also creates an alias for
-  # each (e.g. `subject` -> `subject_0`); using the alias is preferred
-  # because Guppy then follows version rotations automatically.
-  # Check with: curl <es>/_cat/aliases?v
-  # If aliases exist, use the bare name (subject, file).
-  # If not, use the versioned name (subject_0, file_0).
+  extraEnv:
+    - name: NODE_EXTRA_CA_CERTS
+      value: /guppy/certs/ca.crt
+    #- name: NODE_OPTIONS
+    #  value: "--use-openssl-ca"
+    - name: GEN3_ES_USER
+      value: "elastic"
+    - name: GEN3_ES_PASSWORD
+      value: "41RTyGJQEi63tmab18jCiJLE"
+    - name: NODE_TLS_REJECT_UNAUTHORIZED
+      value: "0"
+
+  volumes:
+    - name: elasticsearch-ca
+      secret:
+        secretName: elasticsearch-ca
+        items:
+          - key: ca.crt
+            path: ca.crt
+
+  volumeMounts:
+    - name: elasticsearch-ca
+      readOnly: true
+      mountPath: /guppy/certs
+
   indices:
     - index: subject
       type: subject
