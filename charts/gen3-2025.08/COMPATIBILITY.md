@@ -23,7 +23,10 @@ The environment overlays make four compatibility corrections:
    existing database. That database records Alembic revision ``bff33a927a37``,
    which is present in the pinned image but absent from ``fence:2025.08``. This
    avoids both a destructive database reset and continued use of mutable
-   ``master`` while a newer compatible release is selected.
+   ``master`` while a newer compatible release is selected. A writable
+   ``emptyDir`` is mounted at ``/fence/keys/key`` so this image can derive
+   ``jwt_public_key.pem``; the private key remains a read-only Secret subPath
+   inside that directory.
 
 Argo CD uses this chart through
 `argocd/applications/gen3/gen3.yaml`. Once these repository changes reach the

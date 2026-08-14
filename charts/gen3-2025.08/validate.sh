@@ -45,6 +45,8 @@ if grep -Eq 'image:.*quay.io/cdis/(arborist|audit-service|data-portal|fence|gupp
 fi
 
 grep -q 'quay.io/cdis/fence:master@sha256:5b00f1d4c5ad1087ad39313e132a6828e1c875e5e8bff405cef4b48b1392ad75' "${rendered_file}"
+grep -q 'mountPath: /fence/keys/key' "${rendered_file}"
+grep -q 'name: fence-jwt-workdir' "${rendered_file}"
 grep -q 'mountPath: /indexd/local_settings.py' "${rendered_file}"
 grep -q 'mountPath: /indexd/deployment/wsgi/wsgi.py' "${rendered_file}"
 grep -q 'application = get_app(settings)' "${rendered_file}"
