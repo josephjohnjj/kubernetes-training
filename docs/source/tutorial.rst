@@ -22,7 +22,7 @@
    tutorial/pv_claim
    tutorial/services
    tutorial/labels
-   tutorial/linkered
+   tutorial/linkerd
    tutorial/ingress
    tutorial/scheduling
    tutorial/log.rst
