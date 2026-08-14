@@ -27,9 +27,7 @@ spec:
     namespace: gen3
 
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-
+    # Keep Gen3 synchronization manual. Several bootstrap Jobs have immutable
+    # pod templates and must not be patched by an unattended full sync.
     syncOptions:
       - CreateNamespace=true
