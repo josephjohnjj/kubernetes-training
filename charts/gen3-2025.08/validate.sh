@@ -31,6 +31,21 @@ ruby -ryaml -rjson -rbase64 -e '
   settings = Base64.decode64(indexd.dig("data", "local_settings.py"))
   raise "Indexd settings do not use PGHOST" unless settings.include?("PGHOST")
 
+  fence = documents.find do |document|
+    document["kind"] == "Secret" && document.dig("metadata", "name") == "fence-config"
+  end
+  fence_config = YAML.safe_load(fence.dig("stringData", "fence-config.yaml"))
+  idp = fence_config.dig("OPENID_CONNECT", "generic_oidc_idp")
+  raise "Fence OIDC discovery_url must be disabled" unless idp["discovery_url"].nil?
+  unless idp.dig("discovery", "authorization_endpoint") == "https://keycloak.44.203.188.20.nip.io/realms/genome/protocol/openid-connect/auth"
+    raise "Fence OIDC browser authorization endpoint is incorrect"
+  end
+  %w[token_endpoint jwks_uri userinfo_endpoint].each do |endpoint|
+    unless idp.dig("discovery", endpoint)&.start_with?("http://keycloak.keycloak.svc.cluster.local/")
+      raise "Fence OIDC #{endpoint} does not use the internal Keycloak service"
+    end
+  end
+
   bootstrap = documents.find do |document|
     document["kind"] == "Job" && document.dig("metadata", "name") == "gen3-elasticsearch-bootstrap"
   end
