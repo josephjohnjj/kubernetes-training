@@ -413,8 +413,6 @@ volumes:
   - name: fence-jwt-keys
     secret:
       secretName: "fence-jwt-keys"
-  - name: fence-jwt-workdir
-    emptyDir: {}
   - name: privacy-policy
     configMap:
       name: "privacy-policy"
@@ -473,8 +471,6 @@ volumeMounts:
     readOnly: true
     mountPath: "/fence/keys/key/jwt_private_key.pem"
     subPath: "jwt_private_key.pem"
-  - name: "fence-jwt-workdir"
-    mountPath: "/fence/keys/key"
   - name: "config-volume-public"
     readOnly: true
     mountPath: "/var/www/fence/fence-config-public.yaml"
