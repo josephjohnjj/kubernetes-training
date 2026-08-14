@@ -19,6 +19,11 @@ The environment overlays make four compatibility corrections:
    do not exist. This lets Guppy start before the first Tube run.
 5. Fence maintenance jobs inherit the same database environment as the Fence
    deployment instead of falling back to PostgreSQL on localhost.
+6. Fence is pinned to the immutable digest that originally migrated the
+   existing database. That database records Alembic revision ``bff33a927a37``,
+   which is present in the pinned image but absent from ``fence:2025.08``. This
+   avoids both a destructive database reset and continued use of mutable
+   ``master`` while a newer compatible release is selected.
 
 Argo CD uses this chart through
 `argocd/applications/gen3/gen3.yaml`. Once these repository changes reach the

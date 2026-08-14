@@ -40,7 +40,9 @@ audit:
 
 fence:
   image:
-    tag: "2025.08"
+    # The database was migrated by this formerly-master image. Pin its digest
+    # until Fence can be moved to a release containing revision bff33a927a37.
+    tag: "master@sha256:5b00f1d4c5ad1087ad39313e132a6828e1c875e5e8bff405cef4b48b1392ad75"
     pullPolicy: IfNotPresent
   postgres:
     host: gen3-db-cluster-rw.gen3-db
