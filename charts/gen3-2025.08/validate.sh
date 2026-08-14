@@ -45,6 +45,8 @@ if grep -Eq 'image:.*quay.io/cdis/(arborist|audit-service|data-portal|fence|gupp
 fi
 
 grep -q 'mountPath: /var/www/indexd/local_settings.py' "${rendered_file}"
+grep -q 'mountPath: /indexd/deployment/wsgi/wsgi.py' "${rendered_file}"
+grep -q 'application = get_app(settings)' "${rendered_file}"
 grep -q 'name: ES_PASSWORD' "${rendered_file}"
 
 ruby -ryaml -e '

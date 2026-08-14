@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: indexd-wsgi-bootstrap
+  labels:
+    {{- include "indexd.labels" . | nindent 4 }}
+data:
+  wsgi.py: |
+    import sys
+
+    sys.path.insert(0, "/var/www/indexd")
+
+    from local_settings import settings
+    from indexd import get_app
+
+    application = get_app(settings)
