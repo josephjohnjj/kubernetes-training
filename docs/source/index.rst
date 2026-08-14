@@ -43,3 +43,12 @@ GEN3
    :titlesonly:
 
    gen3
+
+Argo CD Infrastructure
+======================
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   argocd
