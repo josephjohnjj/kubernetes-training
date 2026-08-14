@@ -36,6 +36,15 @@ manual installation:
    Applications and Git-managed sources, inspect the live diff, and verify the
    exact target cluster before applying any manual command or manifest.
 
+AWS and Kubernetes Cluster
+--------------------------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   aws_cluster
+
 GEN3
 ----
 
