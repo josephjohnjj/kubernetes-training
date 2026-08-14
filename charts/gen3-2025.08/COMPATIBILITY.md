@@ -6,10 +6,10 @@ enabled Gen3 applications to the matching `2025.08` container release. The old
 
 The environment overlays make four compatibility corrections:
 
-1. Indexd settings are mounted at `/var/www/indexd/local_settings.py`, which is
-   added to the 2025.08 image's runtime import path by a chart-managed WSGI
-   bootstrap. The bootstrap passes those settings explicitly to `get_app()`;
-   without it, this image loads its localhost database defaults.
+1. Indexd settings are mounted in the image's existing `/indexd` application
+   directory and loaded by a chart-managed WSGI bootstrap. The bootstrap passes
+   those settings explicitly to `get_app()`; without it, this image loads its
+   localhost database defaults.
 2. Tube receives the Elasticsearch host, port, protocol, username, and password
    as separate environment variables.
 3. Guppy, Tube, and Portal all use the same `dev_case` index and generic case
