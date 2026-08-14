@@ -62,8 +62,10 @@ keys required by the rendered chart before applying this template::
      port: "5432"
      database: postgres
 
-Keep exactly one desired definition of this Secret. The repository currently
-contains duplicate ``postgres-dbcreds`` manifests and must be corrected.
+Keep exactly one desired definition of this Secret. The repository stores it in
+``postgres/secrets/postgres-dbcreds.yaml``. Service-specific database Secrets,
+including ``indexd-dbcreds`` and ``sheepdog-dbcreds``, are owned by the GEN3
+Helm chart and must not also be declared under ``postgres/secrets``.
 
 Ceph S3 bucket credentials
 --------------------------
@@ -126,4 +128,3 @@ names::
      -o jsonpath='{range $k,$v := .data}{$k}{"\n"}{end}'
 
 Never include ``-o yaml`` output for Secrets in tickets or documentation.
-

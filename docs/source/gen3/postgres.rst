@@ -183,24 +183,25 @@ or connection strings committed to Git. Production credentials should be
 managed through an external secret manager and referenced from Kubernetes
 Secrets.
 
-Current manifest issues to resolve
-----------------------------------
+Current manifest ownership
+--------------------------
 
-The repository currently contains credential and resource-definition problems
-that should be corrected before relying on a clean Argo CD bootstrap:
+The ``postgres/secrets`` directory contains exactly three infrastructure-owned
+Secrets:
 
-* ``postgres/db/gen3-db.yaml`` references ``gen3db-secret`` in ``gen3-db``, but
-  the file named ``postgres/secrets/gen3db-secret.yaml`` declares
-  ``postgres-dbcreds`` in ``gen3`` instead.
-* Several files under ``postgres/secrets`` declare the same
-  ``postgres-dbcreds`` resource with different types and fields. Argo CD cannot
-  safely manage multiple desired definitions for one object.
-* Passwords are currently present in repository-managed YAML and GEN3 Helm
-  values. They should be rotated and migrated to encrypted or external Secrets.
-* The CloudNativePG backup configuration is commented out. PostgreSQL streaming
-  replicas and Ceph replication do not replace backups.
+* ``gen3-owner-secret.yaml`` defines ``gen3db-secret`` in ``gen3-db``.
+* ``gen3-superuser-secret.yaml`` defines ``superuser-secret`` in ``gen3-db``.
+* ``postgres-dbcreds.yaml`` defines ``postgres-dbcreds`` in ``gen3``.
 
-Treat these as configuration defects, not as intended database architecture.
+Service-specific database Secrets are generated exclusively by the GEN3 Helm
+chart. Do not add ``indexd-dbcreds``, ``sheepdog-dbcreds``, or other
+service-specific Secrets under ``postgres/secrets`` because that gives two Argo
+CD applications ownership of the same Kubernetes object.
+
+Passwords are currently present in repository-managed YAML and GEN3 Helm
+values. They should be rotated and migrated to encrypted or external Secrets.
+The CloudNativePG backup configuration is also commented out; PostgreSQL
+streaming replicas and Ceph replication do not replace backups.
 
 Argo CD reconciliation
 ----------------------
