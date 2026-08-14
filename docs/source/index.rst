@@ -43,7 +43,8 @@ AWS and Kubernetes Cluster
    :maxdepth: 1
    :titlesonly:
 
-   aws_cluster
+   aws/aws_cluster
+   aws/manual_kubernetes_cluster
 
 GEN3
 ----

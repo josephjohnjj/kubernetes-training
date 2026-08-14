@@ -358,4 +358,3 @@ Ceph devices. After the cluster passes validation, install Argo CD and use the
 Git-managed Applications for Rook-Ceph, databases, ingress, observability, and
 GEN3. Avoid continuing with unrelated manual manifests when an Argo CD source
 already owns the resource.
-
