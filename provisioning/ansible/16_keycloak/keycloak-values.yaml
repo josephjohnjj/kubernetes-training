@@ -13,13 +13,3 @@ image:
   #repository: bitnami/keycloak
   repository: bitnamilegacy/keycloak
   tag: 26.3.3-debian-12-r0
-
-# TLS terminates at ingress-nginx. Trust its forwarded headers, keep HTTP on
-# the in-cluster hop, and publish a stable HTTPS issuer for OIDC clients.
-production: true
-proxyHeaders: xforwarded
-httpEnabled: true
-
-extraEnvVars:
-  - name: KC_HOSTNAME
-    value: "https://keycloak.44.203.188.20.nip.io"

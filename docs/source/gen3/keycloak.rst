@@ -69,10 +69,7 @@ In the Keycloak administration console:
 #. Create or federate users and ensure their email claim is populated.
 
 For HTTPS, use ``https`` consistently in the Keycloak hostname, Fence discovery
-URL, redirect URI, web origins, and Ingress TLS configuration. Keycloak trusts
-the NGINX ``X-Forwarded-*`` headers and has its public hostname fixed to
-``https://keycloak.44.203.188.20.nip.io``. HTTP remains enabled only for the
-in-cluster connection between ingress-nginx and the Keycloak Service.
+URL, redirect URI, web origins, and Ingress TLS configuration.
 
 Configure Fence
 ---------------
