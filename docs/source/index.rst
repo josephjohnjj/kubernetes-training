@@ -1,42 +1,43 @@
-Kubernetes Training
-=================================================
+GEN3 Deployment in Kubernetes
+=============================
 
-This repository covers the fundamentals of Kubernetes along with infrastructure-as-code to provision a production-ready cluster.
+This documentation describes the GEN3 2025.08 deployment on Kubernetes,
+including its application components, storage, databases, identity integration,
+sample data flow, and Argo CD infrastructure management.
 
 .. note::
 
-   Copilot agent using Claude Haiku 4.5 has been used to generate the content of this documentation. 
+   OpenAI Codex was used to help inspect the repository and generate, organize,
+   and validate portions of this documentation. The deployment owner remains
+   responsible for reviewing all commands, manifests, configuration, and
+   security-sensitive values before use.
 
-Contents
---------
+Deployment management
+---------------------
 
-The documentation is organized into three main sections: Training,
-Infrastructure, and GEN3. Training covers Kubernetes concepts, components, and hands-on
-tutorials. Infrastructure provides guides for setting up a production-ready Kubernetes cluster.
+Argo CD is the intended source of truth and deployment mechanism. Infrastructure
+and GEN3 changes should normally be made in Git, reviewed, committed, and then
+reconciled through the corresponding Argo CD Application.
 
+The repository also contains historical and operational material used during
+manual installation:
 
-Tutorial
-==================
+* ``commands.md`` records commands that were run manually during installation
+  and configuration.
+* ``manifests`` contains Kubernetes manifests used for manual installation and
+  one-time configuration.
 
-.. toctree::
-   :maxdepth: 1
-   :titlesonly:
+.. warning::
 
-   tutorial
-
-
-Infratructure
-====================
-
-.. toctree::
-   :maxdepth: 1
-   :titlesonly:
-
-   infrastructure
-   references
+   Use ``commands.md`` and files under ``manifests`` with extreme caution. They
+   may contain environment-specific hostnames, mutable upstream references,
+   obsolete configuration, plaintext credentials, or resources now owned by
+   Argo CD. Do not run them as a bulk installation procedure. Prefer the Argo CD
+   Applications and Git-managed sources, inspect the live diff, and verify the
+   exact target cluster before applying any manual command or manifest.
 
 GEN3
-====
+----
 
 .. toctree::
    :maxdepth: 1
@@ -45,7 +46,7 @@ GEN3
    gen3
 
 Argo CD Infrastructure
-======================
+----------------------
 
 .. toctree::
    :maxdepth: 1
