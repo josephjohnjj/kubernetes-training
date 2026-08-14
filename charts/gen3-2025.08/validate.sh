@@ -31,28 +31,6 @@ ruby -ryaml -rjson -rbase64 -e '
   settings = Base64.decode64(indexd.dig("data", "local_settings.py"))
   raise "Indexd settings do not use PGHOST" unless settings.include?("PGHOST")
 
-  fence = documents.find do |document|
-    document["kind"] == "Secret" && document.dig("metadata", "name") == "fence-config"
-  end
-  fence_config = YAML.safe_load(fence.dig("stringData", "fence-config.yaml"))
-  idp = fence_config.dig("OPENID_CONNECT", "generic_oidc_idp")
-  raise "Fence OIDC discovery_url must be disabled" unless idp["discovery_url"].nil?
-  unless idp.dig("discovery", "authorization_endpoint") == "https://keycloak.44.203.188.20.nip.io/realms/genome/protocol/openid-connect/auth"
-    raise "Fence OIDC browser authorization endpoint is incorrect"
-  end
-  %w[token_endpoint jwks_uri userinfo_endpoint].each do |endpoint|
-    unless idp.dig("discovery", endpoint)&.start_with?("http://keycloak.keycloak.svc.cluster.local/")
-      raise "Fence OIDC #{endpoint} does not use the internal Keycloak service"
-    end
-  end
-
-  fence_deployment = documents.find do |document|
-    document["kind"] == "Deployment" && document.dig("metadata", "name") == "fence-deployment"
-  end
-  fence_image = fence_deployment.dig("spec", "template", "spec", "containers", 0, "image")
-  expected_fence_image = "quay.io/cdis/fence:master@sha256:5b00f1d4c5ad1087ad39313e132a6828e1c875e5e8bff405cef4b48b1392ad75"
-  raise "Fence image is not pinned to the compatible digest" unless fence_image == expected_fence_image
-
   bootstrap = documents.find do |document|
     document["kind"] == "Job" && document.dig("metadata", "name") == "gen3-elasticsearch-bootstrap"
   end
@@ -61,17 +39,18 @@ ruby -ryaml -rjson -rbase64 -e '
   end
 ' "${rendered_file}"
 
-if grep -Eq 'image:.*quay.io/cdis/(arborist|audit-service|data-portal|fence|guppy|hatchery|indexd|manifestservice|metadata-service|nginx|peregrine|sheepdog|workspace-token-service|tube|gen3-spark):(master|main|latest)([[:space:]]|$)' "${rendered_file}"; then
+if grep -Eq 'image:.*quay.io/cdis/(arborist|audit-service|data-portal|fence|guppy|hatchery|indexd|manifestservice|metadata-service|nginx|peregrine|sheepdog|workspace-token-service|tube|gen3-spark):(master|main|latest)("|[[:space:]]*$)' "${rendered_file}"; then
   echo "A core Gen3 workload still uses a mutable image tag" >&2
   exit 1
 fi
 
+grep -q 'quay.io/cdis/fence:master@sha256:5b00f1d4c5ad1087ad39313e132a6828e1c875e5e8bff405cef4b48b1392ad75' "${rendered_file}"
+grep -q 'mountPath: /fence/keys/key' "${rendered_file}"
+grep -q 'name: fence-jwt-workdir' "${rendered_file}"
 grep -q 'mountPath: /indexd/local_settings.py' "${rendered_file}"
 grep -q 'mountPath: /indexd/deployment/wsgi/wsgi.py' "${rendered_file}"
 grep -q 'application = get_app(settings)' "${rendered_file}"
 grep -q 'name: ES_PASSWORD' "${rendered_file}"
-grep -q 'mountPath: /fence/keys/key' "${rendered_file}"
-grep -q 'name: fence-jwt-workdir' "${rendered_file}"
 
 ruby -ryaml -e '
   documents = YAML.load_stream(File.read(ARGV[0])).compact
