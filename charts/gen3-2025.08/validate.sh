@@ -70,6 +70,8 @@ grep -q 'mountPath: /indexd/local_settings.py' "${rendered_file}"
 grep -q 'mountPath: /indexd/deployment/wsgi/wsgi.py' "${rendered_file}"
 grep -q 'application = get_app(settings)' "${rendered_file}"
 grep -q 'name: ES_PASSWORD' "${rendered_file}"
+grep -q 'mountPath: /fence/keys/key' "${rendered_file}"
+grep -q 'name: fence-jwt-workdir' "${rendered_file}"
 
 ruby -ryaml -e '
   documents = YAML.load_stream(File.read(ARGV[0])).compact
