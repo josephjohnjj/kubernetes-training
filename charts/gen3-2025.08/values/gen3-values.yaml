@@ -84,8 +84,8 @@ fence:
     OPENID_CONNECT:
       generic_oidc_idp:
         name: Keycloak
-        discovery_url: "http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration"
-        redirect_url: "http://gen3.44.203.188.20.nip.io/login/generic_oidc_idp/login"
+        discovery_url: "https://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration"
+        redirect_url: "https://gen3.44.203.188.20.nip.io/login/generic_oidc_idp/login"
         client_id: gen3-fence
         client_secret: "10FeHUHWPu8G2xFE1pTcQ5B8hTbBcmfT"
         user_id_field: email
