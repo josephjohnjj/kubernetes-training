@@ -50,7 +50,7 @@ Install the Rook Operator
 ---------------------------------
 
 
-Install the Rook operator and create the nampace rook-ceph:
+Install the Rook operator and create the namespace ``rook-ceph``:
 
 .. code-block:: bash
 
@@ -321,10 +321,10 @@ Make the Ceph StorageClass the default (optional):
 
 
 
-Persistant Volume Claim
+Persistent Volume Claim
 -------------------------
 
-First create a namspace `mlproject`.
+First create a namespace ``mlproject``.
 
 .. code-block:: bash
 

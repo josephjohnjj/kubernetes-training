@@ -35,13 +35,13 @@ On **all nodes** installing the container runtime containerd
     sudo apt install containerd.io 
 
 
-Kubernets also requires Container Runtime Interface (CRI) to be enable. To check if CRI is enabled, run the following command:
+Kubernetes also requires the Container Runtime Interface (CRI) to be enabled. To check if CRI is enabled, run the following command:
 
 .. code-block:: bash
 
     sudo crictl info
 
-If this is note enabled, edit `/etc/containerd/config.toml` and replace
+If this is not enabled, edit `/etc/containerd/config.toml` and replace
 
 .. code-block:: bash
 
@@ -100,7 +100,7 @@ On **all nodes** install kubeadm, kubelet and kubectl
 Create control-plane node
 -----------------------
 
-One one of the nodes, run the following command to initialize the control-plane node:
+On one of the nodes, run the following command to initialize the control-plane node:
 
 .. code-block:: bash
 
@@ -236,6 +236,5 @@ On the worker nodes install the nfs-common package:
 .. code-block:: bash
 
     sudo apt-get install -y nfs-common
-
 
 

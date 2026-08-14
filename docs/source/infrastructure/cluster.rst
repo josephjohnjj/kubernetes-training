@@ -38,13 +38,13 @@ On **all nodes** installing the container runtime containerd
     sudo apt install containerd.io 
 
 
-Kubernets also requires Container Runtime Interface (CRI) to be enable. To check if CRI is enabled, run the following command:
+Kubernetes also requires the Container Runtime Interface (CRI) to be enabled. To check if CRI is enabled, run the following command:
 
 .. code-block:: bash
 
     sudo crictl info
 
-If this is note enabled, edit `/etc/containerd/config.toml` and replace
+If this is not enabled, edit `/etc/containerd/config.toml` and replace
 
 .. code-block:: bash
 
@@ -165,7 +165,7 @@ and then restart HA Proxy
     sudo systemctl status haproxy
 
 
-Now lest change the firewall rules to allow traffic on port 6443 to the HA Proxy load balancer.
+Now let's change the firewall rules to allow traffic on port 6443 to the HA Proxy load balancer.
 
 .. code-block:: bash
 
@@ -185,7 +185,7 @@ check the connectivity again.
 Create control-plane node
 -----------------------
 
-One one of the nodes, run the following command to initialize the control-plane node:
+On one of the nodes, run the following command to initialize the control-plane node:
 
 .. code-block:: bash
 
@@ -219,7 +219,7 @@ Now from the login node, check if you can access the Kubernetes API server throu
     Connection to 10.0.1.207 6443 port [tcp/*] succeeded!
 
 
-Now use add the next two control-plane nodes to the cluster by running the kubeadm join command that you copied from the output of `kubeadm init` on 
+Now add the next two control-plane nodes to the cluster by running the kubeadm join command that you copied from the output of `kubeadm init` on
 the other two control-plane nodes. It will look something like this:
 
 .. code-block:: bash
@@ -228,7 +228,7 @@ the other two control-plane nodes. It will look something like this:
     sha256:9eb2a9ef1d314f3f88863113d0b43d70843c4c6774a7a7fa095f54994c320e53  --control-plane --certificate-key \
     db0cfe59196dda444a923c72c4560754b7dfb1966347c21c25b79d71d776b319
 
-Once the joining was successful, check the status of the nodes by running the following command, from the login node:
+Once the join is successful, check the status of the nodes by running the following command from the login node:
 
 .. code-block:: bash
 
@@ -370,10 +370,10 @@ Calico pods are running:
     kube-scheduler-ip-10-0-1-99                1/1     Running   0          22m    10.0.1.99         ip-10-0-1-99    <none>           <none>
 
 
-With this, we have successfully set up a Kubernetes cluster with three control-plane node and four worker nodes. 
+With this, we have successfully set up a Kubernetes cluster with three control-plane nodes and four worker nodes.
 
 
-Lets us label all nodes in the kubernetes cluster
+Let us label all nodes in the Kubernetes cluster.
 
 
 
