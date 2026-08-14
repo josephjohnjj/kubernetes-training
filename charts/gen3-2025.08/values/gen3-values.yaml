@@ -135,14 +135,14 @@ indexd:
     database: indexd_gen3
     username: indexd_gen3
     password: indexd_gen3
-  # Indexd 2025.08 imports this module from its /indexd working directory.
+  # Indexd 2025.08 resolves local_settings from its /var/www/indexd runtime path.
   volumeMounts:
     - name: uwsgi-config
       mountPath: /etc/uwsgi/uwsgi.ini
       subPath: uwsgi.ini
     - name: config-volume
       readOnly: true
-      mountPath: /indexd/local_settings.py
+      mountPath: /var/www/indexd/local_settings.py
       subPath: local_settings.py
     - name: gunicorn-conf
       readOnly: true

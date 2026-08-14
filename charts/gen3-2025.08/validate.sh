@@ -44,7 +44,19 @@ if grep -Eq 'image:.*quay.io/cdis/(arborist|audit-service|data-portal|fence|gupp
   exit 1
 fi
 
-grep -q 'mountPath: /indexd/local_settings.py' "${rendered_file}"
+grep -q 'mountPath: /var/www/indexd/local_settings.py' "${rendered_file}"
 grep -q 'name: ES_PASSWORD' "${rendered_file}"
+
+ruby -ryaml -e '
+  documents = YAML.load_stream(File.read(ARGV[0])).compact
+  cronjob = documents.find do |document|
+    document["kind"] == "CronJob" && document.dig("metadata", "name") == "fence-delete-expired-clients"
+  end
+  env = cronjob.dig("spec", "jobTemplate", "spec", "template", "spec", "containers", 0, "env")
+  names = env.map { |entry| entry["name"] }
+  required = %w[DB FENCE_DB]
+  missing = required - names
+  raise "Fence cleanup job is missing: #{missing.join(", ")}" unless missing.empty?
+' "${rendered_file}"
 
 echo "Gen3 compatibility validation passed."

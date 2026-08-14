@@ -31,7 +31,7 @@ spec:
           volumeMounts:
             - name: "config-volume"
               readOnly: true
-              mountPath: "/indexd/local_settings.py"
+              mountPath: "/var/www/indexd/local_settings.py"
               subPath: "local_settings.py"
           env:
           - name: PGHOST

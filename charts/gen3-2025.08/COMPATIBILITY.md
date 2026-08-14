@@ -6,14 +6,16 @@ enabled Gen3 applications to the matching `2025.08` container release. The old
 
 The environment overlays make four compatibility corrections:
 
-1. Indexd settings are mounted at `/indexd/local_settings.py`, which is where
-   the 2025.08 image imports them.
+1. Indexd settings are mounted at `/var/www/indexd/local_settings.py`, which is
+   on the 2025.08 image's runtime import path.
 2. Tube receives the Elasticsearch host, port, protocol, username, and password
    as separate environment variables.
 3. Guppy, Tube, and Portal all use the same `dev_case` index and generic case
    schema.
 4. An Argo CD PreSync job creates the two empty Elasticsearch indices if they
    do not exist. This lets Guppy start before the first Tube run.
+5. Fence maintenance jobs inherit the same database environment as the Fence
+   deployment instead of falling back to PostgreSQL on localhost.
 
 Argo CD uses this chart through
 `argocd/applications/gen3/gen3.yaml`. Once these repository changes reach the
