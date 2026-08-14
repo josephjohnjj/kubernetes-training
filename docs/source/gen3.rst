@@ -15,6 +15,7 @@ by Argo CD.
    gen3/argocd_bootstrap
    gen3/storage
    gen3/postgres
+   gen3/indexd_compatibility
    gen3/keycloak
    gen3/nginx_ingress
    gen3/components
