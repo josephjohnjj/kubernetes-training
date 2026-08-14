@@ -51,6 +51,12 @@ grep -q 'name: ES_PASSWORD' "${rendered_file}"
 
 ruby -ryaml -e '
   documents = YAML.load_stream(File.read(ARGV[0])).compact
+  secret = documents.find do |document|
+    document["kind"] == "Secret" && document.dig("metadata", "name") == "indexd-settings"
+  end
+  encoded_settings = secret&.dig("data", "local_settings.py")
+  raise "Indexd settings Secret is missing local_settings.py" if encoded_settings.nil? || encoded_settings.empty?
+
   cronjob = documents.find do |document|
     document["kind"] == "CronJob" && document.dig("metadata", "name") == "fence-delete-expired-clients"
   end

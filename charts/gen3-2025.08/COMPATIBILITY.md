@@ -9,7 +9,8 @@ The environment overlays make four compatibility corrections:
 1. Indexd settings are mounted in the image's existing `/indexd` application
    directory and loaded by a chart-managed WSGI bootstrap. The bootstrap passes
    those settings explicitly to `get_app()`; without it, this image loads its
-   localhost database defaults.
+   localhost database defaults. The Secret template renders `local_settings.py`
+   explicitly so Argo CD cannot apply an empty `indexd-settings` Secret.
 2. Tube receives the Elasticsearch host, port, protocol, username, and password
    as separate environment variables.
 3. Guppy, Tube, and Portal all use the same `dev_case` index and generic case
