@@ -40,7 +40,8 @@ audit:
 
 fence:
   image:
-    tag: "2025.08"
+    repository: quay.io/cdis/fence
+    tag: "master@sha256:5b00f1d4c5ad1087ad39313e132a6828e1c875e5e8bff405cef4b48b1392ad75"
     pullPolicy: IfNotPresent
   postgres:
     host: gen3-db-cluster-rw.gen3-db

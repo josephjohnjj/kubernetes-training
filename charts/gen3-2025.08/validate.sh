@@ -46,6 +46,13 @@ ruby -ryaml -rjson -rbase64 -e '
     end
   end
 
+  fence_deployment = documents.find do |document|
+    document["kind"] == "Deployment" && document.dig("metadata", "name") == "fence-deployment"
+  end
+  fence_image = fence_deployment.dig("spec", "template", "spec", "containers", 0, "image")
+  expected_fence_image = "quay.io/cdis/fence:master@sha256:5b00f1d4c5ad1087ad39313e132a6828e1c875e5e8bff405cef4b48b1392ad75"
+  raise "Fence image is not pinned to the compatible digest" unless fence_image == expected_fence_image
+
   bootstrap = documents.find do |document|
     document["kind"] == "Job" && document.dig("metadata", "name") == "gen3-elasticsearch-bootstrap"
   end
@@ -54,7 +61,7 @@ ruby -ryaml -rjson -rbase64 -e '
   end
 ' "${rendered_file}"
 
-if grep -Eq 'image:.*quay.io/cdis/(arborist|audit-service|data-portal|fence|guppy|hatchery|indexd|manifestservice|metadata-service|nginx|peregrine|sheepdog|workspace-token-service|tube|gen3-spark):(master|main|latest)' "${rendered_file}"; then
+if grep -Eq 'image:.*quay.io/cdis/(arborist|audit-service|data-portal|fence|guppy|hatchery|indexd|manifestservice|metadata-service|nginx|peregrine|sheepdog|workspace-token-service|tube|gen3-spark):(master|main|latest)([[:space:]]|$)' "${rendered_file}"; then
   echo "A core Gen3 workload still uses a mutable image tag" >&2
   exit 1
 fi
