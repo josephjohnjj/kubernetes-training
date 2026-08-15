@@ -63,3 +63,12 @@ Argo CD Infrastructure
    :titlesonly:
 
    argocd
+
+Cluster Configuration Decisions
+-------------------------------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   configuration/index
