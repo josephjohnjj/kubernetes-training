@@ -10,3 +10,64 @@ extraEnvs:
 persistence:
   enabled: true
   storageClass: opensearch-sc
+
+extraObjects:
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: opensearch-ism-policy
+      annotations:
+        argocd.argoproj.io/hook: PostSync
+        argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    spec:
+      backoffLimit: 10
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: configure-ism
+              image: curlimages/curl:8.15.0
+              command:
+                - sh
+                - -ec
+                - |
+                  until curl -kfsS -u 'admin:Opensearch@123' \
+                    https://opensearch-cluster-master:9200/_cluster/health; do
+                    sleep 10
+                  done
+
+                  curl -kfsS -u 'admin:Opensearch@123' \
+                    -H 'Content-Type: application/json' \
+                    -X PUT \
+                    https://opensearch-cluster-master:9200/_plugins/_ism/policies/fluent-bit-retention \
+                    -d '{
+                      "policy": {
+                        "description": "Delete Fluent Bit indices after 14 days",
+                        "default_state": "hot",
+                        "states": [
+                          {
+                            "name": "hot",
+                            "actions": [],
+                            "transitions": [
+                              {
+                                "state_name": "delete",
+                                "conditions": {
+                                  "min_index_age": "14d"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "name": "delete",
+                            "actions": [{"delete": {}}],
+                            "transitions": []
+                          }
+                        ],
+                        "ism_template": [
+                          {
+                            "index_patterns": ["fluent-bit-*"],
+                            "priority": 100
+                          }
+                        ]
+                      }
+                    }'
