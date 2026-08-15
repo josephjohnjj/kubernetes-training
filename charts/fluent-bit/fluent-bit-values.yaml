@@ -16,3 +16,12 @@ config:
 
         Suppress_Type_Name On
         Retry_Limit False
+
+serviceMonitor:
+  enabled: true
+  selector:
+    release: prometheus
+
+dashboards:
+  enabled: true
+  namespace: prometheus

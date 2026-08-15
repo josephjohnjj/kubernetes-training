@@ -1,1 +1,26 @@
-null
+grafana:
+  plugins:
+    - grafana-opensearch-datasource
+
+  additionalDataSources:
+    - name: OpenSearch
+      uid: opensearch
+      type: grafana-opensearch-datasource
+      access: proxy
+      url: https://opensearch-cluster-master.opensearch.svc.cluster.local:9200
+      basicAuth: true
+      basicAuthUser: admin
+      secureJsonData:
+        basicAuthPassword: "Opensearch@123"
+      jsonData:
+        database: "fluent-bit*"
+        timeField: "@timestamp"
+        flavor: opensearch
+        version: "3.7.0"
+        tlsSkipVerify: true
+
+    - name: Jaeger
+      uid: jaeger
+      type: jaeger
+      access: proxy
+      url: http://jaeger.jaeger.svc.cluster.local:16686

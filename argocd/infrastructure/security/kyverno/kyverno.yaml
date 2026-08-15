@@ -13,6 +13,9 @@ spec:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     path: charts/kyverno
     targetRevision: main
+    helm:
+      valueFiles:
+        - kyverno-values.yaml
 
   destination:
     server: https://kubernetes.default.svc

@@ -12,9 +12,9 @@ spec:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     targetRevision: main
     path: charts/trivy-operator
-    #helm:
-    #  valueFiles:
-    #    - values-custom.yaml
+    helm:
+      valueFiles:
+        - trivy-operator-values.yaml
 
   destination:
     server: https://kubernetes.default.svc
