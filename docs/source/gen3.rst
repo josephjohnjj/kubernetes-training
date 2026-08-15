@@ -9,6 +9,7 @@ by Argo CD.
    :titlesonly:
 
    gen3/prerequisites
+   gen3/deployment_shortcuts
    gen3/versions
    gen3/gen3_version
    gen3/secrets
