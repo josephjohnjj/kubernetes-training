@@ -20,10 +20,12 @@ deleted from the current files, because earlier values remain in Git history.
 Rotate all exposed credentials and replace plaintext values with External
 Secrets, SOPS, Sealed Secrets, or an equivalent secret-management mechanism.
 
-External GEN3 and Keycloak traffic uses HTTP. Internal PostgreSQL,
-Elasticsearch, and Ceph object gateway connections are also unencrypted.
-Configure certificates and HTTPS for all public endpoints. Use encrypted
-internal connections where supported.
+GEN3 and Argo CD browser traffic uses HTTPS, but this POC still advertises the
+Keycloak issuer and performs OIDC discovery over HTTP to avoid an untrusted
+Keycloak certificate. Internal PostgreSQL, Elasticsearch, and Ceph object
+gateway connections are also unencrypted. Install a trusted Keycloak
+certificate, move its issuer and discovery consumers to HTTPS together, and
+use encrypted internal connections where supported.
 
 NetworkPolicies are disabled, so workloads are not restricted to only the
 services they require. This increases the impact of a compromised pod,

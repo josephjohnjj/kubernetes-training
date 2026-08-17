@@ -39,8 +39,8 @@ Repository-pinned versions
      - ``26.3.3-debian-12-r0``
      - ``manifests/keycloak/values.yaml``
    * - Keycloak Helm chart
-     - Not recorded
-     - Must be pinned before recreation
+     - ``25.2.0``
+     - Tested Helm installation; record with ``helm list -n keycloak``
 
 The vendored GEN3 chart has ``appVersion: master``. That field is not used as
 the runtime release identifier here; enabled service images are explicitly

@@ -4,6 +4,58 @@ GEN3 Keycloak Installation and Configuration
 Keycloak is the OpenID Connect identity provider used by Fence. The current
 GEN3 values expect realm ``genome`` and client ``gen3-fence``.
 
+Keycloak clients in this environment
+------------------------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 18 23 18 14 27
+
+   * - Client
+     - Purpose
+     - Client authentication
+     - PKCE
+     - Callback
+   * - ``gen3-fence``
+     - GEN3 user login
+     - On (confidential)
+     - ``plain``
+     - GEN3 ``/user/login/generic_oidc_idp/login``
+   * - ``argocd``
+     - Argo CD user login
+     - Off (public)
+     - ``S256``
+     - Argo CD ``/auth/callback`` and ``/pkce/verify``
+
+Both clients use realm ``genome`` but are otherwise independent. See
+:doc:`../argocd/keycloak_oidc` for the Argo CD client and groups mapper.
+
+Transport summary
+-----------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 20 45
+
+   * - Traffic
+     - Protocol
+     - Reason
+   * - Browser to GEN3
+     - HTTPS
+     - Revproxy redirects HTTP and uses secure cookies.
+   * - Browser to Argo CD
+     - HTTPS
+     - Public administrative endpoint.
+   * - Fence/Argo CD discovery to Keycloak
+     - HTTP (POC only)
+     - Avoids the untrusted Keycloak certificate.
+   * - Internal Kubernetes services
+     - Mostly HTTP
+     - Cluster-local POC configuration.
+
+Production must give Keycloak a trusted certificate and migrate its advertised
+issuer and every discovery consumer to HTTPS together.
+
 Prepare the database
 --------------------
 
@@ -22,18 +74,25 @@ Create the namespace and a values file containing no literal password::
    kubectl -n keycloak create secret generic keycloak-db \
      --from-literal=db-password='<generate-a-strong-password>'
 
-The repository pins image ``bitnamilegacy/keycloak:26.3.3-debian-12-r0`` and
-disables the bundled PostgreSQL database. It does not currently record the
-Bitnami chart version. Select and record a tested chart version, adapt its
-values to reference ``keycloak-db`` using that version's password Secret
-option, then render and review before installation::
+The tested installation uses Bitnami chart ``25.2.0``, Keycloak ``26.3.3``,
+and image ``bitnamilegacy/keycloak:26.3.3-debian-12-r0``. The repository
+disables the bundled PostgreSQL database. Adapt the values to reference
+``keycloak-db`` using the chart's password Secret option, then render and
+review before installation::
 
-   export KEYCLOAK_CHART_VERSION='<tested-chart-version>'
+   export KEYCLOAK_CHART_VERSION='25.2.0'
    helm template keycloak bitnami/keycloak \
      --version "${KEYCLOAK_CHART_VERSION}" -n keycloak -f values.yaml
    helm upgrade --install keycloak bitnami/keycloak \
      --version "${KEYCLOAK_CHART_VERSION}" \
      --namespace keycloak --create-namespace --values values.yaml
+
+Record Helm history before and after an upgrade. Roll back to the previous
+revision if the new pod does not become ready::
+
+   helm history keycloak -n keycloak
+   helm rollback keycloak PREVIOUS_REVISION -n keycloak
+   kubectl -n keycloak rollout status statefulset/keycloak --timeout=5m
 
 .. warning::
 

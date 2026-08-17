@@ -23,14 +23,20 @@ ports 80 and 443 to those NodePorts.
 GEN3 ingress
 ------------
 
-The GEN3 chart's Revproxy Ingress is currently disabled in environment values.
-Enable it and use the deployment hostname::
+The GEN3 chart's Revproxy Ingress is enabled in the current environment values.
+For a new environment, replace the host in both ``hostname`` and ``hosts``::
 
    revproxy:
      hostname: gen3.example.org
      ingress:
        enabled: true
        className: nginx
+       hosts:
+         - host: gen3.example.org
+           paths:
+             - path: /
+               pathType: Prefix
+       tls: []
 
 The resulting rule sends all GEN3 paths to ``revproxy-service``. Render it
 before committing::
@@ -80,8 +86,11 @@ to both Ingress resources::
          - gen3.example.org
        secretName: gen3-tls
 
-Use a separate ``keycloak-tls`` Secret for the Keycloak hostname. Update all
-OIDC URLs to HTTPS at the same time to avoid issuer and redirect mismatches.
+Use a separate ``keycloak-tls`` Secret for the Keycloak hostname. In the
+current POC, browser callbacks use HTTPS while Keycloak discovery uses HTTP to
+avoid its untrusted public certificate. Once Keycloak has a trusted
+certificate, update its advertised issuer and all discovery consumers to HTTPS
+together; redirect URIs must continue to exactly match their public clients.
 
 Verification
 ------------
@@ -96,4 +105,3 @@ Verification
 A ``404`` from the NGINX default backend normally indicates a hostname or
 IngressClass mismatch. A ``502`` or ``503`` normally indicates that the backend
 Service has no ready endpoints or the configured service port is wrong.
-
