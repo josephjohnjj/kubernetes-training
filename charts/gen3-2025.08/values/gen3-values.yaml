@@ -49,10 +49,13 @@ fence:
     username: fence_gen3
     password: fence_gen3
   usersync:
-    userYamlS3AccessKeyId: "MOZX23BEC0RAAD35MBJ7"
-    userYamlS3SecretAccessKey: "SeDmbojoOCywDvncu87YqJjGNAPxcOoguNIBzMC7"
-    userYamlS3Endpoint: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
-    userYamlS3Path: "s3://users-bucket/users.yaml"
+    # Ceph/S3-backed users.yaml configuration, retained for future use:
+    # userYamlS3AccessKeyId: "MOZX23BEC0RAAD35MBJ7"
+    # userYamlS3SecretAccessKey: "SeDmbojoOCywDvncu87YqJjGNAPxcOoguNIBzMC7"
+    # userYamlS3Endpoint: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
+    # userYamlS3Path: "s3://users-bucket/users.yaml"
+    # Use the USER_YAML embedded in the Fence chart for this POC.
+    userYamlS3Path: "none"
   serviceAccount:
     create: true
     annotations:
