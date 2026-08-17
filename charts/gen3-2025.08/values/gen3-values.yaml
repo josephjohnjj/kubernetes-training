@@ -194,8 +194,14 @@ revproxy:
     pullPolicy: IfNotPresent
   hostname: gen3.44.203.188.20.nip.io
   ingress:
-    enabled: false
+    enabled: true
     className: nginx
+    hosts:
+      - host: gen3.44.203.188.20.nip.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
   service:
     type: ClusterIP
 
