@@ -61,15 +61,56 @@ In the Keycloak administration console:
 
 #. Create realm ``genome``.
 #. Create an OpenID Connect client with client ID ``gen3-fence``.
-#. Enable the authorization-code flow (standard flow).
-#. Set the valid redirect URI to
-   ``http://gen3.44.203.188.20.nip.io/login/generic_oidc_idp/login``.
-#. Set allowed web origins to the GEN3 origin.
+#. Enable client authentication and copy the generated client secret for the
+   Fence configuration.
+#. Enable Standard flow (the OAuth 2.0 authorization-code flow).
+#. Disable Authorization and Implicit flow. Direct access grants are optional
+   and are not required for browser login.
+#. Set PKCE Method to ``plain`` for the tested ``2025.08`` Fence client.
+#. Configure the access settings exactly as follows::
+
+      Root URL:
+      https://gen3.44.203.188.20.nip.io
+
+      Home URL:
+      https://gen3.44.203.188.20.nip.io
+
+      Valid redirect URIs:
+      https://gen3.44.203.188.20.nip.io/user/login/generic_oidc_idp/login
+
+      Web origins:
+      https://gen3.44.203.188.20.nip.io
+
+      Admin URL:
+      <leave empty>
+
+#. Remove obsolete callback entries that use HTTP or omit the ``/user``
+   prefix.
 #. Copy the generated client secret into the Secret consumed by Fence.
 #. Create or federate users and ensure their email claim is populated.
 
-For HTTPS, use ``https`` consistently in the Keycloak hostname, Fence discovery
-URL, redirect URI, web origins, and Ingress TLS configuration.
+The valid redirect URI is an exact value, not merely a documentation example.
+The ``/user`` prefix is required because Revproxy routes external ``/user/*``
+requests to Fence and strips that prefix before proxying. Without it, the OIDC
+response is routed to Portal, which displays its generic not-found page.
+
+Protocol split for this POC
+---------------------------
+
+This deployment intentionally uses different protocols for the two OIDC
+traffic paths:
+
+* Fence performs server-side discovery over HTTP at
+  ``http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration``.
+  This avoids certificate verification failures caused by the POC's
+  self-signed Keycloak certificate.
+* The browser returns from Keycloak over HTTPS to
+  ``https://gen3.44.203.188.20.nip.io/user/login/generic_oidc_idp/login``.
+  Revproxy redirects the public HTTP GEN3 URL to HTTPS and uses secure session
+  cookies, so the registered callback must use HTTPS.
+
+This split is a POC workaround. A production deployment should install a
+trusted certificate for Keycloak and then use HTTPS for discovery as well.
 
 Configure Fence
 ---------------
@@ -78,12 +119,15 @@ The relevant values are under ``fence.FENCE_CONFIG.OPENID_CONNECT`` in
 ``charts/gen3-2025.08/values/gen3-values.yaml``. They define:
 
 * Discovery URL:
-  ``/realms/genome/.well-known/openid-configuration``
+  ``http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration``
+* Redirect URL:
+  ``https://gen3.44.203.188.20.nip.io/user/login/generic_oidc_idp/login``
 * Client ID: ``gen3-fence``
 * User identifier claim: ``email``
 * Scope: ``openid email``
 
-Move the client secret out of the values file before deployment.
+The Keycloak client secret and the Fence ``client_secret`` must be identical.
+Move the secret out of the values file before a production deployment.
 
 Verify authentication
 ---------------------
@@ -98,3 +142,20 @@ returns to the GEN3 callback without redirect or issuer errors. Check Fence logs
 without printing tokens::
 
    kubectl -n gen3 logs deployment/fence-deployment --tail=200
+
+Confirm the deployed callback and Revproxy route::
+
+   POD=$(kubectl -n gen3 get pods -l app=fence \
+     --sort-by=.metadata.creationTimestamp \
+     -o jsonpath='{.items[-1:].metadata.name}')
+   kubectl -n gen3 exec "$POD" -c fence -- \
+     sed -n '/generic_oidc_idp:/,/google:/p' \
+     /var/www/fence/fence-config.yaml
+
+   REVPROXY_POD=$(kubectl -n gen3 get pods -l app=revproxy \
+     -o jsonpath='{.items[0].metadata.name}')
+   kubectl -n gen3 logs "$REVPROXY_POD" --since=5m | \
+     grep generic_oidc_idp
+
+The callback request must begin with ``/user/login/`` and the Revproxy log must
+identify Fence, rather than Portal, as the upstream service.

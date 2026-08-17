@@ -24,8 +24,10 @@ OIDC values
 
 The provider is named ``generic_oidc_idp``. It uses Keycloak realm ``genome``,
 client ID ``gen3-fence``, claim ``email``, and scope ``openid email``. Keycloak
-is the default login option. Both discovery and redirect URLs currently use
-HTTP and environment-specific ``nip.io`` hosts.
+is the default login option. Fence performs Keycloak discovery over HTTP for
+this POC, while the public callback uses HTTPS and the external Revproxy path
+``/user/login/generic_oidc_idp/login``. See :doc:`../keycloak` for the matching
+Keycloak client configuration and the reason for this protocol split.
 
 .. warning::
 
@@ -42,4 +44,3 @@ Fence renders the main and presigned-URL Deployments, ``fence-dbcreate``, the
    kubectl -n gen3 get job fence-dbcreate
    kubectl -n gen3 get cronjob usersync fence-delete-expired-clients
    kubectl -n gen3 logs deployment/fence-deployment --tail=100
-
