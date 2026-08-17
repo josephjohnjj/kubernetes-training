@@ -95,9 +95,11 @@ Use this dependency order:
 #. Create safe database Secrets and deploy PostgreSQL and Elasticsearch.
 #. Install ingress-nginx.
 #. Install and configure Keycloak.
-#. Deploy GEN3 and wait for database initialization jobs.
+#. Confirm namespace ``gen3`` exists before the storage Application creates
+   its ObjectBucketClaims.
+#. Deploy GEN3; its enabled Revproxy Ingress is rendered with the chart.
+#. Wait for database initialization jobs.
 #. Run the PostgreSQL permissions Job only after all service databases exist.
-#. Apply ingress rules and perform the end-to-end readiness checks.
+#. Perform the end-to-end ingress and readiness checks.
 
 Use :doc:`readiness` as the gate between stages.
-

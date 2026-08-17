@@ -2,6 +2,14 @@
 
 This repository covers the fundamentals of Kubernetes along with infrastructure-as-code to provision a production-ready cluster.
 
+## Getting Started
+
+The canonical GEN3 2025.08 fresh-install procedure is
+[`docs/source/gen3/getting_started.rst`](docs/source/gen3/getting_started.rst).
+Read it before applying manifests: this repository contains environment-specific
+hostnames, destructive Ceph device selections, and proof-of-concept credentials
+that must be replaced for a new cluster.
+
 
 ## Kubernetes Cluster Components
 
@@ -199,4 +207,3 @@ This layer provides full-stack visibility across logs, metrics, and traces.
   Central visualization platform that integrates metrics, logs, and traces into unified dashboards.
 
 ---
-

@@ -27,9 +27,9 @@ before them::
    kubectl apply -f argocd/bootstrap/project-infrastructure.yaml
    kubectl apply -f argocd/bootstrap/argocd-rbac-cm.yaml
 
-The current AppProject must be updated to allow namespace ``gen3`` before the
-GEN3 Application can be accepted. It currently lists ``gen3-1000g`` but the
-active Application targets ``gen3``.
+The AppProject permits namespace ``gen3``. The infrastructure root also creates
+that namespace at sync wave ``-1`` so it exists before the storage child
+Application reconciles GEN3 ObjectBucketClaims.
 
 Bootstrap platform applications
 -------------------------------
@@ -67,4 +67,3 @@ Inspect conditions and resource health before forcing a sync::
 Avoid deleting Applications, PVCs, Ceph resources, or namespaces to repair a
 sync. Argo CD pruning is enabled for GEN3 and the database Application, so
 review every Git deletion carefully.
-

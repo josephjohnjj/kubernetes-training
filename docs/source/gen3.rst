@@ -8,6 +8,7 @@ by Argo CD.
    :maxdepth: 2
    :titlesonly:
 
+   gen3/getting_started
    gen3/prerequisites
    gen3/deployment_shortcuts
    gen3/versions
