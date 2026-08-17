@@ -1,15 +1,35 @@
 # Environment-specific configuration for the Gen3 2025.08 release train.
 # Component images are deliberately pinned together; do not use master/latest.
+#
+# DEPLOYMENT CHECKLIST — update these values for every new environment:
+# 1. Replace every occurrence of gen3.44.203.188.20.nip.io and
+#    keycloak.44.203.188.20.nip.io with the new public DNS names.
+# 2. Keep the URL scheme (http/https) consistent across global.hostname,
+#    revproxy Ingress, Keycloak discovery, Keycloak client redirect URIs, and
+#    Fence redirect_url. For HTTPS, configure ingress.tls and a trusted cert.
+# 3. Replace the PostgreSQL host, database users, and passwords. The database
+#    service must resolve from the gen3 namespace before the first sync.
+# 4. Replace Keycloak realm/client details and client_secret. Configure the
+#    exact Fence redirect URL as a valid URI on the Keycloak client.
+# 5. Replace Ceph/S3 and Elasticsearch endpoints and credentials. Never commit
+#    production secrets here; supply them through a secret-management system.
+# 6. Review portal and ETL resource requests/limits for the target nodes.
+# 7. Decide whether usersync uses the embedded USER_YAML (path "none") or an
+#    S3 users.yaml, and provide credentials that own/can read that object.
 
 global:
+  # UPDATE: select the dictionary version required by this deployment.
   dictionaryUrl: "https://s3.amazonaws.com/dictionary-artifacts/datadictionary/develop/schema.json"
+  # UPDATE: public Gen3 hostname (host only; do not include the URL scheme).
   hostname: gen3.44.203.188.20.nip.io
   dev: false
   tierAccessLevel: libre
   postgres:
     dbCreate: true
+    # UPDATE: secret containing the PostgreSQL administrator connection data.
     externalSecret: postgres-dbcreds
     master:
+      # UPDATE: writable PostgreSQL service reachable from the gen3 namespace.
       host: gen3-db-cluster-rw.gen3-db
       database: gen3db
       port: "5432"
@@ -55,6 +75,7 @@ fence:
     # userYamlS3Endpoint: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
     # userYamlS3Path: "s3://users-bucket/users.yaml"
     # Use the USER_YAML embedded in the Fence chart for this POC.
+    # UPDATE: use "none" for embedded data or an s3:// URL for managed users.
     userYamlS3Path: "none"
   serviceAccount:
     create: true
@@ -77,6 +98,7 @@ fence:
           name: users-bucket
           key: AWS_SECRET_ACCESS_KEY
     - name: AWS_ENDPOINT_URL
+      # UPDATE: S3-compatible endpoint used by Fence in the target cluster.
       value: "http://rook-ceph-rgw-gen3-store.rook-ceph.svc:80"
     - name: DB
       value: "postgresql://fence_gen3:fence_gen3@gen3-db-cluster-rw.gen3-db:5432/fence_gen3"
@@ -87,9 +109,12 @@ fence:
     OPENID_CONNECT:
       generic_oidc_idp:
         name: Keycloak
+        # UPDATE: Keycloak realm discovery URL and matching HTTP/HTTPS scheme.
         discovery_url: "http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration"
+        # UPDATE: exact callback registered in the Keycloak gen3-fence client.
         redirect_url: "http://gen3.44.203.188.20.nip.io/login/generic_oidc_idp/login"
         client_id: gen3-fence
+        # UPDATE: load the production client secret from secret management.
         client_secret: "10FeHUHWPu8G2xFE1pTcQ5B8hTbBcmfT"
         user_id_field: email
         scope: "openid email"
@@ -104,6 +129,7 @@ guppy:
   image:
     tag: "2025.08"
     pullPolicy: IfNotPresent
+  # UPDATE: Elasticsearch endpoint/credentials and the deployment's indices.
   esEndpoint: "http://elastic:41RTyGJQEi63tmab18jCiJLE@elasticsearch-es-http.elasticsearch.svc:9200"
   indices:
     - index: dev_case
@@ -117,6 +143,7 @@ guppy:
 # empty indices once; Tube can then replace/populate them after data is loaded.
 elasticsearchBootstrap:
   enabled: true
+  # UPDATE: endpoint and bootstrap credentials for the target Elasticsearch.
   endpoint: "http://elasticsearch-es-http.elasticsearch.svc:9200"
   username: elastic
   password: "41RTyGJQEi63tmab18jCiJLE"
@@ -181,6 +208,7 @@ portal:
   annotations:
     secret.reloader.stakater.com/reload: portal-config
   resources:
+    # UPDATE: size these for the portal build; it can exceed small memory limits.
     requests:
       cpu: 500m
       memory: 2Gi
@@ -192,15 +220,19 @@ revproxy:
   image:
     tag: "2025.08"
     pullPolicy: IfNotPresent
+  # UPDATE: public Gen3 hostname; keep this aligned with global.hostname.
   hostname: gen3.44.203.188.20.nip.io
   ingress:
     enabled: true
+    # UPDATE: IngressClass installed in the target cluster.
     className: nginx
     hosts:
+      # UPDATE: public Gen3 hostname routed to revproxy-service.
       - host: gen3.44.203.188.20.nip.io
         paths:
           - path: /
             pathType: Prefix
+    # UPDATE: add the public hostname and TLS Secret for HTTPS deployments.
     tls: []
   service:
     type: ClusterIP
@@ -230,6 +262,7 @@ etl:
     spark:
       tag: "2025.08"
       pullPolicy: IfNotPresent
+  # UPDATE: Elasticsearch connection details used by Tube/Spark.
   esEndpoint: elasticsearch-es-http.elasticsearch.svc
   esPort: "9200"
   esUseSsl: false
