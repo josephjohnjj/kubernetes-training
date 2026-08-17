@@ -4,9 +4,9 @@
 # DEPLOYMENT CHECKLIST — update these values for every new environment:
 # 1. Replace every occurrence of gen3.44.203.188.20.nip.io and
 #    keycloak.44.203.188.20.nip.io with the new public DNS names.
-# 2. Keep the URL scheme (http/https) consistent across global.hostname,
-#    revproxy Ingress, Keycloak discovery, Keycloak client redirect URIs, and
-#    Fence redirect_url. For HTTPS, configure ingress.tls and a trusted cert.
+# 2. Use the browser-facing HTTPS URL for Fence callbacks and Keycloak client
+#    redirect URIs. Server-side discovery may use HTTP when Keycloak's public
+#    HTTPS endpoint has a certificate that Fence does not trust.
 # 3. Replace the PostgreSQL host, database users, and passwords. The database
 #    service must resolve from the gen3 namespace before the first sync.
 # 4. Replace Keycloak realm/client details and client_secret. Configure the
@@ -109,10 +109,12 @@ fence:
     OPENID_CONNECT:
       generic_oidc_idp:
         name: Keycloak
-        # UPDATE: Keycloak realm discovery URL and matching HTTP/HTTPS scheme.
+        # UPDATE: server-side realm discovery URL; HTTP avoids the POC's
+        # untrusted certificate while browser-facing Gen3 remains HTTPS.
         discovery_url: "http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration"
-        # UPDATE: exact callback registered in the Keycloak gen3-fence client.
-        redirect_url: "http://gen3.44.203.188.20.nip.io/login/generic_oidc_idp/login"
+        # UPDATE: exact public callback registered in the Keycloak gen3-fence
+        # client. The /user prefix makes revproxy route it to Fence.
+        redirect_url: "https://gen3.44.203.188.20.nip.io/user/login/generic_oidc_idp/login"
         client_id: gen3-fence
         # UPDATE: load the production client secret from secret management.
         client_secret: "10FeHUHWPu8G2xFE1pTcQ5B8hTbBcmfT"
