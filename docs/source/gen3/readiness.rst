@@ -105,7 +105,9 @@ Pass criteria:
 
 * GEN3 home page loads through ingress-nginx.
 * Keycloak login returns to GEN3 successfully.
-* Fence UserSync can read ``users.yaml`` from Ceph RGW.
+* Fence UserSync completes using its configured source. The active POC uses
+  embedded ``USER_YAML``; an S3-enabled deployment must read ``users.yaml``
+  from Ceph RGW with the current OBC credentials.
 * Sheepdog can submit and retrieve a test record.
 * Tube completes and creates the expected Elasticsearch indices.
 * Guppy and Portal return the indexed test data.
@@ -113,3 +115,9 @@ Pass criteria:
 Keep the Application at the failing stage and investigate before allowing
 dependent stages to sync.
 
+Run an explicit UserSync smoke test::
+
+   JOB="usersync-manual-$(date +%s)"
+   kubectl -n gen3 create job --from=cronjob/usersync "$JOB"
+   kubectl -n gen3 wait --for=condition=Complete "job/$JOB" --timeout=5m
+   kubectl -n gen3 logs "job/$JOB" --all-containers --tail=200

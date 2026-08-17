@@ -13,9 +13,10 @@ Configured values
 * Indexd URL ``http://indexd-service`` uses no basic authentication and default
   prefix ``gen31k/``.
 * ``usersync.usersync: true`` schedules UserSync every 30 minutes.
-* UserSync reads ``s3://users-bucket/users.yaml`` from Ceph RGW at
-  ``rook-ceph-rgw-gen3-store.rook-ceph.svc:80``.
-* S3 credentials come from Secret ``users-bucket``.
+* The active POC sets ``userYamlS3Path: "none"`` and uses the chart's embedded
+  ``USER_YAML``.
+* The commented S3 option reads ``s3://users-bucket/users.yaml`` through Ceph
+  RGW and uses credentials from Secret ``users-bucket`` when enabled.
 * dbGaP synchronization and Slack notifications are disabled.
 * Service account ``fence-service-sa`` is created without an EKS role.
 

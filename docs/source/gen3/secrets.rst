@@ -12,6 +12,46 @@ Generate values
 Generate each password independently with an approved password manager. Never
 reuse the example values already present in the repository.
 
+Secret ownership and ordering
+-----------------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 16 27 33
+
+   * - Object
+     - Namespace
+     - Owner
+     - Required before
+   * - ``gen3db-secret``
+     - ``gen3-db``
+     - Database infrastructure
+     - CloudNativePG bootstrap
+   * - ``superuser-secret``
+     - ``gen3-db``
+     - Database infrastructure
+     - CloudNativePG bootstrap
+   * - ``postgres-dbcreds``
+     - ``gen3``
+     - Database infrastructure
+     - GEN3 database-creation Jobs
+   * - ``users-bucket``
+     - ``gen3``
+     - Rook OBC provisioner
+     - Fence pods that reference S3 credentials
+   * - ``keycloak-db``
+     - ``keycloak``
+     - Keycloak operator/install process
+     - Keycloak startup
+   * - Fence OIDC client credential
+     - ``gen3``
+     - Secret manager/operator
+     - Fence OIDC login
+
+Do not declare the same object from two Argo CD Applications. In particular,
+the OBC provisioner owns ``users-bucket`` and the GEN3 chart owns its
+service-specific database Secrets.
+
 CloudNativePG bootstrap owner
 -----------------------------
 
@@ -99,6 +139,14 @@ existing Secret or external-secret option::
    type: Opaque
    stringData:
      client-secret: REPLACE_WITH_KEYCLOAK_CLIENT_SECRET
+
+.. note::
+
+   This manifest documents the desired production ownership model. The current
+   POC still places the Fence ``client_secret`` directly in
+   ``charts/gen3-2025.08/values/gen3-values.yaml`` because the vendored chart
+   has not yet been wired to consume ``fence-keycloak-oidc``. Do not create the
+   Secret and assume it is active; verify the rendered Deployment/Secret first.
 
 Keycloak database Secret
 ------------------------

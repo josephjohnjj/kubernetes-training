@@ -12,8 +12,8 @@ The deployment uses Rook-Ceph as its storage foundation. Ceph provides two
 storage interfaces to GEN3:
 
 * RADOS Block Device (RBD) volumes for PostgreSQL and Elasticsearch.
-* S3-compatible object storage through the Ceph Object Gateway (RGW) for Fence
-  UserSync and other GEN3 buckets.
+* S3-compatible object storage through the Ceph Object Gateway (RGW) for GEN3
+  buckets and an optional Fence UserSync source.
 
 The GEN3 application pods themselves are mostly stateless. Durable application
 data is held by CloudNativePG, Elasticsearch, or Ceph RGW rather than in the
@@ -24,7 +24,7 @@ pods' container filesystems.
    GEN3 services
       +-- CloudNativePG PostgreSQL -- PVC (cnpg-sc) -----------------+
       +-- Elasticsearch ---------- PVC (gen3-elasticsearch-sc) -----+--> Rook-Ceph
-      +-- Fence UserSync ---------- S3 (gen3-store/users-bucket) ----+
+      +-- Optional Fence UserSync - S3 (gen3-store/users-bucket) ----+
 
 Rook-Ceph cluster
 -----------------
@@ -119,13 +119,17 @@ reclaim policy is ``Retain``, so bucket data is retained when an
 
 Two statically named ObjectBucketClaims are defined in the ``gen3`` namespace:
 
-* ``users-bucket``: stores ``users.yaml`` for Fence UserSync.
+* ``users-bucket``: can store ``users.yaml`` for Fence UserSync.
 * ``schema-bucket``: reserved for GEN3 schema objects; the current
   ``global.dictionaryUrl`` still points to the external GEN3 dictionary URL.
 
-Fence reads ``s3://users-bucket/users.yaml`` through the RGW endpoint. S3 access
-keys are supplied to the pod from the ``users-bucket`` Kubernetes Secret. The
-``gen3-usersync`` Ceph object-store user is associated with ``gen3-store``.
+The active POC sets ``userYamlS3Path: "none"`` and uses the ``USER_YAML``
+embedded in the Fence chart. The S3 configuration is retained as a commented
+future option. When enabled, Fence reads ``s3://users-bucket/users.yaml``
+through the RGW endpoint and requires credentials that can read that exact
+bucket and object. Rook supplies OBC credentials through the ``users-bucket``
+Secret. Uploading an object with credentials belonging to an older retained
+bucket does not grant a newly provisioned OBC identity access to it.
 
 .. warning::
 
@@ -170,4 +174,3 @@ Use these read-only checks after an Argo CD sync::
 Expected checks are that the Ceph cluster is healthy, the PostgreSQL cluster has
 three ready instances, the Elasticsearch PVC is ``Bound``, and both bucket
 claims are ``Bound``.
-
