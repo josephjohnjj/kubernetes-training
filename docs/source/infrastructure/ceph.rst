@@ -403,3 +403,67 @@ The default StorageClass is indicated by `(default)` in the output:
    Additionally, before installing an application, verify that the cluster's default 
    StorageClass is the one intended for the deployment. If a different StorageClass should 
    be used, update the default StorageClass accordingly before proceeding with the installation.
+
+
+TODO
+----
+
+Reserve the Ceph storage nodes for storage services
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Prevent ordinary application workloads from being scheduled on ``storage1``,
+``storage2``, and ``storage3``. Roll out this change one node at a time so that
+Ceph and the node-level services can be checked between changes.
+
+#. Add the following OSD toleration to
+   :file:`storage/rook-ceph/cluster/cluster.yaml` under ``spec`` before tainting
+   any node:
+
+   .. code-block:: yaml
+
+      placement:
+        osd:
+          tolerations:
+            - key: dedicated
+              operator: Equal
+              value: ceph-storage
+              effect: NoSchedule
+
+#. Apply the CephCluster manifest and confirm that Ceph is healthy:
+
+   .. code-block:: bash
+
+      kubectl apply -f storage/rook-ceph/cluster/cluster.yaml
+      kubectl -n rook-ceph get pods -o wide
+      kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph status
+
+#. Confirm that required node-level DaemonSets, including Calico, kube-proxy,
+   Ceph CSI, and monitoring agents, tolerate the proposed taint. These services
+   must continue running on the storage nodes.
+
+#. Apply the ``NoSchedule`` taint to one storage node:
+
+   .. code-block:: bash
+
+      kubectl taint node storage1 dedicated=ceph-storage:NoSchedule
+
+#. Check the pods on that node and verify Ceph health again:
+
+   .. code-block:: bash
+
+      kubectl get pods -A -o wide --field-selector spec.nodeName=storage1
+      kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph status
+
+#. If the cluster remains healthy, repeat the taint and verification for
+   ``storage2`` and then ``storage3``.
+
+The ``NoSchedule`` effect does not evict pods that are already running. Move or
+restart existing non-storage workloads separately after confirming that they
+can run on another node. Do not use ``NoExecute`` and do not drain a Ceph
+storage node as part of this procedure.
+
+To roll back a taint, append ``-`` to the taint specification:
+
+.. code-block:: bash
+
+   kubectl taint node storage1 dedicated=ceph-storage:NoSchedule-
