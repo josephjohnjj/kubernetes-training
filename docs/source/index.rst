@@ -46,14 +46,6 @@ AWS and Kubernetes Cluster
    aws/aws_cluster
    aws/manual_kubernetes_cluster
 
-GEN3
-----
-
-.. toctree::
-   :maxdepth: 1
-   :titlesonly:
-
-   gen3
 
 Argo CD Infrastructure
 ----------------------
@@ -72,3 +64,12 @@ Cluster Configuration Decisions
    :titlesonly:
 
    configuration/index
+
+GEN3
+----
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   gen3
