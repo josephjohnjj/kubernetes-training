@@ -1,0 +1,23 @@
+$id: vcf_file
+title: VCF File
+category: data_file
+type: object
+properties:
+  file_name:
+    type: string
+  data_format:
+    type: string
+    enum:
+      - VCF
+  genome_build:
+    type: string
+    enum:
+      - GRCh38
+links:
+  - name: aliquots
+    target_type: aliquot
+    multiplicity: many_to_one
+required:
+  - file_name
+  - data_format
+  - genome_build

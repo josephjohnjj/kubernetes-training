@@ -1,0 +1,3 @@
+patient_id,diagnosis,body_site,sex,birth_year,race,sample_id,sample_type,collection_method,collection_date,aliquot_id,analyte_type,volume_ul,concentration_ng_ul,vcf_path,genome_build
+P001,Cancer,Blood,F,1970,Asian,S001,Blood,Venipuncture,2026-07-01,A001,DNA,50,25.4,raw/P001.vcf,GRCh38
+P002,Healthy Control,Saliva,M,1982,White,S002,Saliva,Saliva collection kit,2026-07-02,A002,DNA,40,19.8,raw/P002.vcf,GRCh38

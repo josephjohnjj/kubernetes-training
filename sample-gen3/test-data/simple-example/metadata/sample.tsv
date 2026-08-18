@@ -1,0 +1,3 @@
+type	submitter_id	project_id	cases.submitter_id	sample_type	collection_method	collection_date
+sample	demo-sample-S001	DEMO-STUDY1	demo-case-P001	Blood	Venipuncture	2026-07-01
+sample	demo-sample-S002	DEMO-STUDY1	demo-case-P002	Saliva	Saliva collection kit	2026-07-02

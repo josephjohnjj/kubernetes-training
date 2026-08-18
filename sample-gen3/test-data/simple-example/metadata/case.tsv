@@ -1,0 +1,3 @@
+type	submitter_id	project_id	disease_type	primary_site	consent_group
+case	demo-case-P001	DEMO-STUDY1	Cancer	Blood	General Research Use
+case	demo-case-P002	DEMO-STUDY1	Healthy Control	Saliva	General Research Use

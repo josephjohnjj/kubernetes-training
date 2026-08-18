@@ -1,0 +1,25 @@
+$id: case
+title: Case
+category: administrative
+type: object
+properties:
+  disease_type:
+    type: string
+    enum:
+      - Cancer
+      - Healthy Control
+      - Not Reported
+  primary_site:
+    type: string
+    enum:
+      - Blood
+      - Saliva
+      - Not Reported
+  consent_group:
+    type: string
+    enum:
+      - General Research Use
+required:
+  - disease_type
+  - primary_site
+  - consent_group

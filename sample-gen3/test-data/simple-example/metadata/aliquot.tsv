@@ -1,0 +1,3 @@
+type	submitter_id	project_id	samples.submitter_id	analyte_type	volume_ul	concentration_ng_ul
+aliquot	demo-aliquot-A001	DEMO-STUDY1	demo-sample-S001	DNA	50	25.4
+aliquot	demo-aliquot-A002	DEMO-STUDY1	demo-sample-S002	DNA	40	19.8

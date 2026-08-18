@@ -1,0 +1,22 @@
+$id: aliquot
+title: Aliquot
+category: biospecimen
+type: object
+properties:
+  analyte_type:
+    type: string
+    enum:
+      - DNA
+      - RNA
+  volume_ul:
+    type: number
+  concentration_ng_ul:
+    type: number
+links:
+  - name: samples
+    target_type: sample
+    multiplicity: many_to_one
+required:
+  - analyte_type
+  - volume_ul
+  - concentration_ng_ul

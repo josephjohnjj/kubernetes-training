@@ -1,0 +1,23 @@
+$id: sample
+title: Sample
+category: biospecimen
+type: object
+properties:
+  sample_type:
+    type: string
+    enum:
+      - Blood
+      - Saliva
+  collection_method:
+    type: string
+  collection_date:
+    type: string
+    format: date
+links:
+  - name: cases
+    target_type: case
+    multiplicity: many_to_one
+required:
+  - sample_type
+  - collection_method
+  - collection_date

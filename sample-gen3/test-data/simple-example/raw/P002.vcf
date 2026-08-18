@@ -1,0 +1,4 @@
+##fileformat=VCFv4.2
+##reference=GRCh38
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+2	20001	.	G	T	99	PASS	.

@@ -1,0 +1,23 @@
+$id: demographic
+title: Demographic
+category: clinical
+type: object
+properties:
+  gender:
+    type: string
+    enum:
+      - Female
+      - Male
+      - Not Reported
+  year_of_birth:
+    type: integer
+  race:
+    type: string
+links:
+  - name: cases
+    target_type: case
+    multiplicity: many_to_one
+required:
+  - gender
+  - year_of_birth
+  - race
