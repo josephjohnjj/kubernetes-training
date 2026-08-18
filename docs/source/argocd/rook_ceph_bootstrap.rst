@@ -50,8 +50,8 @@ The toolbox and dashboard access were created manually::
    kubectl create -f toolbox.yaml
    kubectl -n rook-ceph get service
 
-The Git-managed equivalents are ``tools/rook-ceph/toolbox.yaml`` and
-``tools/rook-ceph/dashboard.yaml``.
+The Git-managed equivalents are ``tools/rook-ceph/01-toolbox.yaml`` and
+``tools/rook-ceph/02-dashboard.yaml``.
 
 Retrieve the generated dashboard password only when needed::
 
