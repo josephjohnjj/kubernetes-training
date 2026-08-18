@@ -188,10 +188,42 @@ The Ansible playbooks configure:
 * Kernel modules ``overlay`` and ``br_netfilter``.
 * IPv4 forwarding and bridge netfilter sysctls.
 * Calico ``v3.27.0`` with Pod CIDR ``192.168.0.0/16``.
+* ``vm.max_map_count=262144`` for OpenSearch.
+* Helm ``v3.19.0`` on the control-plane nodes.
 
 Version compatibility must be revalidated before recreation. In particular,
 confirm that the selected Calico release supports the selected Kubernetes
 release.
+
+Numbered deployment workflows
+-----------------------------
+
+Run the deployment entry points from ``provisioning/ansible``. Their numeric
+prefixes show the intended order::
+
+   ansible-playbook -i inventory.ini 01-deploy.yaml
+   ansible-playbook -i inventory.ini 02-deploy-keycloak.yaml
+   ansible-playbook -i inventory.ini 03-deploy-argocd.yaml
+
+``01-deploy.yaml`` builds and verifies the Kubernetes cluster. It imports the
+host preparation, containerd, Kubernetes, HAProxy, control-plane, Calico,
+worker, storage-node, labeling, kubeconfig, OpenSearch kernel, Helm, and
+verification playbooks in dependency order.
+
+The first workflow intentionally does not wipe storage disks, run the
+break-glass package repair playbook, or install application add-ons. Prepare
+Ceph disks and deploy the storage/database prerequisites described below
+before running the Keycloak or Argo CD workflows.
+
+All three entry points support Ansible tags. For example, inspect the available
+tasks or rerun only cluster verification with::
+
+   ansible-playbook -i inventory.ini 01-deploy.yaml --list-tasks
+   ansible-playbook -i inventory.ini 01-deploy.yaml --tags verify
+
+The following sections show the component playbooks invoked by these entry
+points. Use them individually for diagnosis or controlled recovery; use the
+numbered entry points for a normal deployment.
 
 Configure the operating system
 ------------------------------
@@ -226,9 +258,8 @@ The playbook listens on:
 Verify these NodePorts against the live ingress-nginx Service. If Kubernetes
 assigns different ports, update the HAProxy playbook before restarting it.
 
-The current template uses each control node's ``ansible_host`` as its backend,
-which is the public address from the generated inventory. Private addresses are
-preferable for traffic inside the VPC.
+The HAProxy template uses each control node's ``private_ip`` as its backend so
+API and ingress traffic remain within the VPC.
 
 Initialize the primary control plane
 ------------------------------------
@@ -257,7 +288,8 @@ Join secondary control-plane nodes first::
 
    ansible-playbook -i inventory.ini kubernetes-cluster/07-join-secondary-control-planes.yml
 
-Then join application workers and storage nodes::
+The automated workflow installs Calico next, then joins application workers
+and storage nodes::
 
    ansible-playbook -i inventory.ini kubernetes-cluster/09-join-worker-nodes.yml
    ansible-playbook -i inventory.ini kubernetes-cluster/10-join-storage-nodes.yml
@@ -300,6 +332,13 @@ HAProxy::
 
    ansible-playbook -i inventory.ini haproxy/03-configure-login-kubeconfig.yml
 
+The cluster workflow then applies the OpenSearch kernel setting, installs Helm,
+and runs verification::
+
+   ansible-playbook -i inventory.ini kubernetes-cluster/13-configure-opensearch-kernel.yml
+   ansible-playbook -i inventory.ini helm/01-install-helm.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/14-verify-cluster.yml
+
 Ceph disk preparation
 ---------------------
 
@@ -334,6 +373,42 @@ Run the cluster verification playbook and inspect Kubernetes directly::
 Expected results are three ready control-plane nodes, seven ready worker/storage
 nodes, healthy CoreDNS and Calico, and successful API access through HAProxy.
 
+Deploy Keycloak
+---------------
+
+``02-deploy-keycloak.yaml`` first creates the ``keycloak-pool`` CephBlockPool
+and ``keycloak-sc`` RBD StorageClass, then installs the Bitnami Keycloak Helm
+release in the ``keycloak`` namespace::
+
+   ansible-playbook -i inventory.ini 02-deploy-keycloak.yaml
+   kubectl -n keycloak get pods,pvc
+
+Run this only after Rook-Ceph is healthy in the ``rook-ceph`` namespace and its
+RBD CSI provisioner and secrets exist. The playbook temporarily marks
+``keycloak-sc`` as the default StorageClass while installing the release, then
+removes that default annotation.
+
+Review ``keycloak/keycloak-values.yaml`` before deployment. It currently
+contains a literal database password, references the
+``cnpg-cluster-rw.cnpg-database.svc.cluster.local`` database service, enables
+the chart's bundled PostgreSQL component, and uses a ``bitnamilegacy`` image.
+Resolve the database mode and move credentials to an approved secret before
+using this configuration in production.
+
+Deploy Argo CD
+--------------
+
+``03-deploy-argocd.yaml`` creates the ``argocd`` namespace and applies the
+upstream Argo CD installation manifest::
+
+   ansible-playbook -i inventory.ini 03-deploy-argocd.yaml
+   kubectl -n argocd get pods
+
+The playbook requires a StorageClass named ``mgmnt-sc``. It temporarily marks
+that class as the default and removes the annotation after applying Argo CD.
+The manifest URL tracks the upstream ``stable`` branch, so pin a reviewed Argo
+CD release before treating the deployment as reproducible.
+
 Known issues and improvements
 -----------------------------
 
@@ -342,22 +417,18 @@ Address these before treating the process as production-ready:
 * Restrict public SSH and minimize public IP exposure.
 * Enable EBS encryption.
 * Use actual GPU instance types or rename the GPU inventory group.
-* Use private HAProxy backend addresses.
 * Assign an Elastic IP or managed DNS name to the login endpoint.
 * Pin and checksum all downloaded manifests.
 * Confirm Kubernetes and Calico compatibility.
-* Run the complete non-destructive cluster workflow from
-  ``provisioning/ansible`` with
-  ``ansible-playbook -i inventory.ini 01-deploy.yaml``. Disk wiping,
-  troubleshooting, Keycloak, and Argo CD are intentionally excluded.
 * Test etcd backup and control-plane disaster recovery before workloads are
   installed.
 
 Handoff to Argo CD
 ------------------
 
-Terraform and Ansible establish AWS, Kubernetes, networking, labels, and raw
-Ceph devices. After the cluster passes validation, install Argo CD and use the
-Git-managed Applications for Rook-Ceph, databases, ingress, observability, and
-GEN3. Avoid continuing with unrelated manual manifests when an Argo CD source
-already owns the resource.
+Terraform and the first Ansible workflow establish AWS, Kubernetes,
+networking, labels, and raw Ceph devices. After the cluster and storage
+prerequisites pass validation, use ``03-deploy-argocd.yaml`` to install Argo CD
+and use Git-managed Applications for Rook-Ceph, databases, ingress,
+observability, and GEN3. Avoid continuing with unrelated manual manifests when
+an Argo CD source already owns the resource.
