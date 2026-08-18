@@ -21,6 +21,10 @@ by Argo CD.
    gen3/keycloak
    gen3/nginx_ingress
    gen3/components
+   gen3/nomenclature
+   gen3/data_curation_guide
+   gen3/simple_data_example
+   gen3/data_lifecycle_components
    gen3/data_model
    gen3/sample_data_flow
    gen3/readiness
