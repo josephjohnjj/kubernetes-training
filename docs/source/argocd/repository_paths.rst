@@ -13,7 +13,7 @@ This is the control layer:
   RBAC ConfigMap.
 * ``argocd/infrastructure`` contains child Applications for platform services.
 * ``argocd/applications`` contains workload Applications such as GEN3.
-* ``argocd/infrastructure/namespace.yaml`` declares platform namespaces and is
+* ``argocd/infrastructure/01-namespace.yaml`` declares platform namespaces and is
   applied by the recursive infrastructure root Application.
 
 The root Applications monitor these directories and create or update their
@@ -152,4 +152,3 @@ Use the source path shown by each live Application to confirm ownership::
 
 Before modifying a resource manually, determine whether Argo CD manages it and
 whether self-healing or pruning is enabled.
-

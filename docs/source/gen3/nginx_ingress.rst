@@ -7,7 +7,7 @@ The repository deploys ingress-nginx chart ``4.15.1`` with controller
 Install and verify the controller
 ---------------------------------
 
-Argo CD manages it through ``argocd/infrastructure/networking/ingress-nginx.yaml``::
+Argo CD manages it through ``argocd/infrastructure/networking/01-ingress-nginx.yaml``::
 
    kubectl -n argocd get application ingress-nginx
    kubectl -n ingress-nginx get deployment,pod,service
