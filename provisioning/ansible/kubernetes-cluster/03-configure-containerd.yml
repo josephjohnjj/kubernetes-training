@@ -4,9 +4,6 @@
   become: yes
   gather_facts: yes
 
-  vars:
-    containerd_version: "2.2.4-1"
-
   tasks:
     - name: Install containerd (pinned version)
       ansible.builtin.apt:
@@ -55,6 +52,7 @@
         content: "{{ default_config.stdout }}"
         mode: "0644"
       when: not containerd_config.stat.exists
+      notify: Restart containerd
       tags:
         - containerd
         - config
@@ -69,23 +67,25 @@
         regexp: '^disabled_plugins\s*=\s*\[.*"cri".*\]'
         replace: "disabled_plugins = []"
       register: cri_fix
+      notify: Restart containerd
       tags:
         - containerd
         - cri
         - config
 
     # -----------------------------------------------------
-    # Restart containerd only if config changed
+    # Use the systemd cgroup driver recommended for kubeadm clusters
     # -----------------------------------------------------
-    - name: Restart containerd if CRI was enabled
-      ansible.builtin.systemd:
-        name: containerd
-        state: restarted
-      when: cri_fix.changed
+    - name: Enable systemd cgroups
+      ansible.builtin.replace:
+        path: /etc/containerd/config.toml
+        regexp: 'SystemdCgroup\s*=\s*false'
+        replace: "SystemdCgroup = true"
+      notify: Restart containerd
       tags:
         - containerd
-        - service
-        - restart
+        - config
+        - cgroups
 
     # -----------------------------------------------------
     # Ensure containerd is enabled on boot
@@ -94,7 +94,14 @@
       ansible.builtin.systemd:
         name: containerd
         enabled: yes
+        state: started
       tags:
         - containerd
         - service
         - enable
+
+  handlers:
+    - name: Restart containerd
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted

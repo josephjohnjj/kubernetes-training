@@ -157,7 +157,7 @@ Terraform outputs public and private IP lists for each node role::
 Generate the Ansible inventory from those outputs::
 
    cd provisioning/ansible
-   ./generate_host.sh
+   ./generate-inventory.sh
 
 The script creates groups for ``control``, ``login``, ``worker_cpu``,
 ``worker_gpu``, and ``storage``, plus these functional groups:
@@ -168,9 +168,9 @@ The script creates groups for ``control``, ``login``, ``worker_cpu``,
 * ``no_login``: all Kubernetes nodes except the login node.
 * ``haproxy``: ``login1``.
 
-Review ``host.ini`` and test access::
+Review ``inventory.ini`` and test access::
 
-   ansible -i host.ini all -m ping
+   ansible -i inventory.ini all -m ping
 
 Do not publish the generated inventory because it contains current public IPs
 and a local private-key path.
@@ -199,10 +199,11 @@ Configure the operating system
 From ``provisioning/ansible``, run the base preparation on all nodes, then the
 container runtime and Kubernetes prerequisites on Kubernetes nodes::
 
-   ansible-playbook -i host.ini 1_kubernetes_cluster/1_base_packages.yml
-   ansible-playbook -i host.ini 1_kubernetes_cluster/3_containerd.yml
-   ansible-playbook -i host.ini 1_kubernetes_cluster/4_kube.yml
-   ansible-playbook -i host.ini 1_kubernetes_cluster/6_kube_prerequisite.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/01-prepare-hosts.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/02-configure-containerd-repository.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/03-configure-containerd.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/04-install-kubernetes.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/05-configure-kubernetes-prerequisites.yml
 
 The base playbook may perform a distribution upgrade and reboot nodes. Confirm
 SSH access again before continuing.
@@ -213,8 +214,8 @@ Configure HAProxy
 The login node provides the stable kubeadm control-plane endpoint and forwards
 public web traffic to ingress-nginx::
 
-   ansible-playbook -i host.ini 4_ha_proxy/1_packages.yml
-   ansible-playbook -i host.ini 4_ha_proxy/5_haproxy.yml
+   ansible-playbook -i inventory.ini haproxy/01-install-kubectl.yml
+   ansible-playbook -i inventory.ini haproxy/02-configure-haproxy.yml
 
 The playbook listens on:
 
@@ -232,10 +233,10 @@ preferable for traffic inside the VPC.
 Initialize the primary control plane
 ------------------------------------
 
-``7_cp_primary.yml`` calculates the control-plane endpoint from the login
+``06-initialize-primary-control-plane.yml`` calculates the control-plane endpoint from the login
 node's private IP and initializes Kubernetes with kubeadm::
 
-   ansible-playbook -i host.ini 1_kubernetes_cluster/7_cp_primary.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/06-initialize-primary-control-plane.yml
 
 Conceptually, it runs::
 
@@ -254,12 +255,12 @@ Join the remaining nodes
 
 Join secondary control-plane nodes first::
 
-   ansible-playbook -i host.ini 1_kubernetes_cluster/8_cp_secondary.yaml
+   ansible-playbook -i inventory.ini kubernetes-cluster/07-join-secondary-control-planes.yml
 
 Then join application workers and storage nodes::
 
-   ansible-playbook -i host.ini 1_kubernetes_cluster/10_worker.yaml
-   ansible-playbook -i host.ini 1_kubernetes_cluster/11_storage_nodes.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/09-join-worker-nodes.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/10-join-storage-nodes.yml
 
 The playbooks do not run ``kubeadm join`` again when
 ``/etc/kubernetes/kubelet.conf`` already exists.
@@ -269,7 +270,7 @@ Install Calico
 
 Install the CNI once from the primary control plane::
 
-   ansible-playbook -i host.ini 1_kubernetes_cluster/12_calico.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/08-install-calico.yml
 
 Before Calico starts, nodes normally report ``NotReady``. After installation,
 verify Calico, CoreDNS, kube-proxy, and all nodes::
@@ -282,7 +283,7 @@ Configure labels and kubeconfig
 
 Apply the role labels used by scheduling and storage configuration::
 
-   ansible-playbook -i host.ini 1_kubernetes_cluster/14_label_nodes.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/11-label-nodes.yml
 
 This applies:
 
@@ -292,12 +293,12 @@ This applies:
 
 Copy kubeconfig to all control-plane nodes::
 
-   ansible-playbook -i host.ini 1_kubernetes_cluster/15_kube_config.yml
+   ansible-playbook -i inventory.ini kubernetes-cluster/12-configure-control-plane-kubeconfig.yml
 
 After the API is available, install a login-node kubeconfig that points through
 HAProxy::
 
-   ansible-playbook -i host.ini 4_ha_proxy/2_kube_config.yml
+   ansible-playbook -i inventory.ini haproxy/03-configure-login-kubeconfig.yml
 
 Ceph disk preparation
 ---------------------
@@ -305,12 +306,12 @@ Ceph disk preparation
 The storage nodes have three data devices reserved for Ceph. Inspect them on
 every node before running the destructive playbook::
 
-   ansible -i host.ini storage -b -m shell -a 'lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS'
+   ansible -i inventory.ini storage -b -m shell -a 'lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS'
 
 Only after validating the target devices, run::
 
-   ansible-playbook -i host.ini 1_kubernetes_cluster/16_wipe_disk.yml --tags check
-   ansible-playbook -i host.ini 1_kubernetes_cluster/16_wipe_disk.yml --tags wipe,verify
+   ansible-playbook -i inventory.ini kubernetes-cluster/16-wipe-storage-disks.yml --tags check
+   ansible-playbook -i inventory.ini kubernetes-cluster/16-wipe-storage-disks.yml --tags wipe,verify
 
 .. danger::
 
@@ -324,7 +325,7 @@ Final validation
 
 Run the cluster verification playbook and inspect Kubernetes directly::
 
-   ansible-playbook -i host.ini 1_kubernetes_cluster/13_verify.yaml
+   ansible-playbook -i inventory.ini kubernetes-cluster/14-verify-cluster.yml
    kubectl get nodes -o wide
    kubectl get nodes --show-labels
    kubectl -n kube-system get pods
@@ -345,8 +346,10 @@ Address these before treating the process as production-ready:
 * Assign an Elastic IP or managed DNS name to the login endpoint.
 * Pin and checksum all downloaded manifests.
 * Confirm Kubernetes and Calico compatibility.
-* Do not run the top-level ``provisioning/ansible/deploy.yml`` for this cluster;
-  it references a different GPU/Jupyter deployment workflow and missing files.
+* Run the complete non-destructive cluster workflow from
+  ``provisioning/ansible`` with
+  ``ansible-playbook -i inventory.ini 01-deploy.yaml``. Disk wiping,
+  troubleshooting, Keycloak, and Argo CD are intentionally excluded.
 * Test etcd backup and control-plane disaster recovery before workloads are
   installed.
 

@@ -1,6 +1,6 @@
  
-kubectl create -f gpu-roles.yaml 
-kubectl create -f cpu-roles.yaml
+kubectl create -f gpu-role.yaml
+kubectl create -f cpu-role.yaml
 
 kubectl create -f gpu-binding.yaml 
 kubectl create -f cpu-binding.yaml 

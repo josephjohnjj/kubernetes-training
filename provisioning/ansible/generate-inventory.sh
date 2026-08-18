@@ -1,7 +1,9 @@
 #!/bin/sh
 set -e
 
-OUTPUTS=$(terraform -chdir=.. output -json)
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+INVENTORY_FILE="$SCRIPT_DIR/inventory.ini"
+OUTPUTS=$(terraform -chdir="$SCRIPT_DIR/.." output -json)
 
 SSH_KEY="$HOME/.ssh/terraform-user"
 
@@ -15,8 +17,8 @@ write_group() {
   PUBS=$(echo "$OUTPUTS" | jq -r "$PUB_KEY")
   PRIVS=$(echo "$OUTPUTS" | jq -r "$PRIV_KEY")
 
-  echo "" >> host.ini
-  echo "[$GROUP_NAME]" >> host.ini
+  echo "" >> "$INVENTORY_FILE"
+  echo "[$GROUP_NAME]" >> "$INVENTORY_FILE"
 
   pub_file=$(mktemp)
   priv_file=$(mktemp)
@@ -29,7 +31,7 @@ write_group() {
   paste "$pub_file" "$priv_file" | while IFS="$(printf '\t')" read -r pub priv; do
     [ -z "$pub" ] && continue
 
-    echo "${HOST_PREFIX}${count} ansible_host=$pub private_ip=$priv ansible_user=ubuntu ansible_ssh_private_key_file=$SSH_KEY" >> host.ini
+    echo "${HOST_PREFIX}${count} ansible_host=$pub private_ip=$priv ansible_user=ubuntu ansible_ssh_private_key_file=$SSH_KEY" >> "$INVENTORY_FILE"
 
     count=$((count + 1))
   done
@@ -38,7 +40,7 @@ write_group() {
 }
 
 # Create inventory
-: > host.ini
+: > "$INVENTORY_FILE"
 
 write_group \
   "control" \
@@ -70,7 +72,7 @@ write_group \
   '.storage_node_public_ips.value[]' \
   '.storage_node_private_ips.value[]'
 
-cat <<EOF >> host.ini
+cat <<EOF >> "$INVENTORY_FILE"
 
 [worker:children]
 worker_cpu
@@ -99,5 +101,5 @@ worker
 storage
 EOF
 
-echo "Generated host.ini:"
-cat host.ini
+echo "Generated $INVENTORY_FILE:"
+cat "$INVENTORY_FILE"

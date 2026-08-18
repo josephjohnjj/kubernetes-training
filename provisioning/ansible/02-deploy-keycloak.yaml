@@ -1,0 +1,8 @@
+---
+# Deploy Keycloak storage resources before installing the Helm release.
+
+- import_playbook: keycloak/01-deploy-storage.yml
+  tags: [keycloak, storage]
+
+- import_playbook: keycloak/02-install-keycloak.yml
+  tags: [keycloak, application]

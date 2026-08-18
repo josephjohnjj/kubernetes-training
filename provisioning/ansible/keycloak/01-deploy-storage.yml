@@ -10,8 +10,8 @@
     KUBECONFIG: /etc/kubernetes/admin.conf
 
   vars:
-    manifest_src_dir: "./storage_manifests"
-    manifest_dest_dir: "/tmp/storage_manifests"
+    manifest_src_dir: "./storage-manifests"
+    manifest_dest_dir: "/tmp/storage-manifests"
 
     storage_manifests:
       - keycloak-pool.yaml

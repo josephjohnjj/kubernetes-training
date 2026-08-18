@@ -173,3 +173,9 @@ cython_debug/
 todo
 junk
 username_paswd.md
+
+# Ansible generated and local runtime files
+/provisioning/ansible/inventory.ini
+/provisioning/ansible/*.retry
+/provisioning/ansible/.ansible/
+/provisioning/ansible/facts-cache/

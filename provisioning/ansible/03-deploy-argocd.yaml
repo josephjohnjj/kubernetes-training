@@ -1,0 +1,5 @@
+---
+# Deploy Argo CD after the cluster and its management StorageClass are ready.
+
+- import_playbook: argocd/01-install-argocd.yml
+  tags: [argocd, application]
