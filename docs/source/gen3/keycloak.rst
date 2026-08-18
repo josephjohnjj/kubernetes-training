@@ -105,9 +105,9 @@ Expose Keycloak
 ---------------
 
 Keep the Keycloak Service as ``ClusterIP`` and route it through the NGINX
-Ingress in ``manifests/ingress/keycloak-ingress.yaml``::
+Ingress in ``manifests/ingress/05-keycloak-ingress.yaml``::
 
-   kubectl apply -f manifests/ingress/keycloak-ingress.yaml
+   kubectl apply -f manifests/ingress/05-keycloak-ingress.yaml
    kubectl -n keycloak get ingress keycloak
 
 The repository hostname is ``keycloak.44.203.188.20.nip.io``. Replace it in the

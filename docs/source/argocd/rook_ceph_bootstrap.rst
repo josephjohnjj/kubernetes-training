@@ -47,7 +47,7 @@ Install operational tools
 
 The toolbox and dashboard access were created manually::
 
-   kubectl create -f toolbox.yaml
+   kubectl create -f tools/rook-ceph/01-toolbox.yaml
    kubectl -n rook-ceph get service
 
 The Git-managed equivalents are ``tools/rook-ceph/01-toolbox.yaml`` and

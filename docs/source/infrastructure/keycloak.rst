@@ -11,13 +11,13 @@ Create the storage pool used by Keycloak persistent volumes.
 
 .. code-block:: bash
 
-   kubectl create -f keycloak-pool.yaml
+   kubectl create -f manifests/keycloak/01-keycloak-pool.yaml
 
 Create a dedicated StorageClass for Keycloak.
 
 .. code-block:: bash
 
-   kubectl create -f keycloak-sc.yaml
+   kubectl create -f manifests/keycloak/02-keycloak-sc.yaml
 
 Temporarily set the Keycloak StorageClass as the cluster default.
 
@@ -48,7 +48,9 @@ Install Keycloak using the Bitnami Helm chart.
 
 .. code-block:: bash
 
-   helm install keycloak bitnami/keycloak --values values.yaml -n keycloak
+   helm install keycloak bitnami/keycloak \
+     --values manifests/keycloak/03-keycloak-values.yaml \
+     -n keycloak
 
 
 Verify the deployment:
@@ -96,4 +98,3 @@ StorageClass.
    kubectl patch storageclass keycloak-sc -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
 
 This prevents future workloads from automatically using ``keycloak-sc``.
-

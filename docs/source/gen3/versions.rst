@@ -37,7 +37,7 @@ Repository-pinned versions
      - ``charts/ingress-nginx/Chart.yaml``
    * - Keycloak image
      - ``26.3.3-debian-12-r0``
-     - ``manifests/keycloak/values.yaml``
+     - ``manifests/keycloak/03-keycloak-values.yaml``
    * - Keycloak Helm chart
      - ``25.2.0``
      - Tested Helm installation; record with ``helm list -n keycloak``

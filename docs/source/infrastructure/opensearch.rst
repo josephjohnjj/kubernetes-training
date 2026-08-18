@@ -40,7 +40,9 @@ Install the OpenSearch cluster using a custom values file:
 
 .. code-block:: bash
 
-   helm install opensearch opensearch/opensearch -f values_opensearch.yaml -n opensearch
+   helm install opensearch opensearch/opensearch \
+     -f manifests/opensearch/06-opensearch-values.yaml \
+     -n opensearch
 
 Install OpenSearch Dashboards:
 
@@ -108,4 +110,3 @@ removing the default annotation from the OpenSearch StorageClass:
 .. code-block:: bash
 
    kubectl patch storageclass opensearch-sc -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
-

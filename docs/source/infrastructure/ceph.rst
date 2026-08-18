@@ -177,13 +177,13 @@ Ceph monitors and managers without extra setup.
    used for debugging, inspection, and manual administration. 
 
 
-Create ``toolbox.yaml`` in :file:`infrastructure/ansible/3_rook/manifest/toolbox.yaml`
+The repository toolbox manifest is :file:`tools/rook-ceph/01-toolbox.yaml`.
 
 Apply the manifest:
 
 .. code-block:: bash
 
-   kubectl apply -f toolbox.yaml
+   kubectl apply -f tools/rook-ceph/01-toolbox.yaml
 
 Verify:
 

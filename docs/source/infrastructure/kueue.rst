@@ -42,8 +42,8 @@ Create workload queues for different resource types:
 
 .. code-block:: bash
 
-   kubectl create -f cpu_queue.yaml
-   kubectl create -f gpu_queue.yaml
+   kubectl create -f manifests/kueue/01-cpu-queue.yaml
+   kubectl create -f manifests/kueue/02-gpu-queue.yaml
 
 These queue definitions typically include:
 
@@ -136,4 +136,3 @@ The full scheduling flow is:
    ResourceFlavor (CPU/GPU mapping)
       ↓
    Nodes (actual execution)
-

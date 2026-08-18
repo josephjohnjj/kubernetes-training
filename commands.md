@@ -122,8 +122,8 @@ kubectl label nodes cpu-worker2 worker-type=cpu
 kubectl label nodes gpu-worker1 worker-type=gpu 
 kubectl label nodes gpu-worker2 worker-type=gpu 
 
-kubectl create -f cpu_queue.yaml 
-kubectl create -f gpu_queue.yaml 
+kubectl create -f manifests/kueue/01-cpu-queue.yaml
+kubectl create -f manifests/kueue/02-gpu-queue.yaml
 
 
 kubectl get localqueues -A
@@ -191,7 +191,7 @@ kubectl create -f cluster.yaml
 
 kubectl -n rook-ceph get cephcluster
 
-kubectl create -f toolbox.yaml 
+kubectl create -f manifests/rook-ceph/02-toolbox.yaml
 
 kubectl -n rook-ceph get service
 
@@ -235,7 +235,7 @@ helm repo add opensearch https://opensearch-project.github.io/helm-charts/
 helm repo update
 helm search repo opensearch
 
-helm install opensearch opensearch/opensearch  -f values_opensearch.yaml -n opensearch
+helm install opensearch opensearch/opensearch -f manifests/opensearch/06-opensearch-values.yaml -n opensearch
 helm install opensearch-dashboard opensearch/opensearch-dashboards  -n opensearch
 
 kubectl patch svc opensearch-dashboard-opensearch-dashboards -n opensearch -p '{"spec":{"type":"NodePort"}}'
@@ -318,7 +318,6 @@ sheepdog_gen3=# \dn+
         |        | =UC/gen3db        | 
 (1 row)
 ```
-
 
 
 
