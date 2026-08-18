@@ -189,9 +189,9 @@ Current manifest ownership
 The ``postgres/secrets`` directory contains exactly three infrastructure-owned
 Secrets:
 
-* ``gen3-owner-secret.yaml`` defines ``gen3db-secret`` in ``gen3-db``.
-* ``gen3-superuser-secret.yaml`` defines ``superuser-secret`` in ``gen3-db``.
-* ``postgres-dbcreds.yaml`` defines ``postgres-dbcreds`` in ``gen3``.
+* ``01-gen3-owner-secret.yaml`` defines ``gen3db-secret`` in ``gen3-db``.
+* ``02-gen3-superuser-secret.yaml`` defines ``superuser-secret`` in ``gen3-db``.
+* ``03-postgres-dbcreds.yaml`` defines ``postgres-dbcreds`` in ``gen3``.
 
 Service-specific database Secrets are generated exclusively by the GEN3 Helm
 chart. Do not add ``indexd-dbcreds``, ``sheepdog-dbcreds``, or other

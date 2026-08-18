@@ -103,7 +103,7 @@ keys required by the rendered chart before applying this template::
      database: postgres
 
 Keep exactly one desired definition of this Secret. The repository stores it in
-``postgres/secrets/postgres-dbcreds.yaml``. Service-specific database Secrets,
+``postgres/secrets/03-postgres-dbcreds.yaml``. Service-specific database Secrets,
 including ``indexd-dbcreds`` and ``sheepdog-dbcreds``, are owned by the GEN3
 Helm chart and must not also be declared under ``postgres/secrets``.
 

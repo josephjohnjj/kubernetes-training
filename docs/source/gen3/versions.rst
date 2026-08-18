@@ -22,7 +22,7 @@ Repository-pinned versions
      - ``charts/gen3-2025.08/values/gen3-values.yaml``
    * - PostgreSQL
      - ``13``
-     - ``postgres/db/gen3-db.yaml``
+     - ``postgres/db/01-gen3-db.yaml``
    * - Elasticsearch
      - ``9.5.0``
      - ``charts/eck-stack/elasticsearch-values.yaml``
