@@ -5,6 +5,201 @@ GEN3 uses graph and data-model terminology to describe how metadata is
 defined, submitted, stored, and connected. This page introduces those terms
 for readers who are new to GEN3.
 
+GEN3 components
+---------------
+
+GEN3 is composed of cooperating services rather than one application. Each
+component has a specific responsibility. A record normally passes through
+several components between submission and display in the Portal.
+
+Portal
+~~~~~~
+
+The **Portal** is the browser-based user interface. Depending on its
+configuration, it provides pages for signing in, viewing the data dictionary,
+submitting metadata, exploring searchable data, creating file manifests, and
+launching analysis workspaces.
+
+The Portal does not store submitted data itself. It calls backend services
+such as Sheepdog, Guppy, Peregrine, Fence, and Indexd through Revproxy.
+
+Revproxy
+~~~~~~~~
+
+**Revproxy** is the reverse proxy and external routing layer. It exposes one
+GEN3 hostname and sends each incoming path to the correct internal service.
+For example, submission, authentication, GraphQL, and file-access requests may
+all use the same public hostname but be routed to different components.
+
+Revproxy does not define the data model or store research data.
+
+Fence
+~~~~~
+
+**Fence** is the authentication and data-access service. It integrates with
+the configured identity provider, manages user sessions and tokens, and
+participates in controlled raw-file upload and download workflows.
+
+Authentication answers the question: **Who is making this request?** Fence
+works with Arborist when a request also needs an authorization decision.
+
+Arborist
+~~~~~~~~
+
+**Arborist** is the authorization service. It evaluates policies and decides
+whether an authenticated user or service may perform an action on a resource.
+Resources can represent programs, projects, services, files, or other
+protected areas of the commons.
+
+Authorization answers the question: **Is this identity allowed to perform
+this action on this resource?**
+
+Sheepdog
+~~~~~~~~
+
+**Sheepdog** is the structured-metadata submission service. It receives TSV
+or JSON records, validates them against the configured data dictionary,
+checks their project and parent links, and stores valid committed entities in
+the PostgreSQL metadata graph.
+
+Sheepdog stores metadata records; it does not store the bytes of raw VCF, BAM,
+FASTQ, image, or other data files.
+
+Data dictionary
+~~~~~~~~~~~~~~~
+
+The **data dictionary** is the schema used by Sheepdog and other GEN3
+components. It defines node types, properties, data types, controlled values,
+required fields, and permitted links.
+
+The dictionary describes what valid metadata looks like. It does not contain
+the submitted participant, sample, aliquot, or file records.
+
+PostgreSQL
+~~~~~~~~~~
+
+**PostgreSQL** provides persistent relational databases for several GEN3
+services. In the metadata lifecycle, Sheepdog stores normalized node entities,
+properties, and links in PostgreSQL.
+
+The Sheepdog graph is the authoritative representation of submitted structured
+metadata. Elasticsearch contains a derived representation optimized for
+searching.
+
+Indexd
+~~~~~~
+
+**Indexd** is the raw-file registration service. It associates a persistent
+globally unique identifier, usually called a GUID, with information such as a
+file's storage URL, checksum, size, and access metadata.
+
+Indexd does not normally store the file bytes. It records how GEN3 identifies,
+locates, and verifies the object.
+
+Object storage
+~~~~~~~~~~~~~~
+
+**Object storage** holds the actual bytes of raw data files such as VCF, BAM,
+FASTQ, CSV, and images. A deployment might use Amazon S3, Ceph Object Gateway,
+or another S3-compatible service.
+
+A stored object is normally registered in Indexd and described by a file node
+in the Sheepdog metadata graph. These three representations serve different
+purposes:
+
+* object storage contains the bytes;
+* Indexd maps a GUID to the stored object; and
+* a Sheepdog file node describes the file and links it to biological or
+  analysis metadata.
+
+Tube
+~~~~
+
+**Tube** is the GEN3 extract, transform, and load service. It reads normalized
+metadata from the graph, follows configured node relationships, and creates
+denormalized documents for Elasticsearch.
+
+A Tube mapping determines the root node, properties to copy, relationships to
+flatten, values to aggregate, and destination index. Tube output is derived
+search data, not a metadata-submission payload.
+
+Spark
+~~~~~
+
+**Apache Spark** is the data-processing engine used by Tube. It performs the
+joins, graph traversals, flattening, counting, and other transformations
+specified by the Tube mapping.
+
+In Kubernetes deployments, Tube and Spark commonly run in an ETL Job or
+CronJob.
+
+Elasticsearch
+~~~~~~~~~~~~~
+
+**Elasticsearch** stores the denormalized documents produced by Tube. It is
+optimized for fast filtering, aggregation, counts, and Explorer tables.
+
+Elasticsearch is not the authoritative store for submitted graph metadata.
+Its indices can be recreated from the committed PostgreSQL graph by running
+the appropriate ETL process.
+
+Guppy
+~~~~~
+
+**Guppy** provides an authorized GraphQL API over Elasticsearch. The Portal
+Explorer uses Guppy for filters, charts, counts, tables, and manifest-related
+queries.
+
+Guppy's index name, data type, field types, array configuration, and
+authorization field must agree with the indices and documents produced by
+Tube.
+
+Peregrine
+~~~~~~~~~
+
+**Peregrine** provides a GraphQL query interface for the normalized metadata
+graph. It is useful when a query needs the original node records and their
+relationships.
+
+Peregrine and Guppy serve different query shapes:
+
+* Peregrine queries normalized graph entities and links in PostgreSQL.
+* Guppy queries denormalized Explorer documents in Elasticsearch.
+
+Audit
+~~~~~
+
+**Audit** records configured security-sensitive or user activities, such as
+logins or presigned-URL requests, depending on deployment configuration. It
+supports operational traceability but is not the primary store for research
+metadata.
+
+Component relationship summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The principal component relationships are::
+
+   Metadata submission:
+     Portal/API -> Revproxy -> Fence/Arborist -> Sheepdog
+                                             -> PostgreSQL graph
+
+   Raw files:
+     Fence upload flow -> Object storage + Indexd GUID
+                                      `-> Sheepdog file-node metadata
+
+   Explorer query:
+     PostgreSQL -> Tube/Spark -> Elasticsearch -> Guppy -> Portal
+
+   Graph query:
+     PostgreSQL -> Peregrine -> Portal/API client
+
+   File download:
+     Portal/API -> Fence/Arborist -> Indexd -> signed object-storage URL
+
+See :doc:`data_lifecycle_components` for a step-by-step explanation of how
+these components participate when data is submitted, stored, queried, and
+downloaded.
+
 Node
 ----
 
