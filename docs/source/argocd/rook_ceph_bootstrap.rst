@@ -39,7 +39,7 @@ The cluster was then created from ``cluster.yaml`` and verified::
    kubectl -n rook-ceph get cephcluster
 
 The Git-managed equivalent is
-``storage/rook-ceph/cluster/cluster.yaml``. It explicitly uses three storage
+``storage/rook-ceph/cluster/01-rook-ceph-cluster.yaml``. It explicitly uses three storage
 nodes and nine NVMe devices. Confirm every device is empty before applying it.
 
 Install operational tools
@@ -79,9 +79,9 @@ Create filesystem storage
 
 Scratch CephFS and its StorageClass were initially created manually::
 
-   kubectl create -f scratch-fs.yaml
+   kubectl create -f storage/rook-ceph/storage/cephfilesystem/02-scratch-fs.yaml
    kubectl -n rook-ceph get cephfilesystem
-   kubectl create -f scratch-sc.yaml
+   kubectl create -f storage/rook-ceph/storage/storageclasses/06-scratch-sc.yaml
    kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph fs ls
    kubectl create namespace mlproject
 
@@ -135,4 +135,3 @@ Before considering the manual installation adopted by GitOps::
 
 Do not force synchronization of a CephCluster until differences in node names,
 device lists, image versions, and storage pools have been reviewed.
-

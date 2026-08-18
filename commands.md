@@ -201,11 +201,11 @@ n9!,6YZ9U#@H2PFN0&!
 
 kubectl -n rook-ceph delete pod -l app=rook-ceph-operator
 
-kubectl create -f scratch-fs.yaml 
+kubectl create -f storage/rook-ceph/storage/cephfilesystem/02-scratch-fs.yaml
 
 kubectl -n rook-ceph get cephfilesystem 
 
-kubectl create -f scratch-sc.yaml 
+kubectl create -f storage/rook-ceph/storage/storageclasses/06-scratch-sc.yaml
 
 kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph fs ls
 
@@ -251,8 +251,8 @@ CloudNative PG
 ```bash
 
 
-kubectl create -f cnpg-pool.yaml 
-kubectl create -f cnpg-sc.yaml 
+kubectl create -f storage/rook-ceph/storage/cephpool/01-cnpg-pool.yaml
+kubectl create -f storage/rook-ceph/storage/storageclasses/01-cnpg-sc.yaml
 
 kubectl patch storageclass cnpg-sc   -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
@@ -318,7 +318,6 @@ sheepdog_gen3=# \dn+
         |        | =UC/gen3db        | 
 (1 row)
 ```
-
 
 
 

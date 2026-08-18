@@ -28,7 +28,7 @@ Repository-pinned versions
      - ``charts/eck-stack/elasticsearch-values.yaml``
    * - Ceph
      - ``v20.2.1``
-     - ``storage/rook-ceph/cluster/cluster.yaml``
+     - ``storage/rook-ceph/cluster/01-rook-ceph-cluster.yaml``
    * - ingress-nginx chart
      - ``4.15.1``
      - ``charts/ingress-nginx/Chart.yaml``

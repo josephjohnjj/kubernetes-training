@@ -28,15 +28,15 @@ Create required storage and pool configurations:
 
 .. code-block:: bash
 
-   kubectl create -f cnpg-pool.yaml
-   kubectl create -f cnpg-sc.yaml
+   kubectl create -f storage/rook-ceph/storage/cephpool/01-cnpg-pool.yaml
+   kubectl create -f storage/rook-ceph/storage/storageclasses/01-cnpg-sc.yaml
 
 Configuration file locations:
 
 .. code-block:: text
 
-   infrastructure/ansible/15_cnpg_system/cnpg-pool.yaml
-   infrastructure/ansible/15_cnpg_system/cnpg-sc.yaml
+   storage/rook-ceph/storage/cephpool/01-cnpg-pool.yaml
+   storage/rook-ceph/storage/storageclasses/01-cnpg-sc.yaml
 
 Set the CNPG StorageClass as the default (if required for cluster provisioning):
 

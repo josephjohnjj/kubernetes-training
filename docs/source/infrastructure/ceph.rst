@@ -271,7 +271,8 @@ File System
 -------------------
 
 
-Create ``scratch-fs.yaml`` in :file:`infrastructure/ansible/3_rook/manifest/scratch-fs.yaml`
+The repository manifest is
+:file:`storage/rook-ceph/storage/cephfilesystem/02-scratch-fs.yaml`.
 
 
 
@@ -279,7 +280,7 @@ Apply the configuration:
 
 .. code-block:: bash
 
-   kubectl apply -f scratch-fs.yaml
+   kubectl apply -f storage/rook-ceph/storage/cephfilesystem/02-scratch-fs.yaml
 
 .. code-block:: bash
 
@@ -294,13 +295,14 @@ Storage Class
 -------------------
 
 
-Create ``scratch-sc.yaml`` in :file:`infrastructure/ansible/3_rook/manifest/scratch-sc.yaml`
+The repository manifest is
+:file:`storage/rook-ceph/storage/storageclasses/06-scratch-sc.yaml`.
 
 
 
 .. code-block:: bash
 
-   kubectl apply -f scratch-sc.yaml
+   kubectl apply -f storage/rook-ceph/storage/storageclasses/06-scratch-sc.yaml
 
 Verify:
 
@@ -416,7 +418,7 @@ Prevent ordinary application workloads from being scheduled on ``storage1``,
 Ceph and the node-level services can be checked between changes.
 
 #. Add the following OSD toleration to
-   :file:`storage/rook-ceph/cluster/cluster.yaml` under ``spec`` before tainting
+   :file:`storage/rook-ceph/cluster/01-rook-ceph-cluster.yaml` under ``spec`` before tainting
    any node:
 
    .. code-block:: yaml
@@ -433,7 +435,7 @@ Ceph and the node-level services can be checked between changes.
 
    .. code-block:: bash
 
-      kubectl apply -f storage/rook-ceph/cluster/cluster.yaml
+      kubectl apply -f storage/rook-ceph/cluster/01-rook-ceph-cluster.yaml
       kubectl -n rook-ceph get pods -o wide
       kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph status
 

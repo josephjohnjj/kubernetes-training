@@ -48,7 +48,7 @@ marks values that must be reviewed. Also inspect:
 * ``manifests/keycloak/values.yaml``
 * ``manifests/ingress/keycloak-ingress.yaml``
 * ``postgres/secrets``
-* ``storage/rook-ceph/cluster/cluster.yaml``
+* ``storage/rook-ceph/cluster/01-rook-ceph-cluster.yaml``
 * ``charts/eck-stack``
 
 Use :doc:`secrets` to identify object names and ownership. Do not commit newly
