@@ -169,7 +169,7 @@ RBAC after authentication
 -------------------------
 
 Keycloak proves the user's identity; Argo CD RBAC controls what that identity
-may do. ``argocd/bootstrap/argocd-rbac-cm.yaml`` defines repository-managed
+may do. ``argocd/bootstrap/02-argocd-rbac-cm.yaml`` defines repository-managed
 roles and user/group mappings. The Group Membership mapper described above is
 required for those group mappings: the group name in ``argocd-rbac-cm`` must
 exactly match a value in the token's ``groups`` claim.

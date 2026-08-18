@@ -24,8 +24,8 @@ Apply the project first
 The root Applications reference the ``infrastructure`` AppProject, so apply it
 before them::
 
-   kubectl apply -f argocd/bootstrap/project-infrastructure.yaml
-   kubectl apply -f argocd/bootstrap/argocd-rbac-cm.yaml
+   kubectl apply -f argocd/bootstrap/01-project-infrastructure.yaml
+   kubectl apply -f argocd/bootstrap/02-argocd-rbac-cm.yaml
 
 The AppProject permits namespace ``gen3``. The infrastructure root also creates
 that namespace at sync wave ``-1`` so it exists before the storage child
@@ -36,7 +36,7 @@ Bootstrap platform applications
 
 Apply infrastructure first and wait for storage and operators to become ready::
 
-   kubectl apply -f argocd/bootstrap/infrastructure.yaml
+   kubectl apply -f argocd/bootstrap/03-infrastructure.yaml
    kubectl -n argocd get applications --watch
 
 Use :doc:`readiness` to validate Ceph, CloudNativePG, ECK, and ingress-nginx.
@@ -47,7 +47,7 @@ Bootstrap GEN3 applications
 
 After prerequisites and Secrets are ready::
 
-   kubectl apply -f argocd/bootstrap/applications.yaml
+   kubectl apply -f argocd/bootstrap/04-applications.yaml
    kubectl -n argocd get application gen3
    kubectl -n argocd wait --for=jsonpath='{.status.sync.status}'=Synced \
      application/gen3 --timeout=10m

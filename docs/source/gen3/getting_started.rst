@@ -83,9 +83,9 @@ Applications.
 Follow :doc:`argocd_bootstrap`. In summary, install a pinned Argo CD release,
 then apply the project and root Applications::
 
-   kubectl apply -f argocd/bootstrap/project-infrastructure.yaml
-   kubectl apply -f argocd/bootstrap/argocd-rbac-cm.yaml
-   kubectl apply -f argocd/bootstrap/infrastructure.yaml
+   kubectl apply -f argocd/bootstrap/01-project-infrastructure.yaml
+   kubectl apply -f argocd/bootstrap/02-argocd-rbac-cm.yaml
+   kubectl apply -f argocd/bootstrap/03-infrastructure.yaml
 
 The infrastructure root creates namespace ``gen3`` at sync wave ``-1``. This
 must happen before the storage child Application creates ObjectBucketClaims in
@@ -121,7 +121,7 @@ client. Never reuse one client's redirect URI or secret for the other.
 Once storage, PostgreSQL, Elasticsearch, ingress-nginx, and Keycloak are ready,
 create the workload root Application::
 
-   kubectl apply -f argocd/bootstrap/applications.yaml
+   kubectl apply -f argocd/bootstrap/04-applications.yaml
    kubectl -n argocd get application gen3 --watch
 
 Inspect the operation rather than starting a second sync while one is running::

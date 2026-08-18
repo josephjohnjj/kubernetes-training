@@ -25,15 +25,15 @@ in Git.
 Bootstrap resources
 -------------------
 
-``argocd/bootstrap/project-infrastructure.yaml`` defines the
+``argocd/bootstrap/01-project-infrastructure.yaml`` defines the
 ``infrastructure`` AppProject, allowed source repositories, destination
 namespaces, and permitted resource kinds.
 
-``argocd/bootstrap/infrastructure.yaml`` recursively reads
+``argocd/bootstrap/03-infrastructure.yaml`` recursively reads
 ``argocd/infrastructure``. It creates the child Applications for storage,
 databases, networking, observability, security, and scheduling.
 
-``argocd/bootstrap/applications.yaml`` recursively reads
+``argocd/bootstrap/04-applications.yaml`` recursively reads
 ``argocd/applications``. It creates application workloads, including GEN3.
 
 Reconciliation behavior
@@ -92,4 +92,3 @@ The current repository now contains Argo CD Applications for the Rook-Ceph
 resources, but their automated pruning and self-healing are disabled. The
 Keycloak OIDC connection remains a manual cluster configuration; only Argo CD
 RBAC policy is stored in Git.
-
