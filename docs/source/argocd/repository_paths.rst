@@ -134,8 +134,9 @@ storage changes can be destructive and require deliberate review.
 ---------
 
 Application ``rook-ceph-tools`` recursively applies ``tools/rook-ceph``. It
-manages the Ceph toolbox Deployment and the NodePort dashboard Service. These
-are operational access resources, not storage daemons or data pools.
+manages the Ceph toolbox Deployment. The ``platform-ingresses`` Application
+exposes the dashboard through Rook's existing ClusterIP Service, so no
+additional NodePort Service is managed here.
 
 External chart exception
 ------------------------

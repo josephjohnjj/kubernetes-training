@@ -114,7 +114,11 @@ Argo CD ownership after handoff
      - Pools, filesystems, classes, and object storage
    * - ``rook-ceph-tools``
      - ``tools/rook-ceph``
-     - Toolbox and dashboard Service
+     - Ceph toolbox
+
+The Ceph dashboard ingress is owned by the ``platform-ingresses`` Application
+and routes to Rook's existing ``rook-ceph-mgr-dashboard`` ClusterIP Service.
+No additional NodePort Service is required.
 
 Because these Applications have ``prune: false`` and ``selfHeal: false``, Argo
 CD does not automatically reverse manual changes. A human must inspect the diff
