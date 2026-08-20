@@ -33,6 +33,12 @@ namespaces, and permitted resource kinds.
 ``argocd/infrastructure``. It creates the child Applications for storage,
 databases, networking, observability, security, and scheduling.
 
+The ``platform-ingresses`` child Application reads ``argocd/ingresses`` and
+owns the Argo CD, Ceph dashboard, Grafana, Jaeger, Keycloak, and OpenSearch
+Dashboard ingress resources. The hostnames currently use the environment's
+``44.203.188.20.nip.io`` address and must be changed if the ingress endpoint
+changes.
+
 ``argocd/bootstrap/04-applications.yaml`` recursively reads
 ``argocd/applications``. It creates application workloads, including GEN3.
 

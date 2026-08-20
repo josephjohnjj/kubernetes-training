@@ -8,13 +8,13 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: ceph.44.203.188.20.nip.io
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: rook-ceph-mgr-dashboard
-            port:
-              number: 7000
+    - host: ceph.44.203.188.20.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rook-ceph-mgr-dashboard
+                port:
+                  number: 7000

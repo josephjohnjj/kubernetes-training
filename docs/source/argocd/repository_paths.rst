@@ -13,6 +13,8 @@ This is the control layer:
   RBAC ConfigMap.
 * ``argocd/infrastructure`` contains child Applications for platform services.
 * ``argocd/applications`` contains workload Applications such as GEN3.
+* ``argocd/ingresses`` contains the platform ingress resources reconciled by
+  the ``platform-ingresses`` Application.
 * ``argocd/infrastructure/01-namespace.yaml`` declares platform namespaces and is
   applied by the recursive infrastructure root Application.
 

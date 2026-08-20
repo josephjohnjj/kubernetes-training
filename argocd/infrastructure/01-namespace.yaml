@@ -81,3 +81,10 @@ metadata:
   name: gen3
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keycloak
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"

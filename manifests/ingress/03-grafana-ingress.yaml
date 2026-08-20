@@ -6,13 +6,13 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: grafana.44.203.188.20.nip.io
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: prometheus-grafana
-            port:
-              number: 80
+    - host: grafana.44.203.188.20.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-grafana
+                port:
+                  number: 80

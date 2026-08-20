@@ -31,6 +31,12 @@ The AppProject permits namespace ``gen3``. The infrastructure root also creates
 that namespace at sync wave ``-1`` so it exists before the storage child
 Application reconciles GEN3 ObjectBucketClaims.
 
+The project also permits ``keycloak`` for the Git-managed Keycloak ingress.
+On an existing cluster, reapply the project file after pulling this change so
+the ``platform-ingresses`` Application can reconcile that namespace::
+
+   kubectl apply -f argocd/bootstrap/01-project-infrastructure.yaml
+
 Bootstrap platform applications
 -------------------------------
 

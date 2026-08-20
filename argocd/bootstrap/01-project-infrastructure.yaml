@@ -60,6 +60,8 @@ spec:
       namespace: elasticsearch
     - server: https://kubernetes.default.svc
       namespace: gen3-db
+    - server: https://kubernetes.default.svc
+      namespace: keycloak
 
   clusterResourceWhitelist:
     - group: "*"
