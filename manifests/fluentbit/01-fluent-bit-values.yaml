@@ -6,7 +6,11 @@ config:
 
         Host opensearch-cluster-master.opensearch.svc.cluster.local
         Port 9200
-        Index fluent-bit
+
+        Logstash_Format On
+        Logstash_Prefix fluent-bit
+        Logstash_DateFormat %Y.%m.%d
+        Time_Key @timestamp
 
         HTTP_User admin
         HTTP_Passwd Opensearch@123
@@ -16,3 +20,12 @@ config:
 
         Suppress_Type_Name On
         Retry_Limit False
+
+serviceMonitor:
+  enabled: true
+  selector:
+    release: prometheus
+
+dashboards:
+  enabled: true
+  namespace: prometheus

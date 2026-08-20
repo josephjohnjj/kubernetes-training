@@ -214,7 +214,7 @@ persistence:
   #   set, choosing the default provisioner.  (gp2 on AWS, standard on
   #   GKE, AWS & OpenStack)
   #
-  storageClassName: opensearch-sc
+  # storageClass: "-"
   accessModes:
     - ReadWriteOnce
   size: 8Gi
@@ -575,4 +575,3 @@ serviceMonitor:
   #   password: my-password
   basicAuth:
     enabled: false
-
