@@ -87,7 +87,7 @@ then apply the project and root Applications::
    kubectl apply -f argocd/bootstrap/02-argocd-rbac-cm.yaml
    kubectl apply -f argocd/bootstrap/03-infrastructure.yaml
 
-The infrastructure root creates namespace ``gen3`` at sync wave ``-1``. This
+The infrastructure root creates namespace ``gen3`` at sync wave ``-20``. This
 must happen before the storage child Application creates ObjectBucketClaims in
 that namespace.
 
