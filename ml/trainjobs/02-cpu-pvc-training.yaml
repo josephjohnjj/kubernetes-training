@@ -13,60 +13,111 @@ spec:
     numNodes: 1
     image: pytorch/pytorch:2.10.0-cuda12.8-cudnn9-runtime
     command:
-      - python
+      - /bin/bash
       - -c
     args:
       - |
+        set -euo pipefail
+
+        pip install --no-cache-dir \
+          opentelemetry-api \
+          opentelemetry-sdk \
+          opentelemetry-exporter-otlp-proto-http
+
+        python - <<'PY'
         import json
         import socket
         from datetime import datetime, timezone
         from pathlib import Path
 
         import torch
+        from opentelemetry import trace
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+        provider = TracerProvider(
+          resource=Resource.create({
+            "service.name": "cpu-pvc-training",
+            "ml.user": "mluser1",
+            "k8s.namespace.name": "mlproject",
+          })
+        )
+        provider.add_span_processor(
+          BatchSpanProcessor(
+            OTLPSpanExporter(
+              endpoint="http://jaeger.jaeger.svc.cluster.local:4318/v1/traces"
+            )
+          )
+        )
+        trace.set_tracer_provider(provider)
+        tracer = trace.get_tracer("ml-training")
 
         torch.manual_seed(7)
 
-        # Learn y = 3x + 2 from noisy synthetic observations.
-        features = torch.linspace(-2, 2, 256).reshape(-1, 1)
-        targets = 3 * features + 2 + 0.05 * torch.randn_like(features)
+        try:
+          with tracer.start_as_current_span("cpu-pvc-training-run") as run_span:
+            run_span.set_attribute("ml.framework", "pytorch")
+            run_span.set_attribute("ml.device", "cpu")
 
-        model = torch.nn.Linear(1, 1)
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.05)
-        loss_function = torch.nn.MSELoss()
+            with tracer.start_as_current_span("prepare-data"):
+              # Learn y = 3x + 2 from noisy synthetic observations.
+              features = torch.linspace(-2, 2, 256).reshape(-1, 1)
+              targets = 3 * features + 2 + 0.05 * torch.randn_like(features)
 
-        for _ in range(300):
-          optimizer.zero_grad()
-          loss = loss_function(model(features), targets)
-          loss.backward()
-          optimizer.step()
+            model = torch.nn.Linear(1, 1)
+            optimizer = torch.optim.SGD(model.parameters(), lr=0.05)
+            loss_function = torch.nn.MSELoss()
 
-        completed_at = datetime.now(timezone.utc)
-        run_id = completed_at.strftime("%Y%m%dT%H%M%SZ")
-        results_root = Path("/mnt/mlproject/results/mluser1/cpu-pvc-training")
-        output_dir = results_root / run_id
-        output_dir.mkdir(parents=True, exist_ok=False)
+            with tracer.start_as_current_span("train-model") as training_span:
+              for _ in range(300):
+                optimizer.zero_grad()
+                loss = loss_function(model(features), targets)
+                loss.backward()
+                optimizer.step()
 
-        model_path = output_dir / "model.pt"
-        metrics_path = output_dir / "metrics.json"
-        torch.save(model.state_dict(), model_path)
+              training_span.set_attribute("ml.epochs", 300)
+              training_span.set_attribute("ml.final_loss", loss.item())
+              training_span.set_attribute("ml.samples", len(features))
 
-        metrics = {
-          "completed_at": completed_at.isoformat(),
-          "host": socket.gethostname(),
-          "loss": loss.item(),
-          "weight": model.weight.item(),
-          "bias": model.bias.item(),
-          "samples": len(features),
-        }
-        metrics_path.write_text(json.dumps(metrics, indent=2) + "\n")
-        (results_root / "latest.txt").write_text(str(output_dir) + "\n")
+            completed_at = datetime.now(timezone.utc)
+            run_id = completed_at.strftime("%Y%m%dT%H%M%SZ")
+            results_root = Path("/mnt/mlproject/results/mluser1/cpu-pvc-training")
+            output_dir = results_root / run_id
+            model_path = output_dir / "model.pt"
+            metrics_path = output_dir / "metrics.json"
 
-        print("Training complete")
-        print(json.dumps(metrics, indent=2))
-        print("Persistent output directory:", output_dir)
-        print("All saved runs:")
-        for path in sorted(results_root.iterdir()):
-          print(" -", path.name)
+            metrics = {
+              "completed_at": completed_at.isoformat(),
+              "host": socket.gethostname(),
+              "loss": loss.item(),
+              "weight": model.weight.item(),
+              "bias": model.bias.item(),
+              "samples": len(features),
+            }
+
+            with tracer.start_as_current_span("save-results") as storage_span:
+              output_dir.mkdir(parents=True, exist_ok=False)
+              torch.save(model.state_dict(), model_path)
+              metrics_path.write_text(json.dumps(metrics, indent=2) + "\n")
+              (results_root / "latest.txt").write_text(str(output_dir) + "\n")
+              storage_span.set_attribute("ml.model.path", str(model_path))
+              storage_span.set_attribute("ml.metrics.path", str(metrics_path))
+
+            run_span.set_attribute("ml.run.id", run_id)
+            run_span.set_attribute("ml.final_loss", loss.item())
+
+            print("Training complete")
+            print(json.dumps(metrics, indent=2))
+            print("Persistent output directory:", output_dir)
+            print("All saved runs:")
+            for path in sorted(results_root.iterdir()):
+              print(" -", path.name)
+        finally:
+          provider.force_flush()
+          provider.shutdown()
+        PY
     resourcesPerNode:
       requests:
         cpu: "500m"
