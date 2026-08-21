@@ -258,8 +258,43 @@ This is a persistent bearer token for the current lab environment. Delete
    ``/home/ubuntu/.kube/config`` into an ML user home directory. Those files
    grant administrative access and bypass the restricted Role.
 
-5. Submit CPU training jobs
----------------------------
+5. Enable the Kubeflow training runtime
+---------------------------------------
+
+The CPU test uses the optional cluster-scoped ``torch-distributed`` runtime.
+The ``kubeflow-trainer`` Argo CD Application enables only this runtime through
+the following Helm override:
+
+.. code-block:: yaml
+
+   helm:
+     valuesObject:
+       runtimes:
+         torchDistributed:
+           enabled: true
+
+After the parent ``infrastructure`` Application and the ``kubeflow-trainer``
+child Application synchronize, verify the runtime from a control node:
+
+.. code-block:: console
+
+   kubectl get clustertrainingruntime torch-distributed
+
+If the child Application has not received the override, hard-refresh both
+Argo CD layers:
+
+.. code-block:: console
+
+   kubectl -n argocd annotate application infrastructure \
+     argocd.argoproj.io/refresh=hard --overwrite
+   kubectl -n argocd annotate application kubeflow-trainer \
+     argocd.argoproj.io/refresh=hard --overwrite
+
+The child Application should list ``ClusterTrainingRuntime/torch-distributed``
+as a desired resource before job submission.
+
+6. Submit the CPU smoke test
+----------------------------
 
 Every user-submitted ``TrainJob`` must be created in ``mlproject`` and select
 the CPU LocalQueue:
@@ -271,19 +306,128 @@ the CPU LocalQueue:
      labels:
        kueue.x-k8s.io/queue-name: cpu-normal-queue
 
-Users can then follow the HPC-style command flow:
+The repository contains a manually submitted smoke test at
+``ml/trainjobs/01-cpu-smoke-test.yaml``. This path is outside Argo CD's managed
+directories, so committing the example does not run it automatically.
+
+Submit it on the login node using the restricted user identity:
 
 .. code-block:: console
 
-   kubectl create -f training.yaml
-   kubectl get trainjobs
-   kubectl get workloads
-   kubectl get pods
-   kubectl logs POD_NAME --follow
-   kubectl delete trainjob TRAINJOB_NAME
+   cd ~/kubernetes-training
+   sudo -u mluser1 kubectl create \
+     -f ml/trainjobs/01-cpu-smoke-test.yaml
 
 Kubeflow Trainer manages the training workload, while Kueue holds it until CPU
 and memory quota are available.
+
+7. Monitor from the login node
+------------------------------
+
+Use ``sudo -u mluser1`` when an administrator is testing the user workflow from
+the login node. These commands use ``/home/mluser1/.kube/config``:
+
+.. code-block:: console
+
+   sudo -u mluser1 kubectl get trainjob cpu-smoke-test
+   sudo -u mluser1 kubectl get workloads
+   sudo -u mluser1 kubectl get pods --watch
+
+Kueue creates a ``Workload`` and initially suspends the TrainJob. After quota
+is reserved, the Workload reports ``ADMITTED=True`` and Kueue changes the
+TrainJob suspension field to ``false``:
+
+.. code-block:: console
+
+   sudo -u mluser1 kubectl get trainjob cpu-smoke-test \
+     -o jsonpath='suspend={.spec.suspend}{"\n"}'
+
+After a Pod appears, follow its output:
+
+.. code-block:: console
+
+   POD=$(sudo -u mluser1 kubectl get pods \
+     -o jsonpath='{.items[0].metadata.name}')
+   sudo -u mluser1 kubectl logs "$POD" --follow
+
+The first Pod can remain in ``ContainerCreating`` for several minutes while
+the CPU worker downloads the large PyTorch image.
+
+8. Monitor from a control node
+------------------------------
+
+The Linux account ``mluser1`` exists only on the login node. A command such as
+``sudo -u mluser1`` therefore fails on ``control1``. Administrators monitor the
+same workload from a control node using the administrator kubeconfig and an
+explicit namespace:
+
+.. code-block:: console
+
+   kubectl -n mlproject get trainjob cpu-smoke-test
+   kubectl -n mlproject get workloads
+   kubectl -n mlproject get jobsets
+   kubectl -n mlproject get pods -o wide
+
+Check the authoritative suspension fields:
+
+.. code-block:: console
+
+   kubectl -n mlproject get trainjob cpu-smoke-test \
+     -o jsonpath='suspend={.spec.suspend}{"\n"}'
+
+   kubectl -n mlproject get jobset cpu-smoke-test \
+     -o jsonpath='suspend={.spec.suspend}{"\n"}'
+
+The TrainJob printer's ``STATE`` column can briefly continue to display
+``Suspended`` after ``spec.suspend`` becomes ``false``. The spec, JobSet state,
+and presence of a Pod are the more useful indicators during this transition.
+
+Inspect scheduling, events, and logs from the control node:
+
+.. code-block:: console
+
+   kubectl -n mlproject get pods -o wide
+   kubectl -n mlproject describe trainjob cpu-smoke-test
+   kubectl -n mlproject get events --sort-by='.lastTimestamp'
+   kubectl -n mlproject logs POD_NAME --follow
+
+Webhook certificate recovery
+----------------------------
+
+An ``x509: certificate signed by unknown authority`` error from a Kubeflow
+Trainer admission webhook indicates that its serving certificate and webhook
+CA bundle are inconsistent. First restart the Trainer controller and retry the
+operation:
+
+.. code-block:: console
+
+   kubectl -n kubeflow-system rollout restart \
+     deployment/kubeflow-trainer-controller-manager
+   kubectl -n kubeflow-system rollout status \
+     deployment/kubeflow-trainer-controller-manager --timeout=2m
+
+If the error remains, rotate only the generated webhook certificate Secret:
+
+.. code-block:: console
+
+   kubectl -n kubeflow-system delete secret kubeflow-trainer-webhook-cert
+   kubectl -n kubeflow-system create secret generic \
+     kubeflow-trainer-webhook-cert
+
+Wait until the Secret reports ``DATA 4`` before restarting the controller
+again:
+
+.. code-block:: console
+
+   kubectl -n kubeflow-system get secret kubeflow-trainer-webhook-cert
+   kubectl -n kubeflow-system rollout restart \
+     deployment/kubeflow-trainer-controller-manager
+   kubectl -n kubeflow-system rollout status \
+     deployment/kubeflow-trainer-controller-manager --timeout=2m
+
+The rotator repopulates this Secret and updates the webhook configurations.
+The Secret contains generated webhook certificates, not user credentials.
+Do not disable webhook validation to bypass certificate failures.
 
 Offboarding
 -----------

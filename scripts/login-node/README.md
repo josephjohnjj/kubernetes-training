@@ -175,3 +175,146 @@ sudo -u mluser1 kubectl auth can-i get secrets
 The expected permission answers are `yes`, `no`, and `no`. Never copy
 `/etc/kubernetes/admin.conf` or `/home/ubuntu/.kube/config` into a user home
 directory.
+
+## 5. Enable the Kubeflow training runtime
+
+The CPU smoke test references the cluster-scoped `torch-distributed` runtime.
+The `kubeflow-trainer` Argo CD Application enables only this optional runtime:
+
+```yaml
+helm:
+  valuesObject:
+    runtimes:
+      torchDistributed:
+        enabled: true
+```
+
+After the parent `infrastructure` Application and the `kubeflow-trainer` child
+Application synchronize, verify from a control node:
+
+```bash
+kubectl get clustertrainingruntime torch-distributed
+```
+
+If the child Application is stale, refresh both Argo CD layers before retrying:
+
+```bash
+kubectl -n argocd annotate application infrastructure \
+  argocd.argoproj.io/refresh=hard --overwrite
+kubectl -n argocd annotate application kubeflow-trainer \
+  argocd.argoproj.io/refresh=hard --overwrite
+```
+
+## 6. Submit the CPU smoke test
+
+The manually submitted example is stored outside Argo CD's managed paths:
+
+```text
+ml/trainjobs/01-cpu-smoke-test.yaml
+```
+
+On the login node, submit it using the restricted identity:
+
+```bash
+cd ~/kubernetes-training
+sudo -u mluser1 kubectl create \
+  -f ml/trainjobs/01-cpu-smoke-test.yaml
+```
+
+The manifest selects `cpu-normal-queue` using the
+`kueue.x-k8s.io/queue-name` label. Kubeflow Trainer creates the JobSet and
+Pods only after Kueue admits the TrainJob.
+
+## 7. Monitor from the login node
+
+Run user-facing commands as the Linux user so they use the restricted
+kubeconfig:
+
+```bash
+sudo -u mluser1 kubectl get trainjob cpu-smoke-test
+sudo -u mluser1 kubectl get workloads
+sudo -u mluser1 kubectl get pods --watch
+```
+
+Confirm Kueue has unsuspended the job:
+
+```bash
+sudo -u mluser1 kubectl get trainjob cpu-smoke-test \
+  -o jsonpath='suspend={.spec.suspend}{"\n"}'
+```
+
+After the Pod starts, follow its logs:
+
+```bash
+POD=$(sudo -u mluser1 kubectl get pods \
+  -o jsonpath='{.items[0].metadata.name}')
+sudo -u mluser1 kubectl logs "$POD" --follow
+```
+
+The first image pull can take several minutes because the PyTorch runtime image
+is large.
+
+## 8. Monitor from a control node
+
+The Linux account `mluser1` exists only on the login node. Do not run
+`sudo -u mluser1` on a control node. Administrators use their existing
+kubeconfig and specify the namespace:
+
+```bash
+kubectl -n mlproject get trainjob cpu-smoke-test
+kubectl -n mlproject get workloads
+kubectl -n mlproject get jobsets
+kubectl -n mlproject get pods -o wide
+```
+
+Check the authoritative suspension fields:
+
+```bash
+kubectl -n mlproject get trainjob cpu-smoke-test \
+  -o jsonpath='suspend={.spec.suspend}{"\n"}'
+
+kubectl -n mlproject get jobset cpu-smoke-test \
+  -o jsonpath='suspend={.spec.suspend}{"\n"}'
+```
+
+The TrainJob printer's `STATE` column can briefly lag behind `spec.suspend`.
+If `spec.suspend=false`, the JobSet is not suspended, and a Pod exists, Kueue
+has successfully released the workload.
+
+Inspect placement, events, and logs:
+
+```bash
+kubectl -n mlproject get pods -o wide
+kubectl -n mlproject describe trainjob cpu-smoke-test
+kubectl -n mlproject get events --sort-by='.lastTimestamp'
+kubectl -n mlproject logs POD_NAME --follow
+```
+
+## Webhook certificate recovery
+
+If creation of `ClusterTrainingRuntime` fails with `x509: certificate signed by
+unknown authority`, first restart
+`deployment/kubeflow-trainer-controller-manager`. If the error remains, the
+generated `kubeflow-trainer-webhook-cert` Secret and webhook CA bundle are out
+of sync.
+
+Rotate only that generated Secret:
+
+```bash
+kubectl -n kubeflow-system delete secret kubeflow-trainer-webhook-cert
+kubectl -n kubeflow-system create secret generic \
+  kubeflow-trainer-webhook-cert
+```
+
+Wait until the Secret reports four data entries, then restart the controller:
+
+```bash
+kubectl -n kubeflow-system get secret kubeflow-trainer-webhook-cert
+kubectl -n kubeflow-system rollout restart \
+  deployment/kubeflow-trainer-controller-manager
+kubectl -n kubeflow-system rollout status \
+  deployment/kubeflow-trainer-controller-manager --timeout=2m
+```
+
+This Secret contains generated webhook certificates, not user credentials.
+Do not disable webhook validation to bypass certificate failures.
