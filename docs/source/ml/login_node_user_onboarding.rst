@@ -53,6 +53,11 @@ The onboarding workflow uses these Git-managed files:
      - Creates the ``mlproject`` namespace.
    * - ``kueue/02-cpu-queue.yaml``
      - Defines ``cpu-normal-queue`` and its backing ClusterQueue.
+   * - ``ml/trainjobs/01-cpu-smoke-test.yaml``
+     - Provides a minimal CPU scheduling and execution test.
+   * - ``ml/trainjobs/02-cpu-pvc-training.yaml``
+     - Trains a small PyTorch model, saves its outputs on the shared PVC, and
+       exports OpenTelemetry traces to Jaeger.
 
 1. Create the Linux user
 ------------------------
@@ -390,6 +395,244 @@ Inspect scheduling, events, and logs from the control node:
    kubectl -n mlproject describe trainjob cpu-smoke-test
    kubectl -n mlproject get events --sort-by='.lastTimestamp'
    kubectl -n mlproject logs POD_NAME --follow
+
+9. Run persistent training with OpenTelemetry tracing
+-----------------------------------------------------
+
+``ml/trainjobs/02-cpu-pvc-training.yaml`` is a complete CPU example. It:
+
+* Learns a linear model using PyTorch on one CPU worker.
+* Runs through the Kueue ``cpu-normal-queue``.
+* Mounts ``mlproject-pvc`` at ``/mnt/mlproject``.
+* Saves ``model.pt`` and ``metrics.json`` after training.
+* Emits OpenTelemetry spans to the in-cluster Jaeger service.
+
+The files produced by one run are stored under a UTC timestamp:
+
+.. code-block:: text
+
+   /mnt/mlproject/results/mluser1/cpu-pvc-training/
+   |-- latest.txt
+   `-- 20260821T070000Z/
+       |-- metrics.json
+       `-- model.pt
+
+``latest.txt`` contains the path of the most recently completed run. The
+timestamped directory prevents a later run from overwriting earlier model and
+metrics files.
+
+Submit the example from the login node as the restricted user:
+
+.. code-block:: console
+
+   cd ~/kubernetes-training
+   sudo -u mluser1 kubectl create \
+     -f ml/trainjobs/02-cpu-pvc-training.yaml
+
+Kubernetes resources are immutable in places managed by Kubeflow Trainer. To
+run the same named example again, delete the completed TrainJob and recreate
+it:
+
+.. code-block:: console
+
+   sudo -u mluser1 kubectl delete trainjob cpu-pvc-training
+   sudo -u mluser1 kubectl create \
+     -f ml/trainjobs/02-cpu-pvc-training.yaml
+
+Monitor the persistent job from the control node:
+
+.. code-block:: console
+
+   kubectl -n mlproject get trainjobs,workloads,jobsets,pods
+   kubectl -n mlproject get pods -w
+   kubectl -n mlproject logs \
+     -l jobset.sigs.k8s.io/jobset-name=cpu-pvc-training \
+     --all-containers=true --follow
+
+OpenTelemetry output model
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OpenTelemetry trace output is not normally written to a file. The application
+creates in-memory spans, the OpenTelemetry SDK batches them, and the OTLP
+exporter sends them as telemetry data to Jaeger over HTTP:
+
+.. code-block:: text
+
+   PyTorch process
+       |
+       | OpenTelemetry spans (OTLP/HTTP)
+       v
+   http://jaeger.jaeger.svc.cluster.local:4318/v1/traces
+       |
+       v
+   Jaeger trace storage and query UI
+
+This is separate from the persistent application files. ``model.pt`` and
+``metrics.json`` are written to the PVC; trace spans are exported to Jaeger.
+If a durable local telemetry file is required for debugging, configure an
+additional OpenTelemetry file or console exporter rather than treating the
+Jaeger payload as a model-output file.
+
+The example installs the following Python packages when the container starts:
+
+.. code-block:: bash
+
+   pip install --no-cache-dir \
+     opentelemetry-api \
+     opentelemetry-sdk \
+     opentelemetry-exporter-otlp-proto-http
+
+The CPU worker therefore needs access to the Python package index. For a
+repeatable production workload, build these dependencies into a versioned
+training image instead of downloading them for every run.
+
+The SDK identifies all spans from this job as the Jaeger service
+``cpu-pvc-training``:
+
+.. code-block:: python
+
+   provider = TracerProvider(
+       resource=Resource.create({
+           "service.name": "cpu-pvc-training",
+           "ml.user": "mluser1",
+           "k8s.namespace.name": "mlproject",
+       })
+   )
+
+   provider.add_span_processor(
+       BatchSpanProcessor(
+           OTLPSpanExporter(
+               endpoint=(
+                   "http://jaeger.jaeger.svc.cluster.local:"
+                   "4318/v1/traces"
+               )
+           )
+       )
+   )
+
+Use the Kubernetes Service DNS name, not the Jaeger Pod IP. The Service name
+remains stable when the Jaeger Pod is replaced. Port ``4318`` is the OTLP HTTP
+receiver, and ``/v1/traces`` is the OTLP HTTP traces endpoint. Port ``4317``
+is the alternative OTLP gRPC receiver and cannot be used by the HTTP exporter
+configured in this example.
+
+Creating useful training spans
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The manifest creates one parent span for the complete run and three child
+spans for the important stages:
+
+.. code-block:: text
+
+   cpu-pvc-training-run
+   |-- prepare-data
+   |-- train-model
+   `-- save-results
+
+Attributes make a trace searchable and explain the result without putting
+large model data into Jaeger. The example records attributes such as
+``ml.framework``, ``ml.device``, ``ml.epochs``, ``ml.samples``,
+``ml.final_loss``, ``ml.run.id``, and the persistent output paths.
+
+Create spans with ``start_as_current_span`` so parent-child relationships and
+exceptions are recorded correctly:
+
+.. code-block:: python
+
+   with tracer.start_as_current_span("train-model") as span:
+       for _ in range(300):
+           optimizer.zero_grad()
+           loss = loss_function(model(features), targets)
+           loss.backward()
+           optimizer.step()
+
+       span.set_attribute("ml.epochs", 300)
+       span.set_attribute("ml.final_loss", loss.item())
+
+Do not attach model binaries, training datasets, credentials, or high-volume
+per-sample values as span attributes. Store large artifacts on the PVC and add
+only their paths and small identifying values to the trace.
+
+A Kubernetes training container can exit immediately after its Python program
+finishes. The example explicitly flushes and shuts down the provider in a
+``finally`` block so buffered spans are sent even when training raises an
+exception:
+
+.. code-block:: python
+
+   finally:
+       provider.force_flush()
+       provider.shutdown()
+
+Without this flush, a short job may complete before the batch exporter sends
+its final spans.
+
+10. Verify Jaeger connectivity and view the trace
+-------------------------------------------------
+
+Before submitting an instrumented job, verify Jaeger from the control node:
+
+.. code-block:: console
+
+   kubectl -n jaeger get pods
+   kubectl -n jaeger get service jaeger
+   kubectl -n jaeger get endpointslice \
+     -l kubernetes.io/service-name=jaeger
+
+The Pod must be ``Running``, the Service must expose ``4318/TCP`` and
+``16686/TCP``, and the EndpointSlice must contain a ready backend address.
+
+The repository ingress exposes the query UI at:
+
+.. code-block:: text
+
+   http://jaeger.44.203.188.20.nip.io
+
+After the job runs, open that address and:
+
+#. Select ``cpu-pvc-training`` in the **Service** list.
+#. Select a lookback window that includes the job execution.
+#. Click **Find Traces**.
+#. Open the result to inspect the parent and child spans, durations,
+   attributes, and any recorded error.
+
+The service appears in the Jaeger list only after Jaeger receives at least one
+span. Because this example uses a batch exporter, wait for the job to finish
+and flush before concluding that no trace was produced.
+
+Trace troubleshooting
+~~~~~~~~~~~~~~~~~~~~~
+
+If ``cpu-pvc-training`` does not appear in Jaeger, check the following in
+order:
+
+#. Confirm that the training Pod completed and inspect its logs for ``pip`` or
+   OpenTelemetry exporter errors.
+#. Confirm that ``jaeger.jaeger.svc.cluster.local`` resolves and port ``4318``
+   is reachable from the ``mlproject`` namespace.
+#. Confirm that the exporter endpoint ends in ``/v1/traces``.
+#. Confirm that the Jaeger Service still exposes its ``otlp-http`` port.
+#. Increase the Jaeger UI lookback window and clear any service or tag filters.
+
+An administrator can test OTLP-port connectivity from ``mlproject`` with a
+temporary diagnostic Pod when policy permits it:
+
+.. code-block:: console
+
+   kubectl -n mlproject run otlp-connectivity-test \
+     --image=curlimages/curl --restart=Never --rm -it -- \
+     sh -c 'curl -sv http://jaeger.jaeger.svc.cluster.local:4318/'
+
+An HTTP ``404`` or ``405`` response at the receiver root still proves DNS and
+TCP/HTTP connectivity; real trace exports use ``/v1/traces`` with an OTLP
+protobuf request body. The restricted ML user cannot create this diagnostic
+Pod directly, so this test must be run by an administrator.
+
+Jaeger traces describe the instrumented Python application stages. Kueue
+admission, Kubernetes scheduling, image pulling, and Kubeflow controller
+reconciliation do not automatically become child spans of this application
+trace. Continue to use ``Workload`` status, Kubernetes events, Pod status, and
+controller logs to diagnose those control-plane stages.
 
 Webhook certificate recovery
 ----------------------------
