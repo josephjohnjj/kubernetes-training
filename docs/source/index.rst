@@ -65,6 +65,15 @@ Cluster Configuration Decisions
 
    configuration/index
 
+ML Workload Access
+------------------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   ml/index
+
 Test LLM Applications
 ---------------------
 
