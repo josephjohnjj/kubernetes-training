@@ -51,7 +51,8 @@ The infrastructure tree uses dependency-based waves. Namespaces start at
 ``-20``; operators and foundational controllers use ``-10``; CSI and
 Prometheus use ``-9``; Ceph and other dependent services progress through
 ``-8`` to ``-4``; and platform ingresses use ``10``. The applications tree
-then reconciles ``gen3-db`` at ``10`` and ``gen3`` at ``20``.
+then reconciles ``gen3-db`` at ``10``, ``gen3`` at ``20``, and the test
+``small-llm`` workload at ``30``.
 
 Reconciliation behavior
 -----------------------

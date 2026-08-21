@@ -65,6 +65,15 @@ Cluster Configuration Decisions
 
    configuration/index
 
+Test LLM Applications
+---------------------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   llm
+
 GEN3
 ----
 

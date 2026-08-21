@@ -13,7 +13,7 @@ This is the control layer:
   RBAC ConfigMap.
 * ``argocd/infrastructure`` contains child Applications for platform services.
 * ``argocd/applications`` contains the GEN3 database and workload Applications,
-  ordered at sync waves ``10`` and ``20`` respectively.
+  plus test workloads such as ``small-llm``.
 * ``argocd/ingresses`` contains the platform ingress resources reconciled by
   the ``platform-ingresses`` Application.
 * ``argocd/infrastructure/01-namespace.yaml`` declares platform namespaces and is
@@ -120,6 +120,14 @@ clean rebuild.
 The ``gen3-db`` Application definition lives beside ``gen3`` under
 ``argocd/applications/gen3``. Their waves ensure the database Application is
 reconciled before the GEN3 Helm release.
+
+``llm``
+-------
+
+Application ``small-llm`` applies ``llm/small-llm`` at sync wave ``30``. It
+manages a CPU-only Ollama Deployment, an internal Service, a CephFS-backed
+model cache, and a PostSync model-download Job. See
+:doc:`../llm/small_llm` for deployment and testing instructions.
 
 ``storage``
 -----------

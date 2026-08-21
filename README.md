@@ -31,6 +31,7 @@ The complete documentation is maintained as Sphinx/RST content under
 | Databases | CloudNativePG and PostgreSQL | [CloudNativePG](docs/source/infrastructure/cnpg.rst), [GEN3 PostgreSQL](docs/source/gen3/postgres.rst) |
 | Identity | Keycloak and Argo CD OIDC | [Keycloak](docs/source/gen3/keycloak.rst), [Argo CD OIDC](docs/source/argocd/keycloak_oidc.rst) |
 | Scheduling and ML | Kueue, Kubeflow Trainer, Argo Workflows | [Kueue](docs/source/infrastructure/kueue.rst), [Argo Workflows](docs/source/configuration/argo_workflows.rst) |
+| Test inference | CPU-only Ollama and `qwen2.5:0.5b` | [Small LLM inference](docs/source/llm/small_llm.rst) |
 | Metrics | Metrics Server, Prometheus, Grafana | [Metrics Server](docs/source/infrastructure/metric_server.rst), [Prometheus](docs/source/configuration/prometheus.rst), [Grafana](docs/source/configuration/grafana.rst) |
 | Logs and search | Fluent Bit, OpenSearch, Elasticsearch | [Fluent Bit](docs/source/configuration/fluent_bit.rst), [OpenSearch](docs/source/configuration/opensearch.rst) |
 | Tracing | Jaeger | [Jaeger](docs/source/configuration/jaeger.rst) |
@@ -69,7 +70,8 @@ still be verified between stateful layers:
 5. Reconcile PostgreSQL, search, observability, security, and scheduling services.
 6. Configure Keycloak and required Secrets.
 7. Reconcile `gen3-db` at wave `10`, then GEN3 at wave `20`.
-8. Run the documented readiness and ingress tests.
+8. Reconcile the optional `small-llm` test workload at wave `30`.
+9. Run the documented readiness and ingress tests.
 
 See [Argo CD bootstrap](docs/source/gen3/argocd_bootstrap.rst),
 [sync-wave architecture](docs/source/argocd/architecture.rst), and
@@ -82,6 +84,7 @@ argocd/       Argo CD projects, root Applications, child Applications, ingresses
 charts/       Vendored platform and GEN3 Helm charts
 docs/source/  Sphinx/RST operator and deployment documentation
 kueue/        Queue and resource-flavor configuration
+llm/          Small test-model inference workloads
 manifests/    Compatibility copies and manual-reference manifests
 postgres/     GEN3 CloudNativePG resources and database initialization
 provisioning/ Terraform and Ansible cluster provisioning

@@ -62,6 +62,8 @@ spec:
       namespace: gen3-db
     - server: https://kubernetes.default.svc
       namespace: keycloak
+    - server: https://kubernetes.default.svc
+      namespace: small-llm
 
   clusterResourceWhitelist:
     - group: "*"
