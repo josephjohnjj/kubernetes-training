@@ -12,6 +12,11 @@ spec:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     path: charts/kubeflow-trainer
     targetRevision: main
+    helm:
+      valuesObject:
+        runtimes:
+          torchDistributed:
+            enabled: true
 
   destination:
     server: https://kubernetes.default.svc
