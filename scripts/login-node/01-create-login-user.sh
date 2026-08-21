@@ -5,10 +5,10 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  sudo ./scripts/login-node/create-login-user.sh <username>
+  sudo ./scripts/login-node/01-create-login-user.sh <username>
 
 Example:
-  sudo ./scripts/login-node/create-login-user.sh alice
+  sudo ./scripts/login-node/01-create-login-user.sh alice
 
 Run this script directly on the login node. It:
   1. Creates a non-privileged Linux user.
