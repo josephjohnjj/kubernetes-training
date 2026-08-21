@@ -3,7 +3,7 @@ GEN3 Application Components
 
 These pages describe every application component rendered by the effective
 GEN3 2025.08 Argo CD values. Values are merged in the order recorded in
-``argocd/applications/gen3/01-gen3.yaml``.
+``argocd/applications/gen3/02-gen3.yaml``.
 
 .. toctree::
    :maxdepth: 1

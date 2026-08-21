@@ -17,10 +17,10 @@ in Git.
                                                   |
                           +-----------------------+------------------+
                           v                                          v
-                  platform Applications                      GEN3/workloads
+                  platform Applications                  GEN3 database/workloads
                           |                                          |
-             charts, storage, tools,                    charts/gen3-2025.08
-             postgres, and kueue
+               charts, storage, tools,                postgres and
+                    and kueue                         charts/gen3-2025.08
 
 Bootstrap resources
 -------------------
@@ -40,7 +40,18 @@ Dashboard ingress resources. The hostnames currently use the environment's
 changes.
 
 ``argocd/bootstrap/04-applications.yaml`` recursively reads
-``argocd/applications``. It creates application workloads, including GEN3.
+``argocd/applications``. It creates the GEN3 database at sync wave ``10`` and
+the GEN3 workload at sync wave ``20``, keeping both under the same parent so
+their ordering is enforced.
+
+Sync-wave order
+---------------
+
+The infrastructure tree uses dependency-based waves. Namespaces start at
+``-20``; operators and foundational controllers use ``-10``; CSI and
+Prometheus use ``-9``; Ceph and other dependent services progress through
+``-8`` to ``-4``; and platform ingresses use ``10``. The applications tree
+then reconciles ``gen3-db`` at ``10`` and ``gen3`` at ``20``.
 
 Reconciliation behavior
 -----------------------
