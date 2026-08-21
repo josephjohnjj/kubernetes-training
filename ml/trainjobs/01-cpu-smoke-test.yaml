@@ -1,0 +1,36 @@
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: TrainJob
+metadata:
+  name: cpu-smoke-test
+  namespace: mlproject
+  labels:
+    kueue.x-k8s.io/queue-name: cpu-normal-queue
+spec:
+  runtimeRef:
+    name: torch-distributed
+    kind: ClusterTrainingRuntime
+  trainer:
+    numNodes: 1
+    image: pytorch/pytorch:2.10.0-cuda12.8-cudnn9-runtime
+    command:
+      - python
+      - -c
+    args:
+      - |
+        import socket
+        import time
+        import torch
+
+        print("Host:", socket.gethostname())
+        print("PyTorch:", torch.__version__)
+        print("CUDA available:", torch.cuda.is_available())
+        print("CPU training smoke test started")
+        time.sleep(30)
+        print("CPU training smoke test completed")
+    resourcesPerNode:
+      requests:
+        cpu: "500m"
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
