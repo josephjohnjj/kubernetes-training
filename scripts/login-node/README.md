@@ -146,10 +146,32 @@ kubectl auth can-i get secrets \
 
 The expected answers are `yes`, `no`, and `no` respectively.
 
-## 4. Remaining step
+## 4. Install the restricted kubeconfig
 
-The ServiceAccount does not automatically create a user kubeconfig. Generate
-the credential separately after Argo CD has created the account, and install
-only the restricted kubeconfig at `/home/mluser1/.kube/config`. Never copy
+After Argo CD creates the ServiceAccount and RoleBinding, run the second script
+on the login node as `ubuntu`. Do not run it with `sudo`; it uses the current
+administrator kubeconfig and requests `sudo` only when installing the file:
+
+```bash
+./scripts/login-node/02-create-user-kubeconfig.sh mluser1
+```
+
+The script creates `secret/mluser1-token`, builds a kubeconfig using the current
+API endpoint and cluster CA, and installs it as:
+
+```text
+/home/mluser1/.kube/config
+```
+
+Verify the installed identity and permissions:
+
+```bash
+sudo -u mluser1 kubectl auth whoami
+sudo -u mluser1 kubectl auth can-i create trainjobs.trainer.kubeflow.org
+sudo -u mluser1 kubectl auth can-i create pods
+sudo -u mluser1 kubectl auth can-i get secrets
+```
+
+The expected permission answers are `yes`, `no`, and `no`. Never copy
 `/etc/kubernetes/admin.conf` or `/home/ubuntu/.kube/config` into a user home
 directory.

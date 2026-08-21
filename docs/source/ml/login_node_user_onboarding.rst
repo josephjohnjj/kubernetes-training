@@ -219,15 +219,38 @@ Both commands must return ``no``.
 --------------------------------------------
 
 The ServiceAccount does not automatically place a kubeconfig in the Linux
-account. Generate its credential separately after Argo CD has created the
-ServiceAccount and install the resulting restricted kubeconfig at:
+account. After Argo CD creates the user resources, run the credential script on
+the login node as ``ubuntu``. Do not invoke the complete script with ``sudo``;
+it uses the current administrator kubeconfig and requests ``sudo`` only to
+install the completed file:
+
+.. code-block:: console
+
+   ./scripts/login-node/02-create-user-kubeconfig.sh mluser1
+
+The script creates the ``mluser1-token`` ServiceAccount token Secret, builds a
+kubeconfig using the current cluster endpoint and CA, and installs it with mode
+``0600`` at:
 
 .. code-block:: text
 
    /home/mluser1/.kube/config
 
-This credential-generation step is intentionally separate from the Linux user
-script and is not yet automated by the current repository workflow.
+Verify the identity and effective permissions:
+
+.. code-block:: console
+
+   sudo -u mluser1 kubectl auth whoami
+   sudo -u mluser1 kubectl auth can-i create trainjobs.trainer.kubeflow.org
+   sudo -u mluser1 kubectl auth can-i create pods
+   sudo -u mluser1 kubectl auth can-i get secrets
+
+The identity must be
+``system:serviceaccount:mlproject:mluser1``. The expected permission answers
+are ``yes``, ``no``, and ``no``.
+
+This is a persistent bearer token for the current lab environment. Delete
+``secret/mluser1-token`` immediately if the kubeconfig is exposed.
 
 .. danger::
 
