@@ -377,23 +377,18 @@ Deploy Keycloak
 ---------------
 
 ``02-deploy-keycloak.yaml`` first creates the ``keycloak-pool`` CephBlockPool
-and ``keycloak-sc`` RBD StorageClass, then installs the Bitnami Keycloak Helm
-release in the ``keycloak`` namespace::
+and ``keycloak-sc`` RBD StorageClass. Keycloak itself is deployed later by the
+Argo CD child Application from the vendored chart under ``charts/keycloak``::
 
    ansible-playbook -i inventory.ini 02-deploy-keycloak.yaml
-   kubectl -n keycloak get pods,pvc
+   kubectl get storageclass keycloak-sc
 
 Run this only after Rook-Ceph is healthy in the ``rook-ceph`` namespace and its
-RBD CSI provisioner and secrets exist. The playbook temporarily marks
-``keycloak-sc`` as the default StorageClass while installing the release, then
-removes that default annotation.
-
-Review ``keycloak/keycloak-values.yaml`` before deployment. It currently
-contains a literal database password, references the
-``cnpg-cluster-rw.cnpg-database.svc.cluster.local`` database service, enables
-the chart's bundled PostgreSQL component, and uses a ``bitnamilegacy`` image.
-Resolve the database mode and move credentials to an approved secret before
-using this configuration in production.
+RBD CSI provisioner and secrets exist. Review
+``charts/keycloak/keycloak-values.yaml`` before deployment. It uses the
+external ``cnpg-cluster-rw.cnpg-database.svc.cluster.local`` database, disables
+the bundled PostgreSQL component, and references existing Kubernetes Secrets
+for the administrator and database passwords.
 
 Deploy Argo CD
 --------------
@@ -403,6 +398,12 @@ upstream Argo CD installation manifest::
 
    ansible-playbook -i inventory.ini 03-deploy-argocd.yaml
    kubectl -n argocd get pods
+
+After the root infrastructure Application creates the Keycloak child
+Application, inspect and manually perform its initial adoption sync::
+
+   kubectl -n argocd get application keycloak
+   kubectl -n keycloak get statefulset,service,pod
 
 The playbook requires a StorageClass named ``mgmnt-sc``. It temporarily marks
 that class as the default and removes the annotation after applying Argo CD.

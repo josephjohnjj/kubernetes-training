@@ -29,32 +29,56 @@ Temporarily set the Keycloak StorageClass as the cluster default.
 This ensures that any PersistentVolumeClaims created during the Keycloak
 installation automatically use ``keycloak-sc``.
 
-Keycloak Installation
----------------------
+Keycloak installation through Argo CD
+-------------------------------------
 
-Add the Bitnami Helm repository.
+The exact Bitnami chart version ``25.2.0`` is vendored under
+``charts/keycloak``. Environment overrides are in
+``charts/keycloak/keycloak-values.yaml``. The child Application at
+``argocd/infrastructure/identity/keycloak/01-keycloak.yaml`` renders that
+local chart with Helm release name ``keycloak`` and deploys it to namespace
+``keycloak``.
 
-.. code-block:: bash
+The values reference existing Secrets rather than storing credentials in Git:
 
-   helm repo add bitnami https://charts.bitnami.com/bitnami
+* ``keycloak`` with key ``admin-password`` for the administrator password.
+* ``keycloak-externaldb`` with key ``db-password`` for the external database.
 
-Verify that the repository was added successfully.
+.. warning::
 
-.. code-block:: bash
+   A new installation must create both Secrets before the first Keycloak sync.
+   The chart intentionally does not generate them. Without them, the
+   StatefulSet is created but its Pod remains in ``CreateContainerConfigError``.
+   The value in ``keycloak-externaldb`` must exactly match the password assigned
+   to PostgreSQL role ``keycloak``; an arbitrary password causes database
+   authentication failures.
 
-   helm search repo bitnami
+Prefer External Secrets, SOPS, Sealed Secrets, or another approved declarative
+secret workflow. For a manual bootstrap, create the namespace and Secrets
+before synchronizing the Application::
 
-Install Keycloak using the Bitnami Helm chart.
+   kubectl create namespace keycloak --dry-run=client -o yaml | kubectl apply -f -
+   kubectl -n keycloak create secret generic keycloak \
+     --from-literal=admin-password='<generated-admin-password>'
+   kubectl -n keycloak create secret generic keycloak-externaldb \
+     --from-literal=db-password='<password-assigned-to-keycloak-db-role>'
 
-.. code-block:: bash
+During migration from the existing Helm release, do not replace the live
+credentials. Verify that both existing Secrets are present and preserve them
+unchanged::
 
-   helm install keycloak bitnami/keycloak \
-     --version 25.2.0 \
-     --values manifests/keycloak/03-keycloak-values.yaml \
-     -n keycloak
+   kubectl -n keycloak get secret keycloak keycloak-externaldb
 
+The Application intentionally has no automated sync policy for its initial
+adoption. Commit and push the Application, refresh the parent infrastructure
+Application, inspect the diff, and manually sync Keycloak only after confirming
+that Argo will retain the existing StatefulSet, Services, and Secrets::
 
-Verify the deployment:
+   kubectl -n argocd annotate application infrastructure \
+     argocd.argoproj.io/refresh=hard --overwrite
+   kubectl -n argocd get application keycloak
+
+After the first sync, verify the deployment:
 
 .. code-block:: bash
 
@@ -91,14 +115,14 @@ advertise an HTTPS issuer and HTTPS protocol endpoints. See
 matrix.
 
 
-Display the Kubernetes secret created during installation.
+Display Secret metadata without printing its values:
 
 .. code-block:: bash
 
    kubectl describe secret keycloak -n keycloak
 
-The secret contains the administrator username and password generated
-by the Helm chart.
+Do not run ``helm upgrade`` after adoption. Argo CD is the workload owner; the
+Ansible workflow now prepares only the legacy Keycloak storage resources.
 
 Restore StorageClass Configuration
 ----------------------------------

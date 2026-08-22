@@ -71,6 +71,9 @@ chart path and, where needed, a repository-specific values file.
    * - ``jaeger``
      - ``charts/jaeger``
      - ``jaeger``
+   * - ``keycloak``
+     - ``charts/keycloak``
+     - ``keycloak``
    * - ``falco``
      - ``charts/falco``
      - ``falco``
@@ -142,6 +145,12 @@ Storage has two Argo CD ownership levels:
 
 Both Applications have automated pruning and self-healing disabled because
 storage changes can be destructive and require deliberate review.
+
+The ``keycloak`` Application also begins with automated synchronization,
+pruning, and self-healing disabled. Its first sync adopts resources created by
+the former direct Helm release, so an operator must verify the existing
+``keycloak`` and ``keycloak-externaldb`` Secrets and inspect the Argo CD diff
+before synchronization.
 
 ``tools``
 ---------

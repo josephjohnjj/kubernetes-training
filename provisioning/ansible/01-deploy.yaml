@@ -4,8 +4,8 @@
 # Intentionally excluded:
 # - kubernetes-cluster/16-wipe-storage-disks.yml (destructive)
 # - troubleshooting/repair-broken-packages.yml (break-glass repair)
-# - application add-ons deployed by 02-deploy-keycloak.yaml and
-#   03-deploy-argocd.yaml
+# - Keycloak storage prepared by 02-deploy-keycloak.yaml
+# - application add-ons deployed by Argo CD after 03-deploy-argocd.yaml
 
 - import_playbook: kubernetes-cluster/01-prepare-hosts.yml
   tags: [hosts, packages]

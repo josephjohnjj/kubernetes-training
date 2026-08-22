@@ -68,7 +68,8 @@ still be verified between stateful layers:
 3. Reconcile namespaces, operators, ingress-nginx, CSI, and Prometheus.
 4. Verify the Ceph cluster before applying pools and StorageClasses.
 5. Reconcile PostgreSQL, search, observability, security, and scheduling services.
-6. Configure Keycloak and required Secrets.
+6. Create the required Keycloak Secrets, inspect the ``keycloak`` Application
+   diff, and perform its initial adoption sync.
 7. Reconcile `gen3-db` at wave `10`, then GEN3 at wave `20`.
 8. Reconcile the optional `small-llm` test workload at wave `30`.
 9. Run the documented readiness and ingress tests.

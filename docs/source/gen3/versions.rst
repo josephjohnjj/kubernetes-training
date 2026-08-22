@@ -37,10 +37,10 @@ Repository-pinned versions
      - ``charts/ingress-nginx/Chart.yaml``
    * - Keycloak image
      - ``26.3.3-debian-12-r0``
-     - ``manifests/keycloak/03-keycloak-values.yaml``
+     - ``charts/keycloak/keycloak-values.yaml``
    * - Keycloak Helm chart
      - ``25.2.0``
-     - Tested Helm installation; record with ``helm list -n keycloak``
+     - ``charts/keycloak/Chart.yaml``
 
 The vendored GEN3 chart has ``appVersion: master``. That field is not used as
 the runtime release identifier here; enabled service images are explicitly

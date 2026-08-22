@@ -75,32 +75,28 @@ Create the namespace and a values file containing no literal password::
    kubectl -n keycloak create secret generic keycloak-db \
      --from-literal=db-password='<generate-a-strong-password>'
 
-The tested installation uses Bitnami chart ``25.2.0``, Keycloak ``26.3.3``,
-and image ``bitnamilegacy/keycloak:26.3.3-debian-12-r0``. The repository
-disables the bundled PostgreSQL database. Adapt the values to reference
-``keycloak-db`` using the chart's password Secret option, then render and
-review before installation::
+The tested installation uses the vendored Bitnami chart ``25.2.0``, Keycloak
+``26.3.3``, and image
+``bitnamilegacy/keycloak:26.3.3-debian-12-r0``. The repository disables the
+bundled PostgreSQL database. Argo CD renders
+``charts/keycloak/keycloak-values.yaml`` and deploys the chart through the
+``keycloak`` child Application.
 
-   export KEYCLOAK_CHART_VERSION='25.2.0'
-   helm template keycloak bitnami/keycloak \
-     --version "${KEYCLOAK_CHART_VERSION}" -n keycloak -f values.yaml
-   helm upgrade --install keycloak bitnami/keycloak \
-     --version "${KEYCLOAK_CHART_VERSION}" \
-     --namespace keycloak --create-namespace --values values.yaml
+The values expect existing Secrets named ``keycloak`` and
+``keycloak-externaldb``. Do not commit either password. Render changes before
+committing them::
 
-Record Helm history before and after an upgrade. Roll back to the previous
-revision if the new pod does not become ready::
+   helm lint charts/keycloak -f charts/keycloak/keycloak-values.yaml
+   helm template keycloak charts/keycloak \
+     --namespace keycloak \
+     -f charts/keycloak/keycloak-values.yaml
 
-   helm history keycloak -n keycloak
-   helm rollback keycloak PREVIOUS_REVISION -n keycloak
+After Argo synchronization, verify the StatefulSet rollout::
+
+   kubectl -n argocd get application keycloak
    kubectl -n keycloak rollout status statefulset/keycloak --timeout=5m
 
-.. warning::
-
-   Repository files disagree about ``postgresql.enabled`` and currently contain
-   a literal database password. For this deployment the external database is
-   intended, so use ``postgresql.enabled: false`` and migrate the password to a
-   Secret before following this procedure.
+Do not run direct ``helm upgrade`` commands after Argo CD adopts the release.
 
 Expose Keycloak
 ---------------

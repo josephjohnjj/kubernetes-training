@@ -1,0 +1,30 @@
+# Environment overrides for the Argo CD-managed Keycloak release.
+#
+# The referenced Secrets predate Argo CD adoption and are intentionally not
+# rendered by this chart. Preserve them during the first sync and manage their
+# values through the approved secret-management workflow. A fresh installation
+# must create both Secrets before synchronizing this chart; the database
+# password must match the PostgreSQL role named below.
+externalDatabase:
+  host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
+  port: 5432
+  user: keycloak
+  database: keycloak
+  existingSecret: keycloak-externaldb
+  existingSecretPasswordKey: db-password
+
+postgresql:
+  enabled: false
+
+auth:
+  adminUser: user
+  existingSecret: keycloak
+  passwordSecretKey: admin-password
+
+proxyHeaders: xforwarded
+
+image:
+  registry: docker.io
+  repository: bitnamilegacy/keycloak
+  tag: 26.3.3-debian-12-r0
+  pullPolicy: IfNotPresent

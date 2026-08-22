@@ -45,7 +45,7 @@ The primary GEN3 overlay is
 ``charts/gen3-2025.08/values/gen3-values.yaml``. Its ``DEPLOYMENT CHECKLIST``
 marks values that must be reviewed. Also inspect:
 
-* ``manifests/keycloak/03-keycloak-values.yaml``
+* ``charts/keycloak/keycloak-values.yaml``
 * ``argocd/ingresses/05-keycloak-ingress.yaml``
 * ``postgres/secrets``
 * ``storage/rook-ceph/cluster/01-rook-ceph-cluster.yaml``

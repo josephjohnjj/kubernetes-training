@@ -108,11 +108,12 @@ Manual management boundaries
 
 Two important parts were initially configured manually:
 
-* The Keycloak OIDC client Secret and ``argocd-cm`` OIDC settings.
+* The Keycloak realm/client configuration and ``argocd-cm`` OIDC settings.
 * The initial Rook-Ceph operator, CSI drivers, CephCluster, toolbox, filesystem,
   and StorageClass installation.
 
 The current repository now contains Argo CD Applications for the Rook-Ceph
-resources, but their automated pruning and self-healing are disabled. The
-Keycloak OIDC connection remains a manual cluster configuration; only Argo CD
-RBAC policy is stored in Git.
+resources and the Keycloak workload, but their initial automated pruning and
+self-healing are disabled. Keycloak passwords remain in existing Kubernetes
+Secrets, while its realm/client configuration and the Argo CD OIDC connection
+remain manual cluster state. Argo CD RBAC policy is stored in Git.

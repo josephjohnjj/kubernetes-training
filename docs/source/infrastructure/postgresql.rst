@@ -81,11 +81,16 @@ Step 2: Configure Keycloak Helm values
 ---
 
 Step 3: Deploy Keycloak
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
-   helm upgrade keycloak bitnami/keycloak -n keycloak -f values.yaml
+   kubectl -n argocd get application keycloak
+   kubectl -n keycloak rollout status statefulset/keycloak --timeout=5m
+
+Argo CD renders the vendored chart in ``charts/keycloak`` with
+``keycloak-values.yaml``. The external database password comes from the
+existing ``keycloak-externaldb`` Secret.
 
 ---
 

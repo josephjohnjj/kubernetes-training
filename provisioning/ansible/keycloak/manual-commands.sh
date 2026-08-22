@@ -8,14 +8,9 @@ kubectl create -f storage-manifests/keycloak-sc.yaml
 
 kubectl patch storageclass keycloak-sc -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
-
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm search repo bitnami
-helm install keycloak bitnami/keycloak --values keycloak-values.yaml -n keycloak
-
-
-kubectl patch svc keycloak -n keycloak -p '{"spec": {"type": "NodePort"}}'
-
-kubectl describe secret keycloak -n keycloak
+# Keycloak is deployed by the Argo CD Application defined in
+# argocd/infrastructure/identity/keycloak/01-keycloak.yaml.
+kubectl -n argocd get application keycloak
+kubectl -n keycloak get statefulset,service,pod
 
 kubectl patch storageclass keycloak-sc -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'

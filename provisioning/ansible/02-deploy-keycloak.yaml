@@ -1,8 +1,5 @@
 ---
-# Deploy Keycloak storage resources before installing the Helm release.
+# Prepare legacy Keycloak storage resources; Argo CD deploys the application.
 
 - import_playbook: keycloak/01-deploy-storage.yml
   tags: [keycloak, storage]
-
-- import_playbook: keycloak/02-install-keycloak.yml
-  tags: [keycloak, application]
