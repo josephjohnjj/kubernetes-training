@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: keycloak
   namespace: keycloak
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - keycloak.44.203.188.20.nip.io
+      secretName: keycloak-ingress-tls
   rules:
     - host: keycloak.44.203.188.20.nip.io
       http:
