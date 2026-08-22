@@ -10,3 +10,6 @@ individual Linux account and use a restricted Kubernetes identity in the
    :maxdepth: 1
 
    login_node_user_onboarding
+   kubeflow_job_submission
+   persistent_training_and_tracing
+   instrumenting_trainjobs_with_opentelemetry
