@@ -8,6 +8,8 @@ externalDatabase:
 postgresql:
   enabled: true
 
+proxyHeaders: xforwarded
+
 image:
   registry: docker.io
   #repository: bitnami/keycloak

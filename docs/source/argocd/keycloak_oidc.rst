@@ -21,7 +21,7 @@ Current environment
    * - Argo CD URL
      - ``https://argocd.44.203.188.20.nip.io``
    * - Keycloak issuer
-     - ``http://keycloak.44.203.188.20.nip.io/realms/genome``
+     - ``https://keycloak.44.203.188.20.nip.io/realms/genome``
    * - Client type
      - Public OIDC client using authorization code and PKCE
    * - PKCE method
@@ -103,7 +103,7 @@ Argo CD reads its external URL and OIDC provider configuration from
      url: https://argocd.44.203.188.20.nip.io
      oidc.config: |
        name: Keycloak
-       issuer: http://keycloak.44.203.188.20.nip.io/realms/genome
+       issuer: https://keycloak.44.203.188.20.nip.io/realms/genome
        clientID: argocd
        enablePKCEAuthentication: true
        requestedScopes:
@@ -120,7 +120,7 @@ The current setup was applied manually::
 
    kubectl -n argocd patch configmap argocd-cm \
      --type merge \
-     -p '{"data":{"url":"https://argocd.44.203.188.20.nip.io","oidc.config":"name: Keycloak\nissuer: http://keycloak.44.203.188.20.nip.io/realms/genome\nclientID: argocd\nenablePKCEAuthentication: true\nrequestedScopes:\n  - openid\nusernameClaim: preferred_username"}}'
+     -p '{"data":{"url":"https://argocd.44.203.188.20.nip.io","oidc.config":"name: Keycloak\nissuer: https://keycloak.44.203.188.20.nip.io/realms/genome\nclientID: argocd\nenablePKCEAuthentication: true\nrequestedScopes:\n  - openid\nusernameClaim: preferred_username"}}'
 
 Restart Argo CD server after changing the ConfigMap::
 
@@ -151,7 +151,7 @@ Verify the configuration
 Check the discovery document::
 
    curl -fsS \
-     http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration | \
+     https://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration | \
      jq -r '.issuer, .authorization_endpoint, .token_endpoint'
 
 Check the active Argo CD configuration::

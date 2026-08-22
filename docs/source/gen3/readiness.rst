@@ -81,7 +81,7 @@ correct redirect URI::
 
    kubectl -n ingress-nginx get deployment,service
    kubectl -n keycloak get pod,service,ingress
-   curl -fsS http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration
+   curl -fsS https://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration
 
 Replace the example hostname before running the request.
 

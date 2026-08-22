@@ -18,7 +18,7 @@ kubectl edit configmap argocd-cm -n argocd
 
   oidc.config: |
     name: Keycloak
-    issuer: http://keycloak.44.203.188.20.nip.io/realms/infrastructure
+    issuer: https://keycloak.44.203.188.20.nip.io/realms/infrastructure
     clientID: argocd-infra
     enablePKCEAuthentication: true
     requestedScopes:
@@ -27,7 +27,7 @@ kubectl edit configmap argocd-cm -n argocd
 
 kubectl -n argocd patch configmap argocd-cm \
   --type merge \
-  -p '{"data":{"oidc.config":"name: Keycloak\nissuer: http://keycloak.44.203.188.20.nip.io/realms/infrastructure\nclientID: argocd-infra\nenablePKCEAuthentication: true\nrequestedScopes:\n  - openid\nusernameClaim: preferred_username"}}'
+  -p '{"data":{"oidc.config":"name: Keycloak\nissuer: https://keycloak.44.203.188.20.nip.io/realms/infrastructure\nclientID: argocd-infra\nenablePKCEAuthentication: true\nrequestedScopes:\n  - openid\nusernameClaim: preferred_username"}}'
 
 
 
@@ -318,7 +318,6 @@ sheepdog_gen3=# \dn+
         |        | =UC/gen3db        | 
 (1 row)
 ```
-
 
 
 

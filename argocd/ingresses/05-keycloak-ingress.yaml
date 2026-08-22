@@ -5,7 +5,7 @@ metadata:
   namespace: keycloak
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-production
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   ingressClassName: nginx
   tls:

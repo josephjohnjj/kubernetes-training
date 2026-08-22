@@ -160,7 +160,7 @@ This deployment intentionally uses different protocols for the two OIDC
 traffic paths:
 
 * Fence performs server-side discovery over HTTP at
-  ``http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration``.
+  ``https://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration``.
   This avoids certificate verification failures caused by the POC's
   self-signed Keycloak certificate.
 * The browser returns from Keycloak over HTTPS to
@@ -178,7 +178,7 @@ The relevant values are under ``fence.FENCE_CONFIG.OPENID_CONNECT`` in
 ``charts/gen3-2025.08/values/gen3-values.yaml``. They define:
 
 * Discovery URL:
-  ``http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration``
+  ``https://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration``
 * Redirect URL:
   ``https://gen3.44.203.188.20.nip.io/user/login/generic_oidc_idp/login``
 * Client ID: ``gen3-fence``
@@ -194,7 +194,7 @@ Verify authentication
 Verify discovery first::
 
    curl -fsS \
-     http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration
+     https://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration
 
 Then open GEN3, select ``Keycloak Login``, authenticate, and confirm the browser
 returns to the GEN3 callback without redirect or issuer errors. Check Fence logs
