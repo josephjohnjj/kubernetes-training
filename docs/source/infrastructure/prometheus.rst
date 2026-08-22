@@ -28,14 +28,19 @@ Check that Prometheus-related pods are running in the namespace:
 
    kubectl --namespace prometheus get pods -l "release=prometheus"
 
-Expose Grafana via NodePort
----------------------------
+Expose Grafana through HTTPS ingress
+------------------------------------
 
-Patch the Grafana service to expose it externally using NodePort:
+Keep the Grafana Service private. Argo CD manages
+``argocd/ingresses/03-grafana-ingress.yaml``, which requests the trusted
+``grafana-ingress-tls`` certificate and redirects HTTP to HTTPS:
 
 .. code-block:: bash
 
-   kubectl patch svc prometheus-grafana \
-     -n prometheus \
-     -p '{"spec":{"type":"NodePort"}}'
+   kubectl -n prometheus get service prometheus-grafana
+   kubectl -n prometheus get ingress grafana
+   kubectl -n prometheus get certificate grafana-ingress-tls
+   curl -I https://grafana.44.203.188.20.nip.io
 
+The public request terminates TLS at ingress-nginx, which forwards to the
+Grafana ClusterIP Service on port 80.

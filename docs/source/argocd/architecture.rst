@@ -39,6 +39,12 @@ Dashboard ingress resources. The hostnames currently use the environment's
 ``44.203.188.20.nip.io`` address and must be changed if the ingress endpoint
 changes.
 
+All six public ingresses use cert-manager production certificates and force
+HTTP-to-HTTPS redirects. Argo CD uses HTTPS to its backend Service; the other
+components terminate TLS at ingress-nginx and use their configured
+cluster-local backend protocol. See :doc:`../configuration/ingress_nginx` for
+the component matrix and certificate verification procedure.
+
 ``argocd/bootstrap/04-applications.yaml`` recursively reads
 ``argocd/applications``. It creates the GEN3 database at sync wave ``10`` and
 the GEN3 workload at sync wave ``20``, keeping both under the same parent so

@@ -208,7 +208,7 @@ Open the Jaeger UI:
 
 .. code-block:: text
 
-   http://jaeger.44.203.188.20.nip.io
+   https://jaeger.44.203.188.20.nip.io
 
 Then:
 

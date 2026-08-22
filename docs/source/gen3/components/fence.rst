@@ -25,10 +25,10 @@ OIDC values
 
 The provider is named ``generic_oidc_idp``. It uses Keycloak realm ``genome``,
 client ID ``gen3-fence``, claim ``email``, and scope ``openid email``. Keycloak
-is the default login option. Fence performs Keycloak discovery over HTTP for
-this POC, while the public callback uses HTTPS and the external Revproxy path
+is the default login option. Fence performs Keycloak discovery over HTTPS, and
+the public callback uses HTTPS with the external Revproxy path
 ``/user/login/generic_oidc_idp/login``. See :doc:`../keycloak` for the matching
-Keycloak client configuration and the reason for this protocol split.
+Keycloak client configuration.
 
 .. warning::
 

@@ -20,12 +20,12 @@ deleted from the current files, because earlier values remain in Git history.
 Rotate all exposed credentials and replace plaintext values with External
 Secrets, SOPS, Sealed Secrets, or an equivalent secret-management mechanism.
 
-GEN3 and Argo CD browser traffic uses HTTPS, but this POC still advertises the
-Keycloak issuer and performs OIDC discovery over HTTP to avoid an untrusted
-Keycloak certificate. Internal PostgreSQL, Elasticsearch, and Ceph object
-gateway connections are also unencrypted. Install a trusted Keycloak
-certificate, move its issuer and discovery consumers to HTTPS together, and
-use encrypted internal connections where supported.
+The public Argo CD, Ceph Dashboard, Grafana, Jaeger, Keycloak, and OpenSearch
+Dashboards endpoints use trusted HTTPS certificates and redirect HTTP to
+HTTPS. Keycloak advertises an HTTPS issuer, and OIDC discovery uses HTTPS.
+Internal PostgreSQL, Elasticsearch, Ceph object-gateway, and selected
+service-to-service connections may still be unencrypted; use encrypted
+internal connections where supported.
 
 NetworkPolicies are disabled, so workloads are not restricted to only the
 services they require. This increases the impact of a compromised pod,
@@ -94,9 +94,11 @@ operational details.
 Exposure and reproducibility risks
 ----------------------------------
 
-The Ceph dashboard is exposed through a NodePort. Keep administrative services
-private and access them through a VPN, an authenticated ingress, or a temporary
-``kubectl port-forward`` session.
+The Ceph Dashboard is exposed through a trusted HTTPS ingress with an
+authenticated application login. For a production administrative endpoint,
+also restrict network access through a VPN, source allowlist, or private
+ingress; use a temporary ``kubectl port-forward`` when public access is not
+required.
 
 The public hostnames use ``nip.io`` and contain a fixed public IP. A public IP
 change will break DNS names, OIDC discovery, and redirect URLs. Use managed DNS
@@ -113,8 +115,8 @@ Remediation priority
 
 #. Rotate every exposed credential and remove plaintext secrets from Git and,
    where required, its history.
-#. Add trusted TLS certificates and HTTPS to GEN3, Keycloak, and other public
-   endpoints.
+#. Extend the established cert-manager HTTPS pattern to any additional public
+   endpoint, including GEN3 where its environment-specific ingress requires it.
 #. Configure and test PostgreSQL backups and recovery.
 #. Enable workload isolation with reviewed NetworkPolicies.
 #. Pin Argo CD revisions, container images, charts, and the data dictionary to

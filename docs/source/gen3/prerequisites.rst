@@ -73,7 +73,7 @@ Choose and record these values before deployment:
 * GEN3 public hostname.
 * Keycloak public hostname.
 * External address used by ingress-nginx.
-* TLS issuer and certificate Secret names, if HTTPS is required.
+* Production TLS issuer and certificate Secret names for every public Ingress.
 * Password-generation and secret-management method.
 * Backup bucket, retention period, recovery-point objective, and recovery-time
   objective.

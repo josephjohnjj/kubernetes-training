@@ -49,6 +49,7 @@ Install Keycloak using the Bitnami Helm chart.
 .. code-block:: bash
 
    helm install keycloak bitnami/keycloak \
+     --version 25.2.0 \
      --values manifests/keycloak/03-keycloak-values.yaml \
      -n keycloak
 
@@ -61,21 +62,33 @@ Verify the deployment:
 
 
 
-Convert the Keycloak service to a ``NodePort`` service.
+Keep the Keycloak Service private and confirm that it remains ``ClusterIP``:
 
 .. code-block:: bash
 
-   kubectl patch svc keycloak -n keycloak -p '{"spec": {"type": "NodePort"}}'
+   kubectl -n keycloak get service keycloak
 
-This makes Keycloak accessible from outside the Kubernetes cluster
-through a node IP and allocated port.
+The values set ``proxyHeaders: xforwarded`` so Keycloak trusts the original
+HTTPS scheme forwarded by ingress-nginx. Argo CD manages the public Ingress in
+``argocd/ingresses/05-keycloak-ingress.yaml``. It requests the
+``keycloak-ingress-tls`` certificate from ``letsencrypt-production`` and
+redirects HTTP to HTTPS.
 
-Verify the service configuration:
+Verify the Ingress, certificate, redirect, and advertised issuer:
 
 .. code-block:: bash
 
-   kubectl get svc -n keycloak
+   kubectl -n keycloak get ingress keycloak
+   kubectl -n keycloak get certificate keycloak-ingress-tls
+   curl -I http://keycloak.44.203.188.20.nip.io
+   curl -I https://keycloak.44.203.188.20.nip.io
+   curl -fsS \
+     https://keycloak.44.203.188.20.nip.io/realms/infrastructure/.well-known/openid-configuration
 
+The HTTP request must redirect to HTTPS, and the discovery document must
+advertise an HTTPS issuer and HTTPS protocol endpoints. See
+:doc:`../configuration/ingress_nginx` for the complete platform ingress
+matrix.
 
 
 Display the Kubernetes secret created during installation.

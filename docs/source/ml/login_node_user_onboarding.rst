@@ -22,8 +22,9 @@ authorization:
 
 Users are not given ``sudo``, an administrator kubeconfig, direct Pod creation,
 Secret access, or RBAC administration. The current implementation uses
-Kubernetes ServiceAccounts because the Keycloak endpoint advertises an HTTP
-issuer, which cannot be used directly for Kubernetes OIDC authentication.
+Kubernetes ServiceAccounts. Integrating the Kubernetes API server with the
+platform's HTTPS Keycloak issuer is a separate cluster-authentication design
+and is not required for this namespace-scoped onboarding workflow.
 
 The examples onboard ``mluser1`` to the login node at ``44.203.188.20``.
 Replace these environment-specific values in another deployment.

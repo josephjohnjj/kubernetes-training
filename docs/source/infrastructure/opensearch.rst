@@ -50,14 +50,23 @@ Install OpenSearch Dashboards:
 
    helm install opensearch-dashboard opensearch/opensearch-dashboards -n opensearch
 
-Service Exposure
-----------------
+Dashboard HTTPS ingress
+-----------------------
 
-Expose OpenSearch Dashboards using a NodePort service:
+Keep the OpenSearch Dashboards Service private. Argo CD manages
+``argocd/ingresses/06-opensearch-ingress.yaml``, which requests the trusted
+``opensearch-dashboards-ingress-tls`` certificate and redirects HTTP to HTTPS:
 
 .. code-block:: bash
 
-   kubectl patch svc opensearch-dashboard-opensearch-dashboards -n opensearch -p '{"spec":{"type":"NodePort"}}'
+   kubectl -n opensearch get service opensearch-dashboard-opensearch-dashboards
+   kubectl -n opensearch get ingress opensearch-dashboards
+   kubectl -n opensearch get certificate opensearch-dashboards-ingress-tls
+   curl -I https://opensearch.44.203.188.20.nip.io
+
+TLS terminates at ingress-nginx, which forwards to the dashboard ClusterIP
+Service on port 5601. The OpenSearch REST API remains a separate cluster-local
+HTTPS service.
 
 Verification
 ------------

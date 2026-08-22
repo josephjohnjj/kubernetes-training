@@ -133,17 +133,18 @@ Restart Argo CD server after changing the ConfigMap::
    secret to ``argocd-secret``. A confidential Keycloak client is a different
    configuration and must not be mixed with this procedure.
 
-HTTP issuer in this POC
------------------------
+HTTPS issuer and proxy handling
+-------------------------------
 
-The issuer is HTTP because the Keycloak HTTPS endpoint currently uses a
-certificate that cluster clients do not trust. Argo CD itself remains exposed
-to users over HTTPS.
+Keycloak and Argo CD both use trusted certificates issued by
+``letsencrypt-production``. Keycloak is configured with
+``proxyHeaders: xforwarded`` so it trusts ingress-nginx's forwarded scheme and
+advertises HTTPS redirect and discovery URLs. Argo CD's configured issuer must
+exactly match the ``issuer`` returned by Keycloak's HTTPS discovery document.
 
-This is a POC workaround. Production deployments should install a trusted
-certificate for Keycloak, change the realm's advertised issuer to HTTPS, and
-update ``argocd-cm`` at the same time. The issuer must exactly match the
-``issuer`` returned by Keycloak's discovery document.
+Both ingresses force HTTP-to-HTTPS redirects. Keep Keycloak's internal Service
+on port 80: TLS terminates at ingress-nginx, and ``proxyHeaders`` preserves the
+original public HTTPS scheme when Keycloak constructs URLs.
 
 Verify the configuration
 ------------------------

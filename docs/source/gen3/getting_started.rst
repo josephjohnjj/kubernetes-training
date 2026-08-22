@@ -46,7 +46,7 @@ The primary GEN3 overlay is
 marks values that must be reviewed. Also inspect:
 
 * ``manifests/keycloak/03-keycloak-values.yaml``
-* ``manifests/ingress/05-keycloak-ingress.yaml``
+* ``argocd/ingresses/05-keycloak-ingress.yaml``
 * ``postgres/secrets``
 * ``storage/rook-ceph/cluster/01-rook-ceph-cluster.yaml``
 * ``charts/eck-stack``

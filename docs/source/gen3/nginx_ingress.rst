@@ -31,12 +31,18 @@ For a new environment, replace the host in both ``hostname`` and ``hosts``::
      ingress:
        enabled: true
        className: nginx
+       annotations:
+         cert-manager.io/cluster-issuer: letsencrypt-production
+         nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
        hosts:
          - host: gen3.example.org
            paths:
              - path: /
                pathType: Prefix
-       tls: []
+       tls:
+         - secretName: gen3-ingress-tls
+           hosts:
+             - gen3.example.org
 
 The resulting rule sends all GEN3 paths to ``revproxy-service``. Render it
 before committing::
@@ -61,8 +67,15 @@ port 80::
    metadata:
      name: keycloak
      namespace: keycloak
+     annotations:
+       cert-manager.io/cluster-issuer: letsencrypt-production
+       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
    spec:
      ingressClassName: nginx
+     tls:
+       - hosts:
+           - keycloak.example.org
+         secretName: keycloak-ingress-tls
      rules:
        - host: keycloak.example.org
          http:
@@ -78,19 +91,18 @@ port 80::
 TLS
 ---
 
-For production, issue certificates through cert-manager and add ``spec.tls``
-to both Ingress resources::
+Issue certificates through cert-manager and add ``spec.tls`` to every public
+Ingress resource::
 
    tls:
      - hosts:
          - gen3.example.org
        secretName: gen3-tls
 
-Use a separate ``keycloak-tls`` Secret for the Keycloak hostname. In the
-current POC, browser callbacks use HTTPS while Keycloak discovery uses HTTP to
-avoid its untrusted public certificate. Once Keycloak has a trusted
-certificate, update its advertised issuer and all discovery consumers to HTTPS
-together; redirect URIs must continue to exactly match their public clients.
+Use a separate TLS Secret for each hostname. Keycloak uses the trusted
+``keycloak-ingress-tls`` Secret, advertises an HTTPS issuer, and performs OIDC
+discovery over HTTPS. Redirect URIs must exactly match their public HTTPS
+clients.
 
 Verification
 ------------
@@ -99,8 +111,12 @@ Verification
 
    kubectl get ingress -A
    kubectl -n ingress-nginx logs deployment/ingress-nginx-controller --tail=100
-   curl -I -H 'Host: gen3.example.org' http://EXTERNAL_ADDRESS/
-   curl -I -H 'Host: keycloak.example.org' http://EXTERNAL_ADDRESS/
+   curl -I https://gen3.example.org/
+   curl -I https://keycloak.example.org/
+   curl -I http://keycloak.example.org/
+
+The HTTPS requests must validate without ``-k``. The HTTP request must return
+``308 Permanent Redirect`` to the HTTPS Keycloak origin.
 
 A ``404`` from the NGINX default backend normally indicates a hostname or
 IngressClass mismatch. A ``502`` or ``503`` normally indicates that the backend

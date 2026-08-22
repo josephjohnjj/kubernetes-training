@@ -47,14 +47,15 @@ Transport summary
      - HTTPS
      - Public administrative endpoint.
    * - Fence/Argo CD discovery to Keycloak
-     - HTTP (POC only)
-     - Avoids the untrusted Keycloak certificate.
+     - HTTPS
+     - Keycloak uses a trusted ingress certificate and advertises HTTPS URLs.
    * - Internal Kubernetes services
      - Mostly HTTP
      - Cluster-local POC configuration.
 
-Production must give Keycloak a trusted certificate and migrate its advertised
-issuer and every discovery consumer to HTTPS together.
+Keycloak trusts ingress-nginx's forwarded scheme through
+``proxyHeaders: xforwarded``. Its public issuer, discovery endpoints, and
+client redirect URIs therefore remain consistently HTTPS.
 
 Prepare the database
 --------------------
@@ -104,10 +105,10 @@ revision if the new pod does not become ready::
 Expose Keycloak
 ---------------
 
-Keep the Keycloak Service as ``ClusterIP`` and route it through the NGINX
-Ingress in ``manifests/ingress/05-keycloak-ingress.yaml``::
+Keep the Keycloak Service as ``ClusterIP`` and route it through the
+Argo-managed NGINX Ingress in ``argocd/ingresses/05-keycloak-ingress.yaml``::
 
-   kubectl apply -f manifests/ingress/05-keycloak-ingress.yaml
+   kubectl -n argocd get application platform-ingresses
    kubectl -n keycloak get ingress keycloak
 
 The repository hostname is ``keycloak.44.203.188.20.nip.io``. Replace it in the
@@ -153,23 +154,16 @@ The ``/user`` prefix is required because Revproxy routes external ``/user/*``
 requests to Fence and strips that prefix before proxying. Without it, the OIDC
 response is routed to Portal, which displays its generic not-found page.
 
-Protocol split for this POC
----------------------------
+HTTPS OIDC transport
+--------------------
 
-This deployment intentionally uses different protocols for the two OIDC
-traffic paths:
-
-* Fence performs server-side discovery over HTTP at
-  ``https://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration``.
-  This avoids certificate verification failures caused by the POC's
-  self-signed Keycloak certificate.
-* The browser returns from Keycloak over HTTPS to
-  ``https://gen3.44.203.188.20.nip.io/user/login/generic_oidc_idp/login``.
-  Revproxy redirects the public HTTP GEN3 URL to HTTPS and uses secure session
-  cookies, so the registered callback must use HTTPS.
-
-This split is a POC workaround. A production deployment should install a
-trusted certificate for Keycloak and then use HTTPS for discovery as well.
+Fence performs server-side discovery through Keycloak's trusted HTTPS ingress
+at
+``https://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration``.
+The browser also returns over HTTPS to
+``https://gen3.44.203.188.20.nip.io/user/login/generic_oidc_idp/login``.
+The issuer returned by discovery, the configured discovery URL, and each
+registered callback must use the same public HTTPS origins.
 
 Configure Fence
 ---------------
