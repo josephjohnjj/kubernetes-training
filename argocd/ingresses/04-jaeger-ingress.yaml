@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: jaeger
   namespace: jaeger
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - jaeger.44.203.188.20.nip.io
+      secretName: jaeger-ingress-tls-staging
   rules:
     - host: jaeger.44.203.188.20.nip.io
       http:
