@@ -120,17 +120,6 @@ data model, data lifecycle, and readiness checks.
 
    gen3
 
-Kubernetes operations and tutorials
------------------------------------
-
-These task-oriented guides cover installation, upgrades, backups, workloads,
-networking, storage, scheduling, debugging, and security fundamentals.
-
-.. toctree::
-   :maxdepth: 1
-   :titlesonly:
-
-   tutorial
 
 External references
 -------------------
