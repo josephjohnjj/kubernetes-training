@@ -15,21 +15,22 @@
         state: directory
         mode: "0755"
 
-    - name: Remove existing Kubernetes key
-      ansible.builtin.file:
+    - name: Check installed Kubernetes signing key
+      ansible.builtin.stat:
         path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-        state: absent
+      register: kubernetes_signing_key
 
     - name: Download Kubernetes GPG key
       ansible.builtin.get_url:
         url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/Release.key"
         dest: /tmp/kubernetes-release.key
         mode: "0644"
+      register: kubernetes_key_download
 
     - name: Dearmor and install Kubernetes GPG key
       ansible.builtin.command:
-        cmd: gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/kubernetes-release.key
-        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        cmd: gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/kubernetes-release.key
+      when: kubernetes_key_download.changed or not kubernetes_signing_key.stat.exists
 
     - name: Add Kubernetes APT repository
       ansible.builtin.apt_repository:
