@@ -6,6 +6,9 @@
   collections:
     - kubernetes.core
 
+  vars:
+    argocd_version: "v3.4.6"
+
   tasks:
     - name: Create argocd namespace
       kubernetes.core.k8s:
@@ -16,31 +19,34 @@
           metadata:
             name: argocd
 
-    - name: Set mgmnt-sc as default storage class temporarily
-      kubernetes.core.k8s:
-        state: patched
-        api_version: storage.k8s.io/v1
-        kind: StorageClass
-        name: mgmnt-sc
-        definition:
-          metadata:
-            annotations:
-              storageclass.kubernetes.io/is-default-class: "true"
+    - name: Install Argo CD with temporary default storage
+      block:
+        - name: Set mgmnt-sc as default storage class temporarily
+          kubernetes.core.k8s:
+            state: patched
+            api_version: storage.k8s.io/v1
+            kind: StorageClass
+            name: mgmnt-sc
+            definition:
+              metadata:
+                annotations:
+                  storageclass.kubernetes.io/is-default-class: "true"
 
-    - name: Download and install ArgoCD manifests
-      kubernetes.core.k8s:
-        state: present
-        namespace: argocd
-        src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-        apply: true
+        - name: Download and install pinned Argo CD manifests
+          kubernetes.core.k8s:
+            state: present
+            namespace: argocd
+            src: "https://raw.githubusercontent.com/argoproj/argo-cd/{{ argocd_version }}/manifests/install.yaml"
+            apply: true
 
-    - name: Remove default annotation from mgmnt-sc
-      kubernetes.core.k8s:
-        state: patched
-        api_version: storage.k8s.io/v1
-        kind: StorageClass
-        name: mgmnt-sc
-        definition:
-          metadata:
-            annotations:
-              storageclass.kubernetes.io/is-default-class: "false"
+      always:
+        - name: Remove default annotation from mgmnt-sc
+          kubernetes.core.k8s:
+            state: patched
+            api_version: storage.k8s.io/v1
+            kind: StorageClass
+            name: mgmnt-sc
+            definition:
+              metadata:
+                annotations:
+                  storageclass.kubernetes.io/is-default-class: "false"
