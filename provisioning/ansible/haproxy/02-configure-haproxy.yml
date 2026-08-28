@@ -21,6 +21,7 @@
         src: /etc/haproxy/haproxy.cfg
         dest: /etc/haproxy/haproxy.cfg.bak
         remote_src: true
+        force: false
       ignore_errors: true
 
     - name: Configure HAProxy
