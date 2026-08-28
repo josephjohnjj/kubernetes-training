@@ -47,13 +47,20 @@
     # --------------------------------------------
     # Wait for Calico pods to be ready
     # --------------------------------------------
-    - name: Wait for Calico nodes to be ready
+    - name: Wait for every Calico node pod to be ready
       ansible.builtin.command: >
-        kubectl get pods -n kube-system -l k8s-app=calico-node -o jsonpath='{.items[*].status.phase}'
-      register: calico_status
-      retries: 20
-      delay: 10
-      until: "'Running' in calico_status.stdout"
+        kubectl rollout status daemonset/calico-node
+        --namespace kube-system
+        --timeout=5m
+      register: calico_node_rollout
+      changed_when: false
+
+    - name: Wait for Calico controllers to be ready
+      ansible.builtin.command: >
+        kubectl rollout status deployment/calico-kube-controllers
+        --namespace kube-system
+        --timeout=5m
+      register: calico_controller_rollout
       changed_when: false
 
     # --------------------------------------------
