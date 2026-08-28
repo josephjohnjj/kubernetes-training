@@ -44,8 +44,9 @@
         - wipe
 
     - name: Confirm wipe completed
-      command: lsblk -f {{ item }}
-      loop: "{{ ceph_disks }}"
+      command: lsblk -f {{ item.item }}
+      when: item.stat.exists
+      loop: "{{ disk_check.results }}"
       register: verify
       changed_when: false
       tags:
