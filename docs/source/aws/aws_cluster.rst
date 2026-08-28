@@ -237,8 +237,10 @@ container runtime and Kubernetes prerequisites on Kubernetes nodes::
    ansible-playbook -i inventory.ini kubernetes-cluster/04-install-kubernetes.yml
    ansible-playbook -i inventory.ini kubernetes-cluster/05-configure-kubernetes-prerequisites.yml
 
-The base playbook may perform a distribution upgrade and reboot nodes. Confirm
-SSH access again before continuing.
+The base playbook waits for cloud-init, validates the package database, and
+installs its required packages without performing a distribution upgrade. It
+may reboot nodes when Ubuntu marks a reboot as required; confirm SSH access
+again before continuing.
 
 Configure HAProxy
 -----------------
