@@ -26,3 +26,7 @@ spec:
 
     syncOptions:
       - CreateNamespace=true
+      # CNPG CRDs such as Cluster and Pooler exceed the client-side apply
+      # annotation size limit. Server-side apply avoids storing the complete
+      # CRD manifest in kubectl.kubernetes.io/last-applied-configuration.
+      - ServerSideApply=true

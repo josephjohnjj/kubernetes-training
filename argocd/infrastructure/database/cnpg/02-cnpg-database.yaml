@@ -28,3 +28,6 @@ spec:
 
     syncOptions:
       - CreateNamespace=true
+      # During a clean build, the database Application can be discovered
+      # before the CNPG operator has installed postgresql.cnpg.io CRDs.
+      - SkipDryRunOnMissingResource=true
