@@ -18,8 +18,9 @@ The platform ingresses use two ACME ``ClusterIssuer`` resources in
   public platform ingress.
 
 Both issuers use the ingress-nginx HTTP-01 solver. Public DNS must resolve to
-the HAProxy address, and port 80 must reach ingress-nginx for challenges even
-though normal HTTP traffic is redirected to HTTPS.
+the Talos ingress-worker addresses, and port 80 must reach the host-network
+ingress-nginx controllers for challenges even though normal HTTP traffic is
+redirected to HTTPS.
 
 
 For a non-Argo bootstrap, install the same pinned cert-manager release by

@@ -65,6 +65,7 @@ GitOps-managed platform.
 
    aws/aws_cluster
    aws/manual_kubernetes_cluster
+   talos
 
 
 Platform architecture and GitOps

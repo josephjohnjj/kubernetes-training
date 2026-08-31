@@ -14,12 +14,12 @@ Configuration decisions
 ``charts/ingress-nginx/ingress-nginx-values.yaml`` enables the controller
 metrics endpoint and ServiceMonitor. The monitor carries
 ``release: prometheus`` so it matches the cross-namespace Prometheus selector.
-The existing NodePort service choice is unchanged.
-
-HAProxy forwards public port 80 to the controller's HTTP NodePort and public
-port 443 to its HTTPS NodePort. Port 80 remains reachable for ACME HTTP-01
-validation, but every platform Ingress redirects ordinary HTTP requests to
-HTTPS.
+The controller is a host-network DaemonSet selected by
+``ingress-ready=true``. It binds directly to ports 80 and 443 on every Talos
+ingress worker; there is no NodePort Service or HAProxy hop. Public DNS points
+to the ingress workers' stable addresses. Port 80 remains reachable for ACME
+HTTP-01 validation, but every platform Ingress redirects ordinary HTTP
+requests to HTTPS.
 
 Platform HTTPS ingresses
 ------------------------

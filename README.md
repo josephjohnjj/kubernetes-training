@@ -23,8 +23,8 @@ The complete documentation is maintained as Sphinx/RST content under
 
 | Area | Components | Detailed documentation |
 |---|---|---|
-| Provisioning | AWS, Terraform, Ansible, HAProxy | [AWS cluster](docs/source/aws/aws_cluster.rst), [manual cluster](docs/source/aws/manual_kubernetes_cluster.rst), [HAProxy](docs/source/infrastructure/haproxy.rst) |
-| Cluster foundation | Kubernetes, containerd, networking, Helm | [Cluster](docs/source/infrastructure/cluster.rst), [installation](docs/source/infrastructure/installation.rst), [Helm](docs/source/infrastructure/helm.rst) |
+| Provisioning | AWS, Terraform, Talos Linux | [Talos provisioning](provisioning/talos/README.rst), [AWS cluster](docs/source/aws/aws_cluster.rst) |
+| Cluster foundation | Talos, Kubernetes, Flannel, Helm | [Talos provisioning](provisioning/talos/README.rst), [Helm](docs/source/infrastructure/helm.rst) |
 | GitOps | Argo CD, app-of-apps, sync waves | [Architecture](docs/source/argocd/architecture.rst), [bootstrap](docs/source/gen3/argocd_bootstrap.rst), [repository paths](docs/source/argocd/repository_paths.rst) |
 | Ingress and certificates | ingress-nginx, cert-manager, platform ingresses | [Ingress NGINX](docs/source/configuration/ingress_nginx.rst), [cert-manager](docs/source/infrastructure/cert_manager.rst) |
 | Storage | Rook, Ceph, block/file/object storage | [Ceph](docs/source/infrastructure/ceph.rst), [Rook-Ceph GitOps](docs/source/argocd/rook_ceph_bootstrap.rst), [GEN3 storage](docs/source/gen3/storage.rst) |
@@ -58,6 +58,204 @@ Never use the example credentials with non-public data or expose them to the
 internet. Do not allow Rook-Ceph to claim a device until its contents and target
 node have been independently verified.
 
+## Create and bootstrap the Talos cluster
+
+The current AWS design creates a new Talos 1.13 cluster in one availability
+zone. There is no SSH access, login host, HAProxy, or AWS load balancer. The
+Terraform resource historically named `login_node` is the `login1` ingress
+worker. ingress-nginx runs there as a host-network DaemonSet on ports 80 and
+443.
+
+The Kubernetes API uses a preallocated Elastic IP attached to `control1`.
+Because this address is the external API endpoint, loss of `control1` also
+removes external API access even if the other control-plane members remain
+healthy.
+
+### 1. Install matching clients
+
+Install `talosctl` matching the selected Talos release, along with Terraform,
+the AWS CLI, `kubectl`, and `jq`:
+
+```bash
+brew install siderolabs/tap/talosctl kubectl jq
+```
+
+The current machine configurations were generated with `talosctl` 1.13.7.
+
+### 2. Resolve the Talos AWS AMI
+
+Retrieve the official `amd64` AMI for the deployment region:
+
+```bash
+export AWS_REGION="us-east-1"
+export TALOS_VERSION="v1.13.7"
+
+AMI="$(
+  curl -fsSL \
+    "https://github.com/siderolabs/talos/releases/download/${TALOS_VERSION}/cloud-images.json" |
+  jq -er --arg region "$AWS_REGION" \
+    '.[] | select(.region == $region and .arch == "amd64") | .id'
+)"
+
+printf 'Talos AMI: %s\n' "$AMI"
+```
+
+Set the following HCP workspace Terraform variables to that AMI, except when a
+role uses a custom Image Factory image:
+
+```text
+controller_ami
+login_ami
+worker_cpu_ami
+worker_gpu_ami
+storage_ami
+```
+
+GPU workers require a GPU EC2 instance type and eventually a Talos Image
+Factory AMI containing the required GPU extensions. A `t3` or `t3a` instance is
+not a GPU instance.
+
+### 3. Preallocate the Kubernetes API address
+
+Allocate the API Elastic IP before generating Talos configuration:
+
+```bash
+EIP_JSON="$(
+  aws ec2 allocate-address \
+    --region "$AWS_REGION" \
+    --domain vpc \
+    --output json
+)"
+
+export CONTROLPLANE_EIP="$(printf '%s' "$EIP_JSON" | jq -r '.PublicIp')"
+export CONTROLPLANE_API_EIP_ALLOCATION_ID="$(
+  printf '%s' "$EIP_JSON" | jq -r '.AllocationId'
+)"
+
+printf 'Public IP:     %s\n' "$CONTROLPLANE_EIP"
+printf 'Allocation ID: %s\n' "$CONTROLPLANE_API_EIP_ALLOCATION_ID"
+```
+
+Do not release this address. Terraform attaches its allocation ID to
+`control1`.
+
+### 4. Generate and validate machine configuration
+
+```bash
+cd provisioning/talos
+
+export CLUSTER_NAME="gen3"
+export KUBERNETES_ENDPOINT="https://${CONTROLPLANE_EIP}:6443"
+
+./scripts/generate-config.sh
+
+wc -c \
+  generated/controlplane.yaml \
+  generated/worker.yaml \
+  generated/ingress.yaml
+
+talosctl validate --config generated/controlplane.yaml --mode cloud
+talosctl validate --config generated/worker.yaml --mode cloud
+talosctl validate --config generated/ingress.yaml --mode cloud
+```
+
+Each machine configuration must fit the EC2 16 KiB user-data limit. Generated
+credentials are ignored by Git and must not be committed unencrypted.
+
+### 5. Configure HCP Terraform
+
+The workspace is `jxj900/ceph-cluster`. AWS credentials must be sensitive HCP
+**environment variables**, not Terraform variables:
+
+```text
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+```
+
+Sync the endpoint, current administrator `/32`, and generated configuration as
+workspace Terraform variables:
+
+```bash
+export CONTROLPLANE_API_EIP_ALLOCATION_ID
+./scripts/sync-hcp-variables.sh
+```
+
+The script sets:
+
+```text
+controlplane_api_eip_allocation_id
+controlplane_machine_config  (sensitive)
+worker_machine_config        (sensitive)
+ingress_machine_config       (sensitive)
+talos_api_allowed_cidrs
+```
+
+If the existing AWS variables are in the wrong category, migrate the locally
+configured AWS credentials to sensitive HCP environment variables:
+
+```bash
+./scripts/sync-hcp-aws-credentials.sh
+```
+
+Machine configuration is represented in remote Terraform state. Access to the
+workspace and state must therefore be treated as privileged.
+
+### 6. Plan and apply
+
+```bash
+cd ..
+terraform state list
+terraform plan
+terraform apply
+terraform output
+```
+
+For a new cluster, state is initially empty and the reviewed plan should contain
+only additions. The first reviewed plan for this design reported `24 to add, 0
+to change, 0 to destroy`.
+
+### 7. Bootstrap Talos exactly once
+
+Wait until all control-plane instances have booted. Configure the bootstrap
+script with reachable control-plane addresses; the preallocated API Elastic IP
+is sufficient for the initial bootstrap:
+
+```bash
+cd talos
+
+export CONTROL_PLANE_NODES="$CONTROLPLANE_EIP"
+./scripts/bootstrap.sh
+```
+
+`bootstrap.sh` performs the one-time etcd bootstrap and writes
+`generated/kubeconfig`. Never run `talosctl bootstrap` a second time for the
+same cluster.
+
+Verify the cluster:
+
+```bash
+export TALOSCONFIG="$PWD/generated/talosconfig"
+export KUBECONFIG="$PWD/generated/kubeconfig"
+
+talosctl health --nodes "$CONTROLPLANE_EIP"
+kubectl get nodes -o wide
+kubectl get pods -A
+```
+
+### 8. Ingress addressing
+
+Terraform assigns a separate Elastic IP to `login1`, the Talos ingress worker:
+
+```bash
+cd ../
+terraform output login_node_public_ips
+```
+
+Until a controlled domain is available, render platform hostnames from the
+ingress address using nip.io, for example
+`keycloak.<ingress-ip>.nip.io`. Public TCP 80 and 443 terminate directly at
+ingress-nginx on `login1`.
+
 ## Generate inventory and ingress manifests
 
 After Terraform finishes, generate the Ansible inventory and render the
@@ -69,8 +267,8 @@ cd provisioning/ansible
 ansible-playbook -i inventory.ini 02-render-manifests.yml
 ```
 
-The rendering playbook reads the first host in the inventory's `login` group
-and builds `publicDomain` as `<login-public-ip>.nip.io`. It writes the rendered
+The rendering playbook reads the first host in the inventory's `ingress` group
+and builds `publicDomain` as `<ingress-public-ip>.nip.io`. It writes the rendered
 files to `argocd/ingresses/`. Review and commit those generated manifests before
 Argo CD synchronizes them.
 

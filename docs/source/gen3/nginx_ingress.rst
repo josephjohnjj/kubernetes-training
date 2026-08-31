@@ -2,7 +2,7 @@ NGINX Ingress Rules for GEN3
 ============================
 
 The repository deploys ingress-nginx chart ``4.15.1`` with controller
-``1.15.1``. Its Service type is ``NodePort``.
+``1.15.1`` as a host-network DaemonSet on the Talos ingress workers.
 
 Install and verify the controller
 ---------------------------------
@@ -10,15 +10,17 @@ Install and verify the controller
 Argo CD manages it through ``argocd/infrastructure/networking/01-ingress-nginx.yaml``::
 
    kubectl -n argocd get application ingress-nginx
-   kubectl -n ingress-nginx get deployment,pod,service
+   kubectl -n ingress-nginx get daemonset,pod,service
    kubectl get ingressclass nginx
 
-Record the assigned HTTP and HTTPS NodePorts::
+Verify that one controller is ready on every labelled ingress worker::
 
-   kubectl -n ingress-nginx get service ingress-nginx-controller
+   kubectl -n ingress-nginx get daemonset ingress-nginx-controller
+   kubectl get nodes -l ingress-ready=true
 
-An external load balancer, firewall rule, or direct node address must forward
-ports 80 and 443 to those NodePorts.
+Public DNS resolves directly to the stable ingress-worker addresses. Their
+security group admits TCP 80 and 443, which ingress-nginx binds in the host
+network namespace. No NodePort, HAProxy, or AWS load balancer is involved.
 
 GEN3 ingress
 ------------
@@ -110,7 +112,7 @@ Verification
 ::
 
    kubectl get ingress -A
-   kubectl -n ingress-nginx logs deployment/ingress-nginx-controller --tail=100
+   kubectl -n ingress-nginx logs daemonset/ingress-nginx-controller --tail=100
    curl -I https://gen3.example.org/
    curl -I https://keycloak.example.org/
    curl -I http://keycloak.example.org/
