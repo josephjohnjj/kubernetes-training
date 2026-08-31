@@ -1,7 +1,7 @@
 global:
   dictionaryUrl: "https://s3.amazonaws.com/dictionary-artifacts/datadictionary/develop/schema.json"
 
-  hostname: gen3.44.203.188.20.nip.io
+  hostname: gen3.44.207.222.188.nip.io
 
   dev: false
 
@@ -149,8 +149,8 @@ fence:
     OPENID_CONNECT:
       generic_oidc_idp:
         name: "Keycloak"
-        discovery_url: "http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration"
-        redirect_url: "http://gen3.44.203.188.20.nip.io/login/generic_oidc_idp/login"
+        discovery_url: "http://keycloak.44.207.222.188.nip.io/realms/genome/.well-known/openid-configuration"
+        redirect_url: "http://gen3.44.207.222.188.nip.io/login/generic_oidc_idp/login"
         client_id: "gen3-fence"
         client_secret: "10FeHUHWPu8G2xFE1pTcQ5B8hTbBcmfT"
         user_id_field: "email"
@@ -310,7 +310,7 @@ guppy:
   encryptWhitelist: ""
 
 revproxy:
-  hostname: "gen3.44.203.188.20.nip.io"
+  hostname: "gen3.44.207.222.188.nip.io"
   ingress:
     enabled: false
     className: "nginx"

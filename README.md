@@ -45,7 +45,7 @@ Review and replace the following before the first Argo CD synchronization:
 
 | Required change | Primary locations | Instructions |
 |---|---|---|
-| Select the correct cluster and inventory | `provisioning/ansible/inventory.ini`, AWS/Terraform configuration | [AWS cluster deployment](docs/source/aws/aws_cluster.rst), [prerequisites](docs/source/gen3/prerequisites.rst) |
+| Select the correct Talos cluster and AWS environment | `provisioning/talos/`, AWS/Terraform configuration | [Talos on AWS](docs/source/talos.rst), [prerequisites](docs/source/gen3/prerequisites.rst) |
 | Replace public IP addresses and `nip.io` hostnames | `argocd/ingresses/`, GEN3 and Keycloak values | [Ingress configuration](docs/source/configuration/ingress_nginx.rst), [GEN3 getting started](docs/source/gen3/getting_started.rst) |
 | Confirm Ceph node names and raw devices | `storage/rook-ceph/cluster/01-rook-ceph-cluster.yaml` | [Ceph configuration](docs/source/infrastructure/ceph.rst), [storage requirements](docs/source/gen3/storage.rst) |
 | Replace example passwords, access keys, and client secrets | `postgres/secrets/`, GEN3 values, Keycloak and Argo CD configuration | [Secrets inventory](docs/source/gen3/secrets.rst), [Keycloak](docs/source/gen3/keycloak.rst), [Argo CD OIDC](docs/source/argocd/keycloak_oidc.rst) |
@@ -147,7 +147,7 @@ cd provisioning/talos
 export CLUSTER_NAME="gen3"
 export KUBERNETES_ENDPOINT="https://${CONTROLPLANE_EIP}:6443"
 
-./scripts/generate-config.sh
+./scripts/02-generate-config.sh
 
 wc -c \
   generated/controlplane.yaml \
@@ -177,7 +177,7 @@ workspace Terraform variables:
 
 ```bash
 export CONTROLPLANE_API_EIP_ALLOCATION_ID
-./scripts/sync-hcp-variables.sh
+./scripts/03-sync-hcp-variables.sh
 ```
 
 The script sets:
@@ -194,7 +194,7 @@ If the existing AWS variables are in the wrong category, migrate the locally
 configured AWS credentials to sensitive HCP environment variables:
 
 ```bash
-./scripts/sync-hcp-aws-credentials.sh
+./scripts/01-sync-hcp-aws-credentials.sh
 ```
 
 Machine configuration is represented in remote Terraform state. Access to the
@@ -216,18 +216,29 @@ to change, 0 to destroy`.
 
 ### 7. Bootstrap Talos exactly once
 
-Wait until all control-plane instances have booted. Configure the bootstrap
-script with reachable control-plane addresses; the preallocated API Elastic IP
-is sufficient for the initial bootstrap:
+Wait until all control-plane instances have booted. Use the public Elastic IP
+as the reachable Talos endpoint and the private address of `control1` as the
+bootstrap node:
 
 ```bash
 cd talos
 
-export CONTROL_PLANE_NODES="$CONTROLPLANE_EIP"
-./scripts/bootstrap.sh
+CONTROL1_PRIVATE_IP="$(
+  aws ec2 describe-instances \
+    --region "$AWS_REGION" \
+    --filters \
+      'Name=tag:Name,Values=control1' \
+      'Name=instance-state-name,Values=running' \
+    --query 'Reservations[].Instances[].PrivateIpAddress' \
+    --output text
+)"
+
+export CONTROL_PLANE_ENDPOINTS="$CONTROLPLANE_EIP"
+export CONTROL_PLANE_NODES="$CONTROL1_PRIVATE_IP"
+./scripts/04-bootstrap.sh
 ```
 
-`bootstrap.sh` performs the one-time etcd bootstrap and writes
+`04-bootstrap.sh` performs the one-time etcd bootstrap and writes
 `generated/kubeconfig`. Never run `talosctl bootstrap` a second time for the
 same cluster.
 
@@ -256,18 +267,20 @@ ingress address using nip.io, for example
 `keycloak.<ingress-ip>.nip.io`. Public TCP 80 and 443 terminate directly at
 ingress-nginx on `login1`.
 
-## Generate inventory and ingress manifests
+## Render environment-specific manifests
 
-After Terraform finishes, generate the Ansible inventory and render the
-environment-specific platform ingress manifests:
+After Terraform finishes, render every deployable ``nip.io`` hostname from
+the ingress Elastic IP. The Talos workflow reads Terraform output directly and
+does not generate an SSH or Ansible inventory:
 
 ```bash
-cd provisioning/ansible
-./01-generate-inventory.sh
-ansible-playbook -i inventory.ini 02-render-manifests.yml
+cd provisioning/talos
+./scripts/05-render-manifests.sh
+./scripts/05-render-manifests.sh --check
 ```
 
-The rendering playbook reads the first host in the inventory's `ingress` group
+The rendering script updates the platform ingress manifests and GEN3 values
+from ``terraform output login_node_public_ips``.
 and builds `publicDomain` as `<ingress-public-ip>.nip.io`. It writes the rendered
 files to `argocd/ingresses/`. Review and commit those generated manifests before
 Argo CD synchronizes them.
@@ -302,7 +315,7 @@ kueue/        Queue and resource-flavor configuration
 llm/          Small test-model inference workloads
 manifests/    Compatibility copies and manual-reference manifests
 postgres/     GEN3 CloudNativePG resources and database initialization
-provisioning/ Terraform and Ansible cluster provisioning
+provisioning/ Terraform and Talos cluster provisioning
 storage/      Rook-Ceph cluster and storage resources
 tools/        Operational resources such as the Ceph toolbox
 ```

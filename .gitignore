@@ -181,3 +181,7 @@ username_paswd.md
 /provisioning/ansible/facts-cache/
 
 mluser
+provisioning/talos/generated/
+provisioning/talos/secrets.yaml
+provisioning/talos/talosconfig
+provisioning/talos/kubeconfig

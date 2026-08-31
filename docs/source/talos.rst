@@ -10,6 +10,31 @@ The examples use Talos ``v1.13.7``, AWS region ``us-east-1``, and the
 preallocated Kubernetes API Elastic IP ``100.61.11.217``.  Substitute the
 values for a different deployment.
 
+Script execution order
+----------------------
+
+Run the scripts under ``provisioning/talos/scripts`` in numeric order.  The
+Terraform plan and apply occur between scripts 03 and 04:
+
+#. ``01-sync-hcp-aws-credentials.sh`` migrates locally configured AWS
+   credentials into sensitive HCP Terraform environment variables.  Run it
+   once, or again when those credentials rotate.
+#. ``02-generate-config.sh`` creates one shared Talos trust bundle and the
+   control-plane, worker, and ingress machine configurations.
+#. ``03-sync-hcp-variables.sh`` uploads the generated machine configurations,
+   reserved API Elastic IP allocation, and administrator CIDR to HCP
+   Terraform.
+#. Run ``terraform plan`` and ``terraform apply`` from ``provisioning``.
+#. ``04-bootstrap.sh`` bootstraps etcd exactly once and writes the Kubernetes
+   client configuration.
+#. ``05-render-manifests.sh`` updates deployable ``nip.io`` hostnames from the
+   ingress Elastic IP reported by Terraform.  Its ``--check`` mode verifies
+   that the repository is already current.
+
+The numeric prefixes express dependencies; they do not mean every script is
+rerun for every change.  In particular, never rerun the bootstrap operation
+for an existing cluster.
+
 Use Talos AMIs for every node role
 ----------------------------------
 
@@ -160,7 +185,7 @@ Use the reserved address when generating all machine configurations and
    export CLUSTER_NAME=gen3
    export KUBERNETES_ENDPOINT="https://${CONTROLPLANE_EIP}:6443"
 
-   ./scripts/generate-config.sh
+   ./scripts/02-generate-config.sh
    chmod 600 generated/talosconfig
 
    talosctl validate --config generated/controlplane.yaml --mode cloud
@@ -203,7 +228,7 @@ data.  Synchronize the newly generated files to HCP Terraform before creating
 or replacing any instances::
 
    export CONTROLPLANE_API_EIP_ALLOCATION_ID
-   ./scripts/sync-hcp-variables.sh
+   ./scripts/03-sync-hcp-variables.sh
 
 The script updates these workspace variables:
 
@@ -282,17 +307,18 @@ Do not bootstrap until both the client and server versions are displayed.
 Bootstrap exactly once
 ----------------------
 
-Bootstrap etcd against one control-plane node only::
+Bootstrap etcd against one control-plane node only.  The endpoint is the
+public Elastic IP reachable from the administrator workstation, while the
+node target is the private address of ``control1``::
 
-   talosctl bootstrap \
-     --talosconfig ./generated/talosconfig \
-     --endpoints "$CONTROLPLANE_EIP" \
-     --nodes "$CONTROL1_PRIVATE_IP"
+   export CONTROL_PLANE_ENDPOINTS="$CONTROLPLANE_EIP"
+   export CONTROL_PLANE_NODES="$CONTROL1_PRIVATE_IP"
+   ./scripts/04-bootstrap.sh
 
-Successful bootstrap normally produces no output.  Never run bootstrap on the
+The script also writes ``generated/kubeconfig``.  Never run it against the
 other control-plane nodes, workers, storage nodes, or ingress node, and never
-repeat bootstrap for the same cluster.  The remaining control-plane machines
-join the bootstrapped etcd cluster automatically.
+repeat it for the same cluster.  The remaining control-plane machines join
+the bootstrapped etcd cluster automatically.
 
 Check cluster health::
 
@@ -315,14 +341,7 @@ unhealthy, target their private addresses when checking services or logs::
      --endpoints "$CONTROLPLANE_EIP" \
      --nodes <unhealthy-private-ip>
 
-Retrieve and use the Kubernetes configuration after the control plane becomes
-healthy::
-
-   talosctl kubeconfig ./generated/kubeconfig \
-     --force \
-     --talosconfig ./generated/talosconfig \
-     --endpoints "$CONTROLPLANE_EIP" \
-     --nodes "$CONTROL1_PRIVATE_IP"
+Use the Kubernetes configuration after the control plane becomes healthy::
 
    export KUBECONFIG="$PWD/generated/kubeconfig"
    kubectl get nodes -o wide
@@ -349,6 +368,28 @@ The Node manifest declares:
 The manifest marks the kubelet-owned Node as non-prunable.  Its sync-wave
 annotation is inert during direct ``kubectl apply`` and becomes useful later
 if the same manifest is reconciled by GitOps.
+
+Render environment-specific manifests
+-------------------------------------
+
+Talos replaces the former Ansible inventory/template workflow.  Render all
+deployable ``nip.io`` hostnames directly from Terraform's ingress Elastic IP::
+
+   cd provisioning/talos
+   ./scripts/05-render-manifests.sh
+   ./scripts/05-render-manifests.sh --check
+
+The script requires exactly one value from
+``terraform output login_node_public_ips`` and updates:
+
+* ``argocd/ingresses``;
+* the legacy ``manifests/ingress`` copies;
+* ``charts/gen3/values/gen3-values.yaml``; and
+* ``charts/gen3-2025.08/values/gen3-values.yaml``.
+
+The check mode fails if any targeted deployable file contains a different
+``nip.io`` IP.  Documentation is not mechanically rewritten because it may
+contain historical examples.  No SSH inventory is generated.
 
 Troubleshooting the timeout
 ---------------------------

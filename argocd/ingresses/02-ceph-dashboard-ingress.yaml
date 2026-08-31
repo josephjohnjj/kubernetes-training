@@ -11,10 +11,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - "ceph.44.203.188.20.nip.io"
+        - "ceph.44.207.222.188.nip.io"
       secretName: ceph-dashboard-ingress-tls
   rules:
-    - host: "ceph.44.203.188.20.nip.io"
+    - host: "ceph.44.207.222.188.nip.io"
       http:
         paths:
           - path: /

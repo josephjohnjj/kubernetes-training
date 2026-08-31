@@ -10,10 +10,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - "jaeger.44.203.188.20.nip.io"
+        - "jaeger.44.207.222.188.nip.io"
       secretName: jaeger-ingress-tls
   rules:
-    - host: "jaeger.44.203.188.20.nip.io"
+    - host: "jaeger.44.207.222.188.nip.io"
       http:
         paths:
           - path: /

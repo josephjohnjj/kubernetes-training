@@ -5,8 +5,6 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 INVENTORY_FILE="$SCRIPT_DIR/inventory.ini"
 OUTPUTS=$(terraform -chdir="$SCRIPT_DIR/.." output -json)
 
-SSH_KEY="$HOME/.ssh/terraform-user"
-
 # Helper function
 write_group() {
   GROUP_NAME=$1
@@ -31,7 +29,7 @@ write_group() {
   paste "$pub_file" "$priv_file" | while IFS="$(printf '\t')" read -r pub priv; do
     [ -z "$pub" ] && continue
 
-    echo "${HOST_PREFIX}${count} ansible_host=$pub private_ip=$priv ansible_user=ubuntu ansible_ssh_private_key_file=$SSH_KEY" >> "$INVENTORY_FILE"
+    echo "${HOST_PREFIX}${count} ansible_host=$pub private_ip=$priv" >> "$INVENTORY_FILE"
 
     count=$((count + 1))
   done
@@ -49,7 +47,7 @@ write_group \
   '.control_node_private_ip.value[]'
 
 write_group \
-  "login" \
+  "ingress" \
   "login" \
   '.login_node_public_ips.value[]' \
   '.login_node_private_ips.value[]'
@@ -77,6 +75,7 @@ cat <<EOF >> "$INVENTORY_FILE"
 [worker:children]
 worker_cpu
 worker_gpu
+ingress
 
 [no_login:children]
 control
@@ -90,13 +89,9 @@ control1
 control2
 control3
 
-[haproxy]
-login1 
-
-
 [all:children]
 control
-login
+ingress
 worker
 storage
 EOF

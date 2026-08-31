@@ -11,10 +11,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - "argocd.44.203.188.20.nip.io"
+        - "argocd.44.207.222.188.nip.io"
       secretName: argocd-ingress-tls
   rules:
-    - host: "argocd.44.203.188.20.nip.io"
+    - host: "argocd.44.207.222.188.nip.io"
       http:
         paths:
           - path: /

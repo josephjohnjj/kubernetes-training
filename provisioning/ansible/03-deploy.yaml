@@ -1,61 +1,13 @@
 ---
-# Deploy the Kubernetes cluster in dependency order.
-#
-# Intentionally excluded:
-# - kubernetes-cluster/16-wipe-storage-disks.yml (destructive)
-# - Keycloak storage prepared by 04-deploy-keycloak.yaml
-# - application add-ons deployed by Argo CD after 05-deploy-argocd.yaml
-
-- import_playbook: kubernetes-cluster/01-prepare-hosts.yml
-  tags: [hosts, packages]
-
-- import_playbook: kubernetes-cluster/02-configure-containerd-repository.yml
-  tags: [containerd]
-
-- import_playbook: kubernetes-cluster/03-configure-containerd.yml
-  tags: [containerd]
-
-- import_playbook: kubernetes-cluster/04-install-kubernetes.yml
-  tags: [kubernetes, packages]
-
-- import_playbook: kubernetes-cluster/05-configure-kubernetes-prerequisites.yml
-  tags: [kubernetes, prerequisites]
-
-- import_playbook: haproxy/01-install-kubectl.yml
-  tags: [haproxy, kubectl]
-
-- import_playbook: haproxy/02-configure-haproxy.yml
-  tags: [haproxy]
-
-- import_playbook: kubernetes-cluster/06-initialize-primary-control-plane.yml
-  tags: [control-plane]
-
-- import_playbook: kubernetes-cluster/07-join-secondary-control-planes.yml
-  tags: [control-plane]
-
-- import_playbook: kubernetes-cluster/08-install-calico.yml
-  tags: [networking, calico]
-
-- import_playbook: kubernetes-cluster/09-join-worker-nodes.yml
-  tags: [workers]
-
-- import_playbook: kubernetes-cluster/10-join-storage-nodes.yml
-  tags: [storage]
-
-- import_playbook: kubernetes-cluster/11-label-nodes.yml
-  tags: [labels]
-
-- import_playbook: kubernetes-cluster/12-configure-control-plane-kubeconfig.yml
-  tags: [kubeconfig]
-
-- import_playbook: haproxy/03-configure-login-kubeconfig.yml
-  tags: [kubeconfig, haproxy]
-
-- import_playbook: kubernetes-cluster/13-configure-opensearch-kernel.yml
-  tags: [opensearch, sysctl]
-
-- import_playbook: helm/01-install-helm.yml
-  tags: [helm]
-
-- import_playbook: kubernetes-cluster/14-verify-cluster.yml
-  tags: [verify]
+- name: Reject the legacy SSH and kubeadm deployment path
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Explain the Talos replacement
+      ansible.builtin.fail:
+        msg: >-
+          This playbook targets mutable SSH hosts and cannot be used with
+          Talos. Use provisioning/talos/scripts/02-generate-config.sh followed by
+          Terraform and 04-bootstrap.sh, then deploy Kubernetes resources through
+          Argo CD.

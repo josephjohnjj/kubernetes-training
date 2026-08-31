@@ -46,6 +46,11 @@ more ingress nodes before treating DNS-based ingress as highly available.
 Configuration generation
 ------------------------
 
+The scripts are numbered in execution order: configure HCP AWS credentials,
+generate Talos configuration, synchronize HCP Terraform variables, bootstrap
+the new cluster once, and finally render environment-specific manifests.
+Run Terraform plan and apply after script 03 and before script 04.
+
 Generate secrets and machine configurations with ``talosctl`` before running
 Terraform. Use a client matching the Talos version installed by the selected
 AMIs. Apply ``patches/cluster.yaml`` to all generated configurations and
@@ -55,7 +60,7 @@ For example::
 
    export CLUSTER_NAME=gen3
    export KUBERNETES_ENDPOINT=https://kube.example.internal:6443
-   ./scripts/generate-config.sh
+   ./scripts/02-generate-config.sh
 
 Supply the generated files as sensitive Terraform variables. Terraform passes
 them to the instances as EC2 user data, which is how Talos obtains its initial
@@ -71,8 +76,13 @@ treated as secrets. Do not put these values in a committed ``tfvars`` file.
 
 After Terraform starts the configured machines::
 
-   export CONTROL_PLANE_NODES="10.0.1.10 10.0.1.11 10.0.1.12"
-   ./scripts/bootstrap.sh
+   export CONTROL_PLANE_ENDPOINTS="100.61.11.217"
+   export CONTROL_PLANE_NODES="10.0.1.10"
+   ./scripts/04-bootstrap.sh
+
+``CONTROL_PLANE_ENDPOINTS`` is the Talos API address reachable from the
+administrator workstation. ``CONTROL_PLANE_NODES`` starts with the private
+address of the single control-plane machine that will bootstrap etcd.
 
 The bootstrap operation must only be run once. Later instances obtain their
 configuration from user data and join without bootstrapping etcd again.
@@ -80,3 +90,18 @@ configuration from user data and join without bootstrapping etcd again.
 Sensitive generated files such as ``secrets.yaml``, ``talosconfig``,
 ``controlplane.yaml``, ``worker.yaml``, and ``kubeconfig`` must not be committed
 unencrypted.
+
+Manifest rendering
+------------------
+
+Render environment-specific ``nip.io`` hostnames directly from the ingress
+Elastic IP in Terraform output. This is the only useful function retained from
+the former Ansible inventory/template workflow::
+
+   ./scripts/05-render-manifests.sh
+   ./scripts/05-render-manifests.sh --check
+
+The script updates ``argocd/ingresses``, the legacy ``manifests/ingress``
+copies, and both GEN3 values files. It fails unless Terraform reports exactly
+one ingress Elastic IP and verifies that no stale ``nip.io`` IP remains in a
+deployable target.

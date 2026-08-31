@@ -2,8 +2,8 @@
 # Component images are deliberately pinned together; do not use master/latest.
 #
 # DEPLOYMENT CHECKLIST — update these values for every new environment:
-# 1. Replace every occurrence of gen3.44.203.188.20.nip.io and
-#    keycloak.44.203.188.20.nip.io with the new public DNS names.
+# 1. Replace every occurrence of gen3.44.207.222.188.nip.io and
+#    keycloak.44.207.222.188.nip.io with the new public DNS names.
 # 2. Use the browser-facing HTTPS URL for Fence callbacks and Keycloak client
 #    redirect URIs. Server-side discovery may use HTTP when Keycloak's public
 #    HTTPS endpoint has a certificate that Fence does not trust.
@@ -21,7 +21,7 @@ global:
   # UPDATE: select the dictionary version required by this deployment.
   dictionaryUrl: "https://s3.amazonaws.com/dictionary-artifacts/datadictionary/develop/schema.json"
   # UPDATE: public Gen3 hostname (host only; do not include the URL scheme).
-  hostname: gen3.44.203.188.20.nip.io
+  hostname: gen3.44.207.222.188.nip.io
   dev: false
   tierAccessLevel: libre
   postgres:
@@ -111,10 +111,10 @@ fence:
         name: Keycloak
         # UPDATE: server-side realm discovery URL; HTTP avoids the POC's
         # untrusted certificate while browser-facing Gen3 remains HTTPS.
-        discovery_url: "http://keycloak.44.203.188.20.nip.io/realms/genome/.well-known/openid-configuration"
+        discovery_url: "http://keycloak.44.207.222.188.nip.io/realms/genome/.well-known/openid-configuration"
         # UPDATE: exact public callback registered in the Keycloak gen3-fence
         # client. The /user prefix makes revproxy route it to Fence.
-        redirect_url: "https://gen3.44.203.188.20.nip.io/user/login/generic_oidc_idp/login"
+        redirect_url: "https://gen3.44.207.222.188.nip.io/user/login/generic_oidc_idp/login"
         client_id: gen3-fence
         # UPDATE: load the production client secret from secret management.
         client_secret: "10FeHUHWPu8G2xFE1pTcQ5B8hTbBcmfT"
@@ -223,14 +223,14 @@ revproxy:
     tag: "2025.08"
     pullPolicy: IfNotPresent
   # UPDATE: public Gen3 hostname; keep this aligned with global.hostname.
-  hostname: gen3.44.203.188.20.nip.io
+  hostname: gen3.44.207.222.188.nip.io
   ingress:
     enabled: true
     # UPDATE: IngressClass installed in the target cluster.
     className: nginx
     hosts:
       # UPDATE: public Gen3 hostname routed to revproxy-service.
-      - host: gen3.44.203.188.20.nip.io
+      - host: gen3.44.207.222.188.nip.io
         paths:
           - path: /
             pathType: Prefix

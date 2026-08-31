@@ -10,10 +10,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - "opensearch.44.203.188.20.nip.io"
+        - "opensearch.44.207.222.188.nip.io"
       secretName: opensearch-dashboards-ingress-tls
   rules:
-    - host: "opensearch.44.203.188.20.nip.io"
+    - host: "opensearch.44.207.222.188.nip.io"
       http:
         paths:
           - path: /
