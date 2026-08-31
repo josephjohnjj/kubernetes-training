@@ -30,3 +30,7 @@ spec:
       # annotation size limit. Server-side apply avoids storing the complete
       # CRD manifest in kubectl.kubernetes.io/last-applied-configuration.
       - ServerSideApply=true
+      # These CRDs have never been managed successfully with client-side
+      # apply, so there is no field ownership to migrate. Attempting the
+      # migration would hit the same oversized annotation limit first.
+      - DisableClientSideApplyMigration=true
