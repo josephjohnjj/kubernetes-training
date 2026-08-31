@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Node
+metadata:
+  name: worker1
+  labels:
+    worker-type: cpu
+  annotations:
+    # Reconcile node placement before Argo CD creates the ingress-nginx Application.
+    # The controller DaemonSet selects ingress-ready=true.
+    argocd.argoproj.io/sync-wave: "-30"
+
+    # Argo CD may reconcile the Node metadata, but must never delete
+    # the Node during pruning.
+    argocd.argoproj.io/sync-options: Prune=false
+---
+apiVersion: v1
+kind: Node
+metadata:
+  name: worker2
+  labels:
+    worker-type: cpu
+  annotations:
+    argocd.argoproj.io/sync-wave: "-30"
+    argocd.argoproj.io/sync-options: Prune=false
+---
+apiVersion: v1
+kind: Node
+metadata:
+  name: worker3
+  labels:
+    worker-type: cpu
+  annotations:
+    argocd.argoproj.io/sync-wave: "-30"
+    argocd.argoproj.io/sync-options: Prune=false
+---
+apiVersion: v1
+kind: Node
+metadata:
+  name: worker4
+  labels:
+    worker-type: cpu
+  annotations:
+    argocd.argoproj.io/sync-wave: "-30"
+    argocd.argoproj.io/sync-options: Prune=false
