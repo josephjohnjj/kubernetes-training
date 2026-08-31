@@ -23,8 +23,8 @@ The complete documentation is maintained as Sphinx/RST content under
 
 | Area | Components | Detailed documentation |
 |---|---|---|
-| Provisioning | AWS, Terraform, Talos Linux | [Talos provisioning](provisioning/talos/README.rst), [AWS cluster](docs/source/aws/aws_cluster.rst) |
-| Cluster foundation | Talos, Kubernetes, Flannel, Helm | [Talos provisioning](provisioning/talos/README.rst), [Helm](docs/source/infrastructure/helm.rst) |
+| Provisioning | AWS, Terraform, Talos Linux | [Talos provisioning](docs/source/talos.rst), [AWS cluster](docs/source/aws/aws_cluster.rst) |
+| Cluster foundation | Talos, Kubernetes, Flannel, Helm | [Talos provisioning](docs/source/talos.rst), [Helm](docs/source/infrastructure/helm.rst) |
 | GitOps | Argo CD, app-of-apps, sync waves | [Architecture](docs/source/argocd/architecture.rst), [bootstrap](docs/source/gen3/argocd_bootstrap.rst), [repository paths](docs/source/argocd/repository_paths.rst) |
 | Ingress and certificates | ingress-nginx, cert-manager, platform ingresses | [Ingress NGINX](docs/source/configuration/ingress_nginx.rst), [cert-manager](docs/source/infrastructure/cert_manager.rst) |
 | Storage | Rook, Ceph, block/file/object storage | [Ceph](docs/source/infrastructure/ceph.rst), [Rook-Ceph GitOps](docs/source/argocd/rook_ceph_bootstrap.rst), [GEN3 storage](docs/source/gen3/storage.rst) |
@@ -62,7 +62,7 @@ node have been independently verified.
 
 The current AWS design creates a new Talos 1.13 cluster in one availability
 zone. There is no SSH access, login host, HAProxy, or AWS load balancer. The
-Terraform resource historically named `login_node` is the `login1` ingress
+Terraform resource historically named `login_node` is the `ingress1` ingress
 worker. ingress-nginx runs there as a host-network DaemonSet on ports 80 and
 443.
 
@@ -164,16 +164,17 @@ credentials are ignored by Git and must not be committed unencrypted.
 
 ### 5. Configure HCP Terraform
 
-The workspace is `jxj900/ceph-cluster`. AWS credentials must be sensitive HCP
-**environment variables**, not Terraform variables:
+The workspace is `jxj900/ceph-cluster`. First synchronize the locally
+configured AWS credentials as sensitive HCP **environment variables**, not
+Terraform variables:
 
-```text
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
+```bash
+./scripts/01-sync-hcp-aws-credentials.sh
 ```
 
-Sync the endpoint, current administrator `/32`, and generated configuration as
-workspace Terraform variables:
+This manages `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and an optional
+session token. Then sync the endpoint, current administrator `/32`, and
+generated configuration as workspace Terraform variables:
 
 ```bash
 export CONTROLPLANE_API_EIP_ALLOCATION_ID
@@ -188,13 +189,6 @@ controlplane_machine_config  (sensitive)
 worker_machine_config        (sensitive)
 ingress_machine_config       (sensitive)
 talos_api_allowed_cidrs
-```
-
-If the existing AWS variables are in the wrong category, migrate the locally
-configured AWS credentials to sensitive HCP environment variables:
-
-```bash
-./scripts/01-sync-hcp-aws-credentials.sh
 ```
 
 Machine configuration is represented in remote Terraform state. Access to the
@@ -248,24 +242,38 @@ Verify the cluster:
 export TALOSCONFIG="$PWD/generated/talosconfig"
 export KUBECONFIG="$PWD/generated/kubeconfig"
 
-talosctl health --nodes "$CONTROLPLANE_EIP"
+talosctl health \
+  --talosconfig "$TALOSCONFIG" \
+  --endpoints "$CONTROLPLANE_EIP" \
+  --nodes "$CONTROL1_PRIVATE_IP"
 kubectl get nodes -o wide
 kubectl get pods -A
 ```
 
-### 8. Ingress addressing
+### 8. Apply ingress-node metadata
 
-Terraform assigns a separate Elastic IP to `login1`, the Talos ingress worker:
+Apply the node role, scheduler label, and dedicated taint required by the
+ingress-nginx DaemonSet:
 
 ```bash
-cd ../
-terraform output login_node_public_ips
+cd ../..
+kubectl apply -f argocd/infrastructure/nodes/01-ingress-node.yaml
+kubectl get node ingress1 --show-labels
+```
+
+### 9. Ingress addressing
+
+Terraform assigns a separate Elastic IP to `ingress1`, the Talos ingress worker
+(the Terraform output retains its historical `login_node` name):
+
+```bash
+terraform -chdir=provisioning output login_node_public_ips
 ```
 
 Until a controlled domain is available, render platform hostnames from the
 ingress address using nip.io, for example
 `keycloak.<ingress-ip>.nip.io`. Public TCP 80 and 443 terminate directly at
-ingress-nginx on `login1`.
+ingress-nginx on `ingress1`.
 
 ## Render environment-specific manifests
 
@@ -280,26 +288,139 @@ cd provisioning/talos
 ```
 
 The rendering script updates the platform ingress manifests and GEN3 values
-from ``terraform output login_node_public_ips``.
-and builds `publicDomain` as `<ingress-public-ip>.nip.io`. It writes the rendered
-files to `argocd/ingresses/`. Review and commit those generated manifests before
-Argo CD synchronizes them.
+from `terraform output login_node_public_ips` and builds the public domain as
+`<ingress-public-ip>.nip.io`. Review and commit the generated changes before
+Argo CD reads the `talos` branch.
 
-## Deployment order
+## Install and synchronize with Argo CD
 
-The Argo CD Applications use dependency-based sync waves, but readiness must
-still be verified between stateful layers:
+This section continues the canonical workflow in
+[docs/source/talos.rst](docs/source/talos.rst). Keep the generated kubeconfig
+active and run these commands from the repository root.
 
-1. Provision the nodes and Kubernetes cluster.
-2. Install Argo CD and apply the infrastructure AppProject.
-3. Reconcile namespaces, operators, ingress-nginx, CSI, and Prometheus.
-4. Verify the Ceph cluster before applying pools and StorageClasses.
-5. Reconcile PostgreSQL, search, observability, security, and scheduling services.
-6. Create the required Keycloak Secrets, inspect the ``keycloak`` Application
-   diff, and perform its initial adoption sync.
-7. Reconcile `gen3-db` at wave `10`, then GEN3 at wave `20`.
-8. Reconcile the optional `small-llm` test workload at wave `30`.
-9. Run the documented readiness and ingress tests.
+### 1. Install Argo CD
+
+```bash
+export KUBECONFIG="$PWD/provisioning/talos/generated/kubeconfig"
+
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo update argo
+helm upgrade --install argocd argo/argo-cd \
+  --version 10.3.3 \
+  --namespace argocd \
+  --create-namespace \
+  --values charts/argocd/values.yaml \
+  --wait \
+  --timeout 10m
+
+kubectl -n argocd wait \
+  --for=condition=Available deployment --all --timeout=5m
+```
+
+Helm owns Argo CD. Do not apply `argocd/bootstrap/02-argocd-rbac-cm.yaml`;
+the same policy is already managed through `charts/argocd/values.yaml`.
+
+### 2. Reconcile infrastructure
+
+Apply the AppProject before the infrastructure root Application:
+
+```bash
+kubectl apply -f argocd/bootstrap/01-project-infrastructure.yaml
+kubectl apply -f argocd/bootstrap/03-infrastructure.yaml
+kubectl -n argocd get applications --watch
+```
+
+The root discovers every Application below `argocd/infrastructure`.
+Most children synchronize automatically. The Rook/Ceph Applications require
+reviewed manual synchronization because self-healing and pruning are disabled.
+Start the operator and CSI layer first:
+
+```bash
+for app in rook-ceph rook-ceph-csi; do
+  kubectl patch application "$app" -n argocd \
+    --type merge \
+    -p '{"operation":{"sync":{"revision":"talos"}}}'
+done
+
+kubectl -n rook-ceph wait \
+  --for=condition=Available deployment/rook-ceph-operator --timeout=5m
+```
+
+Create and verify the Ceph cluster before applying its pools, StorageClasses,
+object storage, and toolbox. `Synced` alone does not mean a component is ready:
+
+```bash
+kubectl patch application rook-ceph-cluster -n argocd \
+  --type merge \
+  -p '{"operation":{"sync":{"revision":"talos"}}}'
+
+kubectl -n rook-ceph get cephcluster rook-ceph
+kubectl -n rook-ceph get pods
+
+for app in rook-ceph-storage rook-ceph-tools; do
+  kubectl patch application "$app" -n argocd \
+    --type merge \
+    -p '{"operation":{"sync":{"revision":"talos"}}}'
+done
+
+kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph status
+kubectl get storageclass cnpg-sc gen3-elasticsearch-sc gen3-bucket
+kubectl -n cnpg-database get cluster,pod,pvc
+kubectl -n elasticsearch get elasticsearch,pod,pvc
+kubectl -n ingress-nginx get daemonset,pod
+kubectl -n prometheus get daemonset,pod
+```
+
+### 3. Bootstrap and sync Keycloak
+
+Run the credential bootstrap after the infrastructure root has created the
+namespaces and CNPG resources:
+
+```bash
+./provisioning/talos/scripts/06-bootstrap-keycloak-secrets.sh
+
+kubectl get secret keycloak-db-credentials -n cnpg-database
+kubectl get secret keycloak keycloak-externaldb -n keycloak
+```
+
+Then synchronize CNPG’s managed role and perform Keycloak’s reviewed initial
+sync:
+
+```bash
+kubectl patch application cnpg-database -n argocd \
+  --type merge \
+  -p '{"operation":{"sync":{"revision":"talos"}}}'
+
+kubectl patch application keycloak -n argocd \
+  --type merge \
+  -p '{"operation":{"sync":{"revision":"talos"}}}'
+
+kubectl -n keycloak rollout status statefulset/keycloak --timeout=5m
+```
+
+### 4. Reconcile workloads
+
+Only continue after storage, CNPG, Elasticsearch, ingress-nginx, Prometheus,
+and Keycloak are ready:
+
+```bash
+kubectl apply -f argocd/bootstrap/04-applications.yaml
+kubectl -n argocd get applications --watch
+```
+
+The workload root discovers `gen3-db` at wave `10`, GEN3 at wave `20`, and the
+optional small-LLM workload at wave `30`. Verify both sync and health:
+
+```bash
+kubectl -n argocd get applications
+kubectl -n gen3-db get cluster,pod,pvc,job
+kubectl -n gen3 get deployments,jobs,pods
+kubectl -n gen3 wait \
+  --for=condition=Available deployment --all --timeout=10m
+```
+
+If an Application is `Synced` but not healthy, inspect its workloads, custom
+resources, and namespace events before forcing another synchronization.
 
 See [Argo CD bootstrap](docs/source/gen3/argocd_bootstrap.rst),
 [sync-wave architecture](docs/source/argocd/architecture.rst), and
