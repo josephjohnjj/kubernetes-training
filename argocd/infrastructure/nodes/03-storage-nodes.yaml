@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Node
+metadata:
+  name: storage1
+  annotations:
+    # Reconcile storage placement early and never prune kubelet-owned Nodes.
+    argocd.argoproj.io/sync-wave: "-30"
+    argocd.argoproj.io/sync-options: Prune=false
+  labels:
+    node-role.kubernetes.io/storage: ""
+spec:
+  taints:
+    - key: dedicated
+      value: storage
+      effect: NoSchedule
+---
+apiVersion: v1
+kind: Node
+metadata:
+  name: storage2
+  annotations:
+    argocd.argoproj.io/sync-wave: "-30"
+    argocd.argoproj.io/sync-options: Prune=false
+  labels:
+    node-role.kubernetes.io/storage: ""
+spec:
+  taints:
+    - key: dedicated
+      value: storage
+      effect: NoSchedule
+---
+apiVersion: v1
+kind: Node
+metadata:
+  name: storage3
+  annotations:
+    argocd.argoproj.io/sync-wave: "-30"
+    argocd.argoproj.io/sync-options: Prune=false
+  labels:
+    node-role.kubernetes.io/storage: ""
+spec:
+  taints:
+    - key: dedicated
+      value: storage
+      effect: NoSchedule
