@@ -58,6 +58,22 @@ Never use the example credentials with non-public data or expose them to the
 internet. Do not allow Rook-Ceph to claim a device until its contents and target
 node have been independently verified.
 
+## Generate inventory and ingress manifests
+
+After Terraform finishes, generate the Ansible inventory and render the
+environment-specific platform ingress manifests:
+
+```bash
+cd provisioning/ansible
+./01-generate-inventory.sh
+ansible-playbook -i inventory.ini 02-render-manifests.yml
+```
+
+The rendering playbook reads the first host in the inventory's `login` group
+and builds `publicDomain` as `<login-public-ip>.nip.io`. It writes the rendered
+files to `argocd/ingresses/`. Review and commit those generated manifests before
+Argo CD synchronizes them.
+
 ## Deployment order
 
 The Argo CD Applications use dependency-based sync waves, but readiness must

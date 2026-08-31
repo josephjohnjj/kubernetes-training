@@ -157,7 +157,7 @@ Terraform outputs public and private IP lists for each node role::
 Generate the Ansible inventory from those outputs::
 
    cd provisioning/ansible
-   ./generate-inventory.sh
+   ./01-generate-inventory.sh
 
 The script creates groups for ``control``, ``login``, ``worker_cpu``,
 ``worker_gpu``, and ``storage``, plus these functional groups:
@@ -174,6 +174,20 @@ Review ``inventory.ini`` and test access::
 
 Do not publish the generated inventory because it contains current public IPs
 and a local private-key path.
+
+Render ingress manifests
+------------------------
+
+Render the platform ingress manifests after generating and reviewing the
+inventory::
+
+   ansible-playbook -i inventory.ini 02-render-manifests.yml
+
+The rendering playbook reads the public address of the first host in the
+``login`` inventory group and constructs ``publicDomain`` as
+``<login-public-ip>.nip.io``. It writes the six rendered platform ingress files
+to ``argocd/ingresses/``. Review and commit those generated files before Argo CD
+synchronizes them.
 
 Kubernetes software baseline
 ----------------------------
@@ -201,11 +215,11 @@ Numbered deployment workflows
 Run the deployment entry points from ``provisioning/ansible``. Their numeric
 prefixes show the intended order::
 
-   ansible-playbook -i inventory.ini 01-deploy.yaml
-   ansible-playbook -i inventory.ini 02-deploy-keycloak.yaml
-   ansible-playbook -i inventory.ini 03-deploy-argocd.yaml
+   ansible-playbook -i inventory.ini 03-deploy.yaml
+   ansible-playbook -i inventory.ini 04-deploy-keycloak.yaml
+   ansible-playbook -i inventory.ini 05-deploy-argocd.yaml
 
-``01-deploy.yaml`` builds and verifies the Kubernetes cluster. It imports the
+``03-deploy.yaml`` builds and verifies the Kubernetes cluster. It imports the
 host preparation, containerd, Kubernetes, HAProxy, control-plane, Calico,
 worker, storage-node, labeling, kubeconfig, OpenSearch kernel, Helm, and
 verification playbooks in dependency order.
@@ -218,8 +232,8 @@ before running the Keycloak or Argo CD workflows.
 All three entry points support Ansible tags. For example, inspect the available
 tasks or rerun only cluster verification with::
 
-   ansible-playbook -i inventory.ini 01-deploy.yaml --list-tasks
-   ansible-playbook -i inventory.ini 01-deploy.yaml --tags verify
+   ansible-playbook -i inventory.ini 03-deploy.yaml --list-tasks
+   ansible-playbook -i inventory.ini 03-deploy.yaml --tags verify
 
 The following sections show the component playbooks invoked by these entry
 points. Use them individually for diagnosis or controlled recovery; use the
@@ -378,11 +392,11 @@ nodes, healthy CoreDNS and Calico, and successful API access through HAProxy.
 Deploy Keycloak
 ---------------
 
-``02-deploy-keycloak.yaml`` first creates the ``keycloak-pool`` CephBlockPool
+``04-deploy-keycloak.yaml`` first creates the ``keycloak-pool`` CephBlockPool
 and ``keycloak-sc`` RBD StorageClass. Keycloak itself is deployed later by the
 Argo CD child Application from the vendored chart under ``charts/keycloak``::
 
-   ansible-playbook -i inventory.ini 02-deploy-keycloak.yaml
+   ansible-playbook -i inventory.ini 04-deploy-keycloak.yaml
    kubectl get storageclass keycloak-sc
 
 Run this only after Rook-Ceph is healthy in the ``rook-ceph`` namespace and its
@@ -395,10 +409,10 @@ for the administrator and database passwords.
 Deploy Argo CD
 --------------
 
-``03-deploy-argocd.yaml`` creates the ``argocd`` namespace and applies the
+``05-deploy-argocd.yaml`` creates the ``argocd`` namespace and applies the
 upstream Argo CD installation manifest::
 
-   ansible-playbook -i inventory.ini 03-deploy-argocd.yaml
+   ansible-playbook -i inventory.ini 05-deploy-argocd.yaml
    kubectl -n argocd get pods
 
 After the root infrastructure Application creates the Keycloak child
@@ -431,7 +445,7 @@ Handoff to Argo CD
 
 Terraform and the first Ansible workflow establish AWS, Kubernetes,
 networking, labels, and raw Ceph devices. After the cluster and storage
-prerequisites pass validation, use ``03-deploy-argocd.yaml`` to install Argo CD
+prerequisites pass validation, use ``05-deploy-argocd.yaml`` to install Argo CD
 and use Git-managed Applications for Rook-Ceph, databases, ingress,
 observability, and GEN3. Avoid continuing with unrelated manual manifests when
 an Argo CD source already owns the resource.
