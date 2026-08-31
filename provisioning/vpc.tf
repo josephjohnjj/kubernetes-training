@@ -42,7 +42,7 @@ resource "aws_subnet" "public" {
   vpc_id = aws_vpc.main.id
 
   # CIDR block of this subnet - a smaller subnet inside the VPC range
-  cidr_block = "10.0.1.0/24" # Provides ~250 usable IPs
+  cidr_block = var.public_subnet_cidr
 
   # Automatically assign a public IP address to instances launched in this subnet
   map_public_ip_on_launch = true
@@ -51,7 +51,7 @@ resource "aws_subnet" "public" {
   availability_zone = var.target_az
 
   tags = {
-    Name = "public-subnet"
+    Name = "public-subnet-${var.target_az}"
   }
 }
 

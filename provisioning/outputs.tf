@@ -15,16 +15,21 @@ output "control_node_private_ip" {
   value       = [for i in aws_instance.control_node : i.private_ip]
 }
 
+output "controlplane_api_public_ip" {
+  description = "Stable Elastic IP attached to control1 and used as the Kubernetes API endpoint"
+  value       = aws_eip_association.controlplane_api.public_ip
+}
+
 # --------------------------------------------
-# Login Nodes (can be multiple)
+# Ingress workers (Terraform resource is temporarily named login_node)
 # --------------------------------------------
 output "login_node_public_ips" {
-  description = "Public IP addresses of the login nodes"
-  value       = [for i in aws_instance.login_node : i.public_ip]
+  description = "Stable public Elastic IP addresses of the Talos ingress workers"
+  value       = [for i in aws_eip.ingress : i.public_ip]
 }
 
 output "login_node_private_ips" {
-  description = "Private IP addresses of the login nodes"
+  description = "Private IP addresses of the Talos ingress workers"
   value       = [for i in aws_instance.login_node : i.private_ip]
 }
 

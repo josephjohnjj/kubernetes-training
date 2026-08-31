@@ -1,34 +1,27 @@
 # -----------------------------------------------------
-# Security Group for SSH Access to EC2 Instances
+# Talos API access. There is deliberately no SSH security group.
 # -----------------------------------------------------
-resource "aws_security_group" "ssh_access" {
+resource "aws_security_group" "talos_api" {
   # Name for the security group
-  name = "allow_ssh_from_anywhere"
+  name = "talos-api-access"
 
   # A human-readable description of what this SG does
-  description = "Allow SSH inbound traffic"
+  description = "Allow authenticated Talos API access from administrator networks"
 
   # Associate this security group with your main VPC
   vpc_id = aws_vpc.main.id
 
   # -------- Ingress Rules (Incoming Traffic) --------
 
-  # Allow SSH (port 22) from any IPv4 address
-  ingress {
-    description = "SSH from anywhere (IPv4)"
-    from_port   = 22            # Start of port range
-    to_port     = 22            # End of port range (just port 22)
-    protocol    = "tcp"         # SSH uses TCP
-    cidr_blocks = ["0.0.0.0/0"] # Allow from any public IPv4 address
-  }
-
-  # Allow SSH (port 22) from any IPv6 address
-  ingress {
-    description      = "SSH from anywhere (IPv6)"
-    from_port        = 22
-    to_port          = 22
-    protocol         = "tcp"
-    ipv6_cidr_blocks = ["::/0"] # Allow from any public IPv6 address
+  dynamic "ingress" {
+    for_each = length(var.talos_api_allowed_cidrs) == 0 ? [] : [1]
+    content {
+      description = "Talos API from approved administrator networks"
+      from_port   = 50000
+      to_port     = 50000
+      protocol    = "tcp"
+      cidr_blocks = var.talos_api_allowed_cidrs
+    }
   }
 
   # -------- Egress Rules (Outgoing Traffic) --------
@@ -43,7 +36,68 @@ resource "aws_security_group" "ssh_access" {
 
   # Tags help identify this resource in the AWS Console
   tags = {
-    Name = "ssh-sg" # Tag shown in AWS for this SG
+    Name = "talos-api-sg"
+  }
+}
+
+resource "aws_security_group" "kubernetes_api" {
+  name        = "kubernetes-api-access"
+  description = "Allow direct Kubernetes API access on every control-plane DNS target"
+  vpc_id      = aws_vpc.main.id
+
+  dynamic "ingress" {
+    for_each = length(var.talos_api_allowed_cidrs) == 0 ? [] : [1]
+    content {
+      description = "Kubernetes API from approved administrator networks"
+      from_port   = 6443
+      to_port     = 6443
+      protocol    = "tcp"
+      cidr_blocks = var.talos_api_allowed_cidrs
+    }
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "kubernetes-api-sg"
+  }
+}
+
+resource "aws_security_group" "ingress_web" {
+  name        = "talos-ingress-web"
+  description = "Allow public HTTP and HTTPS directly to ingress-nginx on Talos ingress workers"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "Public HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Public HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "talos-ingress-web-sg"
   }
 }
 
@@ -151,5 +205,3 @@ resource "aws_security_group" "monitoring" {
     Name = "monitoring-sg"
   }
 }
-
-
