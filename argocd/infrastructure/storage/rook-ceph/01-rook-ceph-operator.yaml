@@ -28,3 +28,8 @@ spec:
 
     syncOptions:
       - CreateNamespace=true
+      # The ceph-csi-operator Driver and OperatorConfig CRDs exceed the
+      # client-side apply annotation size limit. Server-side apply installs
+      # and upgrades those CRDs without storing the full manifest in an
+      # annotation.
+      - ServerSideApply=true
