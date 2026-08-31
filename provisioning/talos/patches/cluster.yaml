@@ -1,0 +1,21 @@
+cluster:
+  # Keep ordinary platform and application workloads off the control plane.
+  # Talos implements this by maintaining the standard Kubernetes
+  # node-role.kubernetes.io/control-plane:NoSchedule taint.
+  allowSchedulingOnControlPlanes: false
+  network:
+    cni:
+      name: flannel
+      flannel:
+        kubeNetworkPoliciesEnabled: true
+    podSubnets:
+      - 10.244.0.0/16
+    serviceSubnets:
+      - 10.96.0.0/12
+
+machine:
+  time:
+    servers:
+      - 169.254.169.123
+  sysctls:
+    vm.max_map_count: "262144"
