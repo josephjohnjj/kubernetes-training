@@ -1,7 +1,16 @@
 controller:
+  kind: DaemonSet
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+  nodeSelector:
+    ingress-ready: "true"
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: ingress
+      effect: NoSchedule
   service:
-    enabled: true
-    type: NodePort
+    enabled: false
   metrics:
     enabled: true
     serviceMonitor:
