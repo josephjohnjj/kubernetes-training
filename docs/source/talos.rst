@@ -30,10 +30,32 @@ Terraform plan and apply occur between scripts 03 and 04:
 #. ``05-render-manifests.sh`` updates deployable ``nip.io`` hostnames from the
    ingress Elastic IP reported by Terraform.  Its ``--check`` mode verifies
    that the repository is already current.
+#. After Argo CD is installed and its root infrastructure Application is
+   applied, ``06-bootstrap-keycloak-secrets.sh`` creates the Keycloak and CNPG
+   credentials that must remain outside Git.
 
 The numeric prefixes express dependencies; they do not mean every script is
 rerun for every change.  In particular, never rerun the bootstrap operation
 for an existing cluster.
+
+Access and ingress model
+------------------------
+
+Use ``talosctl`` from an administrator workstation or CI runner.  Restrict
+``talos_api_allowed_cidrs`` to the VPN or administrator networks that require
+TCP 50000 access; never expose the Talos API to the entire Internet.
+
+The Kubernetes API endpoint should normally be a controlled DNS name with one
+A record per control-plane address.  This deployment instead uses a
+preallocated Elastic IP attached to ``control1``.  Do not use the ingress
+worker as either the Kubernetes API endpoint or a Talos control-plane node.
+
+Terraform retains the historical resource name ``login_node``, but that
+instance is the ``ingress1`` Talos worker.  Its Elastic IP accepts public TCP
+80 and 443.  The ingress-nginx host-network DaemonSet selects the node through
+``ingress-ready=true`` and binds those ports directly, without NodePort,
+HAProxy, or an AWS load balancer.  Add more ingress nodes and DNS records before
+treating this path as highly available.
 
 Use Talos AMIs for every node role
 ----------------------------------
@@ -447,3 +469,31 @@ Services, and workloads.  Do not apply
 ``argocd/bootstrap/02-argocd-rbac-cm.yaml`` because the equivalent RBAC policy
 is already managed by ``charts/argocd/values.yaml``.  Continue with
 ``gen3/argocd_bootstrap`` only after the Helm release is healthy.
+
+Bootstrap Keycloak credentials
+------------------------------
+
+After applying the root infrastructure Application, keep the generated
+kubeconfig active and create the credentials required by the CNPG managed role
+and the Keycloak chart::
+
+   export KUBECONFIG="$PWD/provisioning/talos/generated/kubeconfig"
+   ./provisioning/talos/scripts/06-bootstrap-keycloak-secrets.sh
+
+The script prompts without echoing the database and administrator passwords.
+It creates ``keycloak-db-credentials`` in ``cnpg-database`` and creates
+``keycloak-externaldb`` plus ``keycloak`` in the ``keycloak`` namespace.  It
+preserves existing credentials on later runs and stops if the two existing
+database credentials disagree.
+
+The Keycloak Application intentionally requires a reviewed initial sync.  Once
+the Secrets exist, inspect and synchronize it::
+
+   kubectl -n argocd get application keycloak
+   kubectl patch application keycloak -n argocd \
+     --type merge \
+     -p '{"operation":{"sync":{"revision":"talos"}}}'
+
+The ECK Elasticsearch credential consumed by the GEN3 bootstrap hook is
+declarative in ``charts/eck-stack`` and does not require a Talos bootstrap
+script.
