@@ -17,6 +17,8 @@ cluster:
       ensure: present
       login: true
       superuser: false
+      passwordSecret:
+        name: keycloak-db-credentials
 
     - name: gen3_1000g
       ensure: present

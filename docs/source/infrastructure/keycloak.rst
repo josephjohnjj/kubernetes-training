@@ -54,14 +54,16 @@ The values reference existing Secrets rather than storing credentials in Git:
    authentication failures.
 
 Prefer External Secrets, SOPS, Sealed Secrets, or another approved declarative
-secret workflow. For a manual bootstrap, create the namespace and Secrets
-before synchronizing the Application::
+secret workflow. For this repository's manual bootstrap, first configure the
+``keycloak`` managed role in ``cnpg-cluster-values.yaml`` with
+``passwordSecret.name: keycloak-db-credentials``, then run::
 
-   kubectl create namespace keycloak --dry-run=client -o yaml | kubectl apply -f -
-   kubectl -n keycloak create secret generic keycloak \
-     --from-literal=admin-password='<generated-admin-password>'
-   kubectl -n keycloak create secret generic keycloak-externaldb \
-     --from-literal=db-password='<password-assigned-to-keycloak-db-role>'
+   ./provisioning/talos/scripts/06-bootstrap-keycloak-secrets.sh
+
+The script prompts without echoing passwords, creates the CNPG
+``kubernetes.io/basic-auth`` Secret, and applies namespace-local copies of the
+same database password for Keycloak. It preserves existing credentials on
+later runs and stops if the two existing database Secrets disagree.
 
 During migration from the existing Helm release, do not replace the live
 credentials. Verify that both existing Secrets are present and preserve them

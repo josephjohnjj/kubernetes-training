@@ -39,9 +39,13 @@ Secret ownership and ordering
      - ``gen3``
      - Rook OBC provisioner
      - Fence pods that reference S3 credentials
-   * - ``keycloak-db``
+   * - ``keycloak-db-credentials``
+     - ``cnpg-database``
+     - Database infrastructure
+     - CNPG managed-role reconciliation
+   * - ``keycloak-externaldb`` and ``keycloak``
      - ``keycloak``
-     - Keycloak operator/install process
+     - Keycloak bootstrap script
      - Keycloak startup
    * - Fence OIDC client credential
      - ``gen3``
@@ -148,19 +152,15 @@ existing Secret or external-secret option::
    has not yet been wired to consume ``fence-keycloak-oidc``. Do not create the
    Secret and assume it is active; verify the rendered Deployment/Secret first.
 
-Keycloak database Secret
-------------------------
+Keycloak Secrets
+----------------
 
-::
-
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: keycloak-db
-     namespace: keycloak
-   type: Opaque
-   stringData:
-     db-password: REPLACE_WITH_GENERATED_PASSWORD
+Run ``provisioning/talos/scripts/06-bootstrap-keycloak-secrets.sh`` to create
+the CNPG ``keycloak-db-credentials`` Secret and the Keycloak
+``keycloak-externaldb`` and ``keycloak`` Secrets. The database password is
+identical in the first two objects, while the administrator password is
+independent. The script applies values directly to the cluster and never
+writes them to Git.
 
 Safe creation from a terminal
 -----------------------------

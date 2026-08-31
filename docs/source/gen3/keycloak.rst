@@ -69,11 +69,10 @@ Kubernetes Secret; do not keep it in ``values.yaml``.
 Install Keycloak
 ----------------
 
-Create the namespace and a values file containing no literal password::
+Create the required Secrets without placing literal passwords in a values
+file::
 
-   kubectl create namespace keycloak --dry-run=client -o yaml | kubectl apply -f -
-   kubectl -n keycloak create secret generic keycloak-db \
-     --from-literal=db-password='<generate-a-strong-password>'
+   ./provisioning/talos/scripts/06-bootstrap-keycloak-secrets.sh
 
 The tested installation uses the vendored Bitnami chart ``25.2.0``, Keycloak
 ``26.3.3``, and image
