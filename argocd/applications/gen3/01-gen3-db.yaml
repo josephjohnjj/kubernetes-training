@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     path: postgres
-    targetRevision: main
+    targetRevision: talos
     directory:
       recurse: true
 

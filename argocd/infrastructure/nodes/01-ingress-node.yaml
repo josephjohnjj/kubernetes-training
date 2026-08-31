@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Node
+metadata:
+  name: ingress1
+  annotations:
+    # Reconcile node placement before Argo CD creates the ingress-nginx
+    # Application. The controller DaemonSet selects ingress-ready=true.
+    argocd.argoproj.io/sync-wave: "-30"
+    # The kubelet owns creation of this Node object. Argo CD may reconcile its
+    # declared metadata, but must never delete the Node during pruning.
+    argocd.argoproj.io/sync-options: Prune=false
+  labels:
+    # Custom scheduling label consumed by the ingress-nginx Helm values.
+    ingress-ready: "true"
+    # Kubernetes blocks a worker from granting itself a role label through its
+    # kubelet identity, so Argo CD applies this with cluster-admin privileges.
+    node-role.kubernetes.io/ingress: ""
+spec:
+  taints:
+    # Reserve ingress1 for workloads that explicitly tolerate this role.
+    # Talos also registers this taint on first join; declaring it here makes
+    # the post-bootstrap Kubernetes state self-healing.
+    - key: dedicated
+      value: ingress
+      effect: NoSchedule

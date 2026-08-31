@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     path: kueue
-    targetRevision: main
+    targetRevision: talos
 
   destination:
     server: https://kubernetes.default.svc

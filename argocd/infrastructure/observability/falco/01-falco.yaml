@@ -10,7 +10,7 @@ spec:
 
   source:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
-    targetRevision: main
+    targetRevision: talos
     path: charts/falco
     helm:
       values: |

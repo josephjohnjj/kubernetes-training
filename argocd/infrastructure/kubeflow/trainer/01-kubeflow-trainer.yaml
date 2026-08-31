@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     path: charts/kubeflow-trainer
-    targetRevision: main
+    targetRevision: talos
     helm:
       valuesObject:
         runtimes:

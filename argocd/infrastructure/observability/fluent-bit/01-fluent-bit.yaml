@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/josephjohnjj/kubernetes-training.git
     path: charts/fluent-bit
-    targetRevision: main
+    targetRevision: talos
     helm:
       valueFiles:
         - fluent-bit-values.yaml
