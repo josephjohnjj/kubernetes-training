@@ -1,5 +1,0 @@
----
-# Prepare legacy Keycloak storage resources; Argo CD deploys the application.
-
-- import_playbook: keycloak/01-deploy-storage.yml
-  tags: [keycloak, storage]
