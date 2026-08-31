@@ -1,0 +1,3 @@
+---
+# Build the nip.io base domain from the first host in the login inventory group.
+publicDomain: "{{ hostvars[groups['login'][0]].ansible_host }}.nip.io"

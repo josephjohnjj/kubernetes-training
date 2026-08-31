@@ -1,0 +1,21 @@
+---
+- name: Render environment-specific Kubernetes manifests
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    repository_root: "{{ playbook_dir }}/../.."
+
+  tasks:
+    - name: Render platform ingress manifests
+      ansible.builtin.template:
+        src: "templates/ingresses/{{ item }}.j2"
+        dest: "{{ repository_root }}/argocd/ingresses/{{ item }}"
+        mode: "0644"
+      loop:
+        - 01-argocd-ingress.yaml
+        - 02-ceph-dashboard-ingress.yaml
+        - 03-grafana-ingress.yaml
+        - 04-jaeger-ingress.yaml
+        - 05-keycloak-ingress.yaml
+        - 06-opensearch-ingress.yaml

@@ -1,26 +1,25 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ceph-dashboard
-  namespace: rook-ceph
+  name: keycloak
+  namespace: keycloak
   annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     cert-manager.io/cluster-issuer: letsencrypt-production
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - "ceph.44.203.188.20.nip.io"
-      secretName: ceph-dashboard-ingress-tls
+        - "keycloak.{{ publicDomain }}"
+      secretName: keycloak-ingress-tls
   rules:
-    - host: "ceph.44.203.188.20.nip.io"
+    - host: "keycloak.{{ publicDomain }}"
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: rook-ceph-mgr-dashboard
+                name: keycloak
                 port:
-                  number: 7000
+                  number: 80
