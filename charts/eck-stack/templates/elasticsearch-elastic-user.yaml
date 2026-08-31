@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: elasticsearch-elastic-user
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    # ECK must be able to resolve the file-realm reference when it reconciles
+    # the Elasticsearch resource.
+    argocd.argoproj.io/sync-wave: "-1"
+type: kubernetes.io/basic-auth
+stringData:
+  username: elastic
+  password: "41RTyGJQEi63tmab18jCiJLE"
+  roles: superuser

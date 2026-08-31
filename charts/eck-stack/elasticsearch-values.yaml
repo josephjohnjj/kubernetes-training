@@ -8,6 +8,12 @@ eck-elasticsearch:
   #
   version: 9.5.0
 
+  # Keep the elastic superuser password aligned with the GEN3 Elasticsearch
+  # bootstrap hook. This is intentionally static for the training cluster.
+  auth:
+    fileRealm:
+      - secretName: elasticsearch-elastic-user
+
   http:
     tls:
       selfSignedCertificate:
