@@ -1,0 +1,42 @@
+# Argo CD is installed and upgraded with the upstream argo/argo-cd Helm chart.
+# Keep this file limited to installation-level settings; platform Applications
+# remain under argocd/ and are reconciled through the app-of-apps hierarchy.
+
+# Argo CD deploys workloads into the same cluster, so its application
+# controller requires cluster-scoped roles.
+createClusterRoles: true
+
+crds:
+  # Helm owns CRD installation and upgrades. Retaining CRDs on uninstall avoids
+  # deleting Application and AppProject objects accidentally.
+  install: true
+  keep: true
+
+configs:
+  rbac:
+    # Helm owns argocd-rbac-cm. Do not also apply
+    # argocd/bootstrap/02-argocd-rbac-cm.yaml to this cluster.
+    create: true
+    policy.default: role:readonly
+    scopes: "[groups]"
+    policy.csv: |
+      # Infrastructure administrator role.
+      p, role:infrastructure-admin, applications, get, infrastructure/*, allow
+      p, role:infrastructure-admin, applications, sync, infrastructure/*, allow
+      p, role:infrastructure-admin, applications, update, infrastructure/*, allow
+      p, role:infrastructure-admin, applications, delete, infrastructure/*, allow
+
+      # Keycloak group and administrator account mappings.
+      g, infrastructure-admin, role:infrastructure-admin
+      g, joseph.john@anu.edu.au, role:infrastructure-admin
+
+server:
+  service:
+    # ingress-nginx reaches the Argo CD HTTPS service inside the cluster. No
+    # cloud LoadBalancer or NodePort is required.
+    type: ClusterIP
+
+  ingress:
+    # The repository-managed Ingress lives in argocd/ingresses and is applied
+    # later by the platform-ingresses Application.
+    enabled: false
