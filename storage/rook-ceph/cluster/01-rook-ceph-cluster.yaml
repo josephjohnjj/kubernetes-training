@@ -23,6 +23,14 @@ spec:
   dashboard:
     enabled: true
 
+  placement:
+    all:
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: storage
+          effect: NoSchedule
+
   storage:
     useAllNodes: false
     useAllDevices: false
